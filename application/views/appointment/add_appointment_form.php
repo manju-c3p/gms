@@ -1,7 +1,29 @@
+<style>
+	.page-header {
+    display: flex;
+    justify-content: space-between; /* left & right */
+    align-items: center;
+    margin-bottom: 24px;
+}
 
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+}
+
+</style>
 <!-- <div class="w-full max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow"> -->
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
-    <h2 class="text-2xl font-bold mb-6">Add Appointment</h2>
+ <div class="page-header">
+    <h2 class="page-title">Add Appointment</h2>
+
+    <a href="<?= base_url('index.php/inspection'); ?>" 
+       class="topbar-btn inspection-btn">
+        Inspection
+    </a>
+</div>
+
 
     <form method="POST" action="<?= base_url('index.php/appointment/save'); ?>">
 
@@ -27,7 +49,7 @@
                 <label class="font-medium">Vehicle</label>
                 <select name="vehicle_id" id="vehicleSelect"
                         class="w-full border p-2 rounded" required>
-                    <option value="">-- Select Vehicle --</option>
+                    <option value="">-- Select Vehicle -- Reg No (Brand , Model, Chassis No, Engine No)</option>
                 </select>
             </div>
 
@@ -86,17 +108,17 @@ document.getElementById("customerSelect").addEventListener("change", function() 
 
     if (!cid) {
         document.getElementById("vehicleSelect").innerHTML =
-            '<option value="">-- Select Vehicle --</option>';
+            '<option value="">-- Select Vehicle -- Reg No (Brand , Model, Chassis No, Engine No)</option>';
         return;
     }
 
     fetch("<?= base_url('index.php/appointment/getVehiclesByCustomer/'); ?>" + cid)
         .then(res => res.json())
         .then(data => {
-            let html = '<option value="">-- Select Vehicle --</option>';
+            let html = '<option value="">-- Select Vehicle -- Reg No (Brand , Model, Chassis No, Engine No)</option>';
             data.forEach(v => {
                 html += `<option value="${v.vehicle_id}">
-                            ${v.registration_no} (${v.brand} ${v.model})
+                            ${v.registration_no} (${v.brand} , ${v.model} , ${v.chassis_no} , ${v.engine_no} )
                          </option>`;
             });
             document.getElementById("vehicleSelect").innerHTML = html;

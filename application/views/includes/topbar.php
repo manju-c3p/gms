@@ -21,17 +21,17 @@
 
 		<!-- ================================================================ -->
 
-<div class="topbar-actions flex items-center space-x-2 ml-6">
-    <a href="<?= base_url('index.php/inspection'); ?>" class="topbar-btn inspection-btn">
-        Inspection
-    </a>
-    <a href="<?= base_url('index.php/estimation'); ?>" class="topbar-btn estimation-btn">
-        Estimation
-    </a>
-    <a href="<?= base_url('index.php/jobcard'); ?>" class="topbar-btn jobcard-btn">
-        Job Card
-    </a>
-</div>
+		<div class="topbar-actions flex items-center space-x-2 ml-6">
+			<a href="<?= base_url('index.php/inspection'); ?>" class="topbar-btn inspection-btn">
+				Inspection
+			</a>
+			<a href="<?= base_url('index.php/estimation'); ?>" class="topbar-btn estimation-btn">
+				Estimation
+			</a>
+			<a href="<?= base_url('index.php/jobcard'); ?>" class="topbar-btn jobcard-btn">
+				Job Card
+			</a>
+		</div>
 
 
 
