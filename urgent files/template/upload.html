@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DMS - Upload</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="upload">
+  <div class="app single">
+    <aside class="sidebar narrow">
+      <div class="brand">DMS</div>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">All Documents</a>
+        <a href="upload.html" class="nav-link active">Upload</a>
+        <a href="settings.html" class="nav-link">Settings</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="left">
+          <a href="index.html" class="btn icon">← Back</a>
+          <h1 class="title">Upload documents</h1>
+        </div>
+      </header>
+
+      <section class="content">
+        <div class="card">
+          <div class="upload-area" id="drop-area">
+            <p>Drag & drop files here, or</p>
+            <input id="file-input" type="file" multiple />
+            <button id="btn-choose" class="btn">Choose files</button>
+            <div class="muted small">Supported: PDF, PNG, JPG, DOCX. Upload is simulated and stored locally.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Recently uploaded (this session)</h3>
+          <div id="recent-uploads"></div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <div id="modal-root"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DMS Collaboration</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex h-screen">
+
+<!-- Sidebar -->
+<aside id="sidebar" class="sidebar flex flex-col">
+  <div class="brand">DMS</div>
+  <nav>
+    <a href="index.html">Dashboard</a>
+
+    <div class="has-submenu">
+      <a href="#">Features ▾</a>
+      <div class="submenu">
+        <a href="features.html#user-management">User Management</a>
+        <a href="features.html#file-management">File Management</a>
+        <a href="features.html#search-files">Search Files</a>
+        <a href="features.html#doc-update">Document Update Notifications</a>
+      </div>
+    </div>
+
+    <div class="has-submenu">
+      <a href="#" class="active">Collaboration ▾</a>
+      <div class="submenu">
+        <a href="#annotation">Document Annotation</a>
+        <a href="#comments">Threaded Comments</a>
+      </div>
+    </div>
+
+    <div class="has-submenu">
+      <a href="#">UX & Mobility ▾</a>
+      <div class="submenu">
+        <a href="ux.html#responsive">Responsive Interface</a>
+        <a href="ux.html#dashboard">Personalized Dashboards</a>
+        <a href="ux.html#notifications">Smart Notifications & Alerts</a>
+        <a href="ux.html#rbac">RBAC</a>
+        <a href="ux.html#approval">Automated Approval Workflows</a>
+      </div>
+    </div>
+  </nav>
+</aside>
+
+<div class="flex-1 flex flex-col overflow-auto md:ml-[260px]">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="flex items-center space-x-4">
+      <button id="sidebar-toggle" class="md:hidden">☰</button>
+      <h1 class="text-xl font-bold">Collaboration</h1>
+    </div>
+    <div class="flex items-center">
+      <input type="text" placeholder="Search documents...">
+      <div class="dropdown">
+        <button class="dropdown-btn">Filters ▼</button>
+        <div class="dropdown-content">
+          <a href="#">All Documents</a>
+          <a href="#">Recently Modified</a>
+          <a href="#">Favorites</a>
+        </div>
+      </div>
+      <div class="dropdown">
+        <button class="dropdown-btn">Group By ▼</button>
+        <div class="dropdown-content">
+          <a href="#">Type</a>
+          <a href="#">Date</a>
+          <a href="#">Owner</a>
+        </div>
+      </div>
+      <button class="favorite-btn ml-2">★ Favorite Filters</button>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <main class="p-6 space-y-6">
+    <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <!-- Collaboration cards -->
+      <a href="collaboration.html" class="card hover:shadow-lg cursor-pointer" id="annotation">
+        <h3>Document Annotation</h3>
+        <p>Add highlights, notes, and comments directly on documents.</p>
+      </a>
+
+      <a href="collaboration.html" class="card hover:shadow-lg cursor-pointer" id="comments">
+        <h3>Threaded Comments</h3>
+        <p>Organize comments in threads for better discussion.</p>
+      </a>
+
+      <!-- Navigation cards for Features and UX -->
+      <a href="features.html" class="card hover:shadow-lg cursor-pointer">
+        <h3>Features</h3>
+        <p>User Management, File Management, Search, Update Notifications.</p>
+      </a>
+
+      <a href="ux.html" class="card hover:shadow-lg cursor-pointer">
+        <h3>UX & Mobility</h3>
+        <p>Responsive Interface, Dashboards, Notifications, RBAC, Workflows.</p>
+      </a>
+
+      <!-- Info cards -->
+      <div class="card">
+        <h3>Recent Documents</h3>
+        <ul>
+          <li>Team Meeting Notes.docx</li>
+          <li>Design Mockup.pdf</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Pending Actions</h3>
+        <ul>
+          <li>Review Annotations</li>
+          <li>Approve Comments</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Notifications</h3>
+        <ul>
+          <li>User added comment on Project Plan</li>
+          <li>Document "Specs.docx" updated</li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>

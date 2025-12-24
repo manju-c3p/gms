@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DMS UX & Mobility</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex h-screen">
+
+<!-- Sidebar -->
+<aside id="sidebar" class="sidebar flex flex-col">
+  <div class="brand">DMS</div>
+  <nav>
+    <a href="index.html">Dashboard</a>
+
+    <div class="has-submenu">
+      <a href="#">Features ▾</a>
+      <div class="submenu">
+        <a href="features.html#user-management">User Management</a>
+        <a href="features.html#file-management">File Management</a>
+        <a href="features.html#search-files">Search Files</a>
+        <a href="features.html#doc-update">Document Update Notifications</a>
+      </div>
+    </div>
+
+    <div class="has-submenu">
+      <a href="#">Collaboration ▾</a>
+      <div class="submenu">
+        <a href="collaboration.html#annotation">Document Annotation</a>
+        <a href="collaboration.html#comments">Threaded Comments</a>
+      </div>
+    </div>
+
+    <div class="has-submenu">
+      <a href="#" class="active">UX & Mobility ▾</a>
+      <div class="submenu">
+        <a href="#responsive">Responsive Interface</a>
+        <a href="#dashboard">Personalized Dashboards</a>
+        <a href="#notifications">Smart Notifications & Alerts</a>
+        <a href="#rbac">RBAC</a>
+        <a href="#approval">Automated Approval Workflows</a>
+      </div>
+    </div>
+  </nav>
+</aside>
+
+<div class="flex-1 flex flex-col overflow-auto md:ml-[260px]">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="flex items-center space-x-4">
+      <button id="sidebar-toggle" class="md:hidden">☰</button>
+      <h1 class="text-xl font-bold">UX & Mobility</h1>
+    </div>
+    <div class="flex items-center">
+      <input type="text" placeholder="Search documents...">
+      <div class="dropdown">
+        <button class="dropdown-btn">Filters ▼</button>
+        <div class="dropdown-content">
+          <a href="#">All Documents</a>
+          <a href="#">Recently Modified</a>
+          <a href="#">Favorites</a>
+        </div>
+      </div>
+      <div class="dropdown">
+        <button class="dropdown-btn">Group By ▼</button>
+        <div class="dropdown-content">
+          <a href="#">Type</a>
+          <a href="#">Date</a>
+          <a href="#">Owner</a>
+        </div>
+      </div>
+      <button class="favorite-btn ml-2">★ Favorite Filters</button>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <main class="p-6 space-y-6">
+    <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <!-- UX cards -->
+      <a href="ux.html" class="card hover:shadow-lg cursor-pointer" id="responsive">
+        <h3>Responsive Interface</h3>
+        <p>Works on desktop and mobile with adaptive layouts.</p>
+      </a>
+
+      <a href="ux.html" class="card hover:shadow-lg cursor-pointer" id="dashboard">
+        <h3>Personalized Dashboards</h3>
+        <p>Simple view of recent documents and pending actions.</p>
+      </a>
+
+      <a href="ux.html" class="card hover:shadow-lg cursor-pointer" id="notifications">
+        <h3>Smart Notifications & Alerts</h3>
+        <p>Receive notifications for updates, comments, and approvals.</p>
+      </a>
+
+      <a href="ux.html" class="card hover:shadow-lg cursor-pointer" id="rbac">
+        <h3>Role-Based Access Control</h3>
+        <p>Granular permissions for users and roles.</p>
+      </a>
+
+      <a href="ux.html" class="card hover:shadow-lg cursor-pointer" id="approval">
+        <h3>Automated Approval Workflows</h3>
+        <p>Define workflows to approve documents automatically.</p>
+      </a>
+
+      <!-- Navigation cards -->
+      <a href="features.html" class="card hover:shadow-lg cursor-pointer">
+        <h3>Features</h3>
+        <p>User Management, File Management, Search, Update Notifications.</p>
+      </a>
+
+      <a href="collaboration.html" class="card hover:shadow-lg cursor-pointer">
+        <h3>Collaboration</h3>
+        <p>Document Annotation and Threaded Comments.</p>
+      </a>
+
+      <!-- Info cards -->
+      <div class="card">
+        <h3>Recent Documents</h3>
+        <ul>
+          <li>UX Guidelines.pdf</li>
+          <li>Mobile Layout Mockup.docx</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Pending Actions</h3>
+        <ul>
+          <li>Review Dashboard Layout</li>
+          <li>Approve Notifications Setup</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Notifications</h3>
+        <ul>
+          <li>New workflow created</li>
+          <li>User assigned RBAC roles</li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>

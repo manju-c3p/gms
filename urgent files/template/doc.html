@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DMS - Document</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="doc">
+  <div class="app single">
+    <aside class="sidebar narrow">
+      <div class="brand">DMS</div>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">All Documents</a>
+        <a href="upload.html" class="nav-link">Upload</a>
+        <a href="settings.html" class="nav-link">Settings</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="left">
+          <a href="index.html" class="btn icon">← Back</a>
+          <h1 id="doc-title" class="title">Document</h1>
+        </div>
+        <div class="right" id="doc-actions">
+          <!-- actions injected -->
+        </div>
+      </header>
+
+      <section class="content detail">
+        <div class="detail-left">
+          <div id="preview-area" class="preview-card">
+            <!-- preview iframe or image -->
+          </div>
+        </div>
+
+        <aside class="detail-right">
+          <div class="card">
+            <h3>Details</h3>
+            <div><strong>Name:</strong> <span id="meta-name"></span></div>
+            <div><strong>Owner:</strong> <span id="meta-owner"></span></div>
+            <div><strong>Modified:</strong> <span id="meta-modified"></span></div>
+            <div><strong>Size:</strong> <span id="meta-size"></span></div>
+            <div><strong>Tags:</strong> <span id="meta-tags"></span></div>
+          </div>
+
+          <div class="card">
+            <h3>Version history</h3>
+            <div id="versions"></div>
+          </div>
+
+          <div class="card">
+            <h3>Share</h3>
+            <input id="share-link" class="input" readonly />
+            <button id="copy-link" class="btn full">Copy link</button>
+          </div>
+        </aside>
+
+      </section>
+    </main>
+  </div>
+
+  <div id="modal-root"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

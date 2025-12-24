@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DMS Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex h-screen">
+
+<!-- Sidebar -->
+<aside id="sidebar" class="sidebar flex flex-col">
+  <div class="brand">DMS</div>
+  <nav>
+    <a href="index.html" class="active">Dashboard</a>
+
+    <div class="has-submenu">
+      <a href="#">Features ▾</a>
+      <div class="submenu">
+        <a href="features.html#user-management">User Management</a>
+        <a href="features.html#file-management">File Management</a>
+        <a href="features.html#search-files">Search Files</a>
+        <a href="features.html#doc-update">Document Update Notifications</a>
+      </div>
+    </div>
+
+    <div class="has-submenu">
+      <a href="#">Collaboration ▾</a>
+      <div class="submenu">
+        <a href="collaboration.html#annotation">Document Annotation</a>
+        <a href="collaboration.html#comments">Threaded Comments</a>
+      </div>
+    </div>
+
+    <div class="has-submenu">
+      <a href="#">UX & Mobility ▾</a>
+      <div class="submenu">
+        <a href="ux.html#responsive">Responsive Interface</a>
+        <a href="ux.html#dashboard">Personalized Dashboards</a>
+        <a href="ux.html#notifications">Smart Notifications & Alerts</a>
+        <a href="ux.html#rbac">Role-Based Access Control</a>
+        <a href="ux.html#approval">Automated Approval Workflows</a>
+      </div>
+    </div>
+  </nav>
+</aside>
+
+<!-- Main content -->
+<div class="flex-1 flex flex-col overflow-auto md:ml-[260px]">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="flex items-center space-x-4">
+      <button id="sidebar-toggle" class="md:hidden">☰</button>
+      <h1 class="text-xl font-bold">Dashboard</h1>
+    </div>
+    <div class="flex items-center">
+      <input type="text" placeholder="Search documents...">
+      <div class="dropdown">
+        <button class="dropdown-btn">Filters ▼</button>
+        <div class="dropdown-content">
+          <a href="#">All Documents</a>
+          <a href="#">Recently Modified</a>
+          <a href="#">Favorites</a>
+        </div>
+      </div>
+      <div class="dropdown">
+        <button class="dropdown-btn">Group By ▼</button>
+        <div class="dropdown-content">
+          <a href="#">Type</a>
+          <a href="#">Date</a>
+          <a href="#">Owner</a>
+        </div>
+      </div>
+      <button class="favorite-btn ml-2">★ Favorite Filters</button>
+    </div>
+  </div>
+
+  <!-- Dashboard Cards with clickable links -->
+  <main class="p-6 space-y-6">
+    <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+
+      <!-- Navigation Cards -->
+      <a href="features.html" class="card hover:shadow-lg cursor-pointer">
+        <h3>Features</h3>
+        <p>User Management, File Management, Search, and Update Notifications.</p>
+      </a>
+
+      <a href="collaboration.html" class="card hover:shadow-lg cursor-pointer">
+        <h3>Collaboration</h3>
+        <p>Document Annotation and Threaded Comments for team collaboration.</p>
+      </a>
+
+      <a href="ux.html" class="card hover:shadow-lg cursor-pointer">
+        <h3>UX & Mobility</h3>
+        <p>Responsive Interface, Dashboards, Notifications, RBAC, and Workflows.</p>
+      </a>
+
+      <!-- Info Cards -->
+      <div class="card">
+        <h3>Recent Documents</h3>
+        <ul>
+          <li>Project Proposal.pdf</li>
+          <li>Budget Report.xlsx</li>
+          <li>Meeting Notes.docx</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Pending Actions</h3>
+        <ul>
+          <li>Approve Q3 Budget</li>
+          <li>Review Legal Docs</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Notifications</h3>
+        <ul>
+          <li>Document "Contract.docx" updated</li>
+          <li>User "John Doe" added a comment</li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>
