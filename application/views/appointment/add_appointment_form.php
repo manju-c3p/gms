@@ -18,7 +18,7 @@
  <div class="page-header">
     <h2 class="page-title">Add Appointment</h2>
 
-    <a href="<?= base_url('index.php/inspection'); ?>" 
+    <a href="<?= base_url('index.php/Inspection_report/view'); ?>" 
        class="topbar-btn inspection-btn">
         Inspection
     </a>

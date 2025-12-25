@@ -4,7 +4,8 @@ class Appointment_model extends CI_Model
 
 	public function add($data)
 	{
-		return $this->db->insert('appointments', $data);
+		$this->db->insert('appointments', $data);
+    return $this->db->insert_id(); // 👈 return appointment_id
 	}
 
 	public function update($id, $data)

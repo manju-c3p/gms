@@ -36,6 +36,15 @@ class Service_model extends CI_Model
         return $this->db->where('master_service_id', $id)
                         ->update('services_master', ['status' => $status]);
     }
+
+	public function get_active_services()
+    {
+        return $this->db
+            ->where('status', 'Active')
+            ->order_by('service_name', 'ASC')
+            ->get('services_master')
+            ->result();
+    }
 }
 
 
