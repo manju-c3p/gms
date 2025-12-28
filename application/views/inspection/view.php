@@ -91,7 +91,7 @@ $rightItems = array_slice($items, $half);
 				<td class="border p-1 font-bold">KM</td>
 				<td class="border p-1">
 					<input type="number" name="km_reading"
-						value=""
+						value="<?= $inspection->km_reading ?>"
 						class="w-full border px-2 py-1">
 				</td>
 			</tr>
@@ -121,17 +121,17 @@ $rightItems = array_slice($items, $half);
 							<td class="border text-center">
 								<input type="radio"
 									name="item_status[<?= $i->item_id ?>]"
-									value="A">
+									value="A" <?= ($item_results[$i->item_id] ?? '') == 'A' ? 'checked' : '' ?>>
 							</td>
 							<td class="border text-center">
 								<input type="radio"
 									name="item_status[<?= $i->item_id ?>]"
-									value="C">
+									value="C" <?= ($item_results[$i->item_id] ?? '') == 'C' ? 'checked' : '' ?>>
 							</td>
 							<td class="border text-center">
 								<input type="radio"
 									name="item_status[<?= $i->item_id ?>]"
-									value="S">
+									value="S" <?= ($item_results[$i->item_id] ?? '') == 'S' ? 'checked' : '' ?>>
 							</td>
 						</tr>
 					<?php endforeach; ?>
@@ -191,14 +191,23 @@ $rightItems = array_slice($items, $half);
 
 				<tbody>
 					<!-- dynamic rows -->
+					 <?php foreach ($saved_services as $index => $srv): ?>
+<tr>
+    <td><?= $index + 1 ?></td>
+    <td>
+        <?php if ($srv->service_id): ?>
+            <?= $service_map[$srv->service_id] ?>
+        <?php else: ?>
+            <?= $srv->custom_text ?>
+        <?php endif; ?>
+    </td>
+</tr>
+<?php endforeach; ?>
+
 				</tbody>
 			</table>
 
-			<button type="button"
-				onclick="addServiceRow()"
-				class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg">
-				+ Add Service
-			</button>
+			
 		</div>
 
 
@@ -208,7 +217,7 @@ $rightItems = array_slice($items, $half);
 		<h4 class="font-bold mb-1">WORKS REQUESTED</h4>
 		<div class="grid grid-cols-5 gap-2 mb-4">
 			<?php foreach ($works as $w): ?>
-				<label><input type="checkbox" name="works_requested[]" value="<?= $w->work_id ?>"> <?= $w->work_name ?></label>
+				<label><input type="checkbox" name="works_requested[]" value="<?= $w->work_id ?>"  <?= in_array($w->work_id, $selected_works) ? 'checked' : '' ?>> <?= $w->work_name ?></label>
 			<?php endforeach; ?>
 		</div>
 
@@ -216,7 +225,7 @@ $rightItems = array_slice($items, $half);
 		<h4 class="font-bold mb-1">INVENTORY STATUS</h4>
 		<div class="grid grid-cols-5 gap-2 mb-4">
 			<?php foreach ($inventory as $inv): ?>
-				<label><input type="checkbox" name="inventory_status[]" value="<?= $inv->inventory_status_id ?>"> <?= $inv->status_name ?></label>
+				<label><input type="checkbox" name="inventory_status[]" value="<?= $inv->inventory_status_id ?>" <?= in_array($inv->inventory_status_id, $selected_inventory) ? 'checked' : '' ?>> <?= $inv->status_name ?></label>
 			<?php endforeach; ?>
 		</div>
 
@@ -227,7 +236,7 @@ $rightItems = array_slice($items, $half);
 				<div class="col-span-1">
 					<label class="font-bold block">Fuel</label>
 					<input name="fuel_level"
-						placeholder="1/2"
+						placeholder="1/2" value="<?= $inspection->fuel_level ?>"
 						class="border px-2 py-1 w-full">
 				</div>
 
@@ -240,7 +249,7 @@ $rightItems = array_slice($items, $half);
 
 				<div class="col-span-3">
 					<label class="font-bold block">Remarks</label>
-					<input name="remarks"
+					<input name="remarks" value= "<?= $inspection->remarks ?>"
 						class="border px-2 py-1 w-full">
 				</div>
 			</div>
@@ -279,12 +288,7 @@ $rightItems = array_slice($items, $half);
 		</div>
 
 		<!-- SAVE BUTTON -->
-		<div class="text-right mt-6">
-			<button type="submit"
-				class="px-6 py-2 bg-blue-600 text-white rounded">
-				Save Inspection
-			</button>
-		</div>
+	
 
 
 

@@ -25,6 +25,7 @@ class ServiceMaster extends CI_Controller
     {
         $data = [
             'service_name'   => $this->input->post('service_name'),
+			'service_type'   => $this->input->post('service_type'),
             'estimated_cost'=> $this->input->post('estimated_cost'),
             'estimated_time'=> $this->input->post('estimated_time'),
             'status'         => $this->input->post('status')
@@ -51,6 +52,7 @@ class ServiceMaster extends CI_Controller
     {
         $data = [
             'service_name'   => $this->input->post('service_name'),
+				'service_type'   => $this->input->post('service_type'),
             'estimated_cost'=> $this->input->post('estimated_cost'),
             'estimated_time'=> $this->input->post('estimated_time'),
             'status'         => $this->input->post('status')

@@ -69,4 +69,6 @@ class Inspection_view_model extends CI_Model
             ]);
         }
     }
+
+
 }

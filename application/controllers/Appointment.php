@@ -14,6 +14,7 @@ class Appointment extends CI_Controller
 	public function index()
 	{
 		$data['appointments'] = $this->Appointment_model->get_all_appointments();
+		
 		$data['title'] = "Appointments";
 		$data['main_content'] = 'Appointment/appointment_list';
 		$this->load->view('includes/template', $data);
@@ -23,6 +24,8 @@ class Appointment extends CI_Controller
 	public function add()
 	{
 		$data['customers'] = $this->Customer_model->get_all_customers();
+		$data['today_date'] = date('Y-m-d');
+		$data['current_time'] = date('H:i');
 		$data['title'] = "Add Appointment";
 		$data['main_content'] = 'appointment/add_appointment_form';
 		$this->load->view('includes/template', $data);

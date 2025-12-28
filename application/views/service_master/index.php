@@ -1,4 +1,3 @@
-
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
@@ -6,58 +5,60 @@
 
 <div class="w-full bg-white rounded-xl shadow p-6">
 
-    <div class="flex justify-between mb-4">
-        <h2 class="text-2xl font-bold">Service Master</h2>
+	<div class="flex justify-between mb-4">
+		<h2 class="text-2xl font-bold">Service Master</h2>
 
-        <button onclick="openModal()"
-                class="px-4 py-2 bg-green-600 text-white rounded">
-            + Add Service
-        </button>
-    </div>
+		<button onclick="openModal()"
+			class="px-4 py-2 bg-green-600 text-white rounded">
+			+ Add Service
+		</button>
+	</div>
 
-    <div class="overflow-x-auto">
-        <table id="serviceTable" class="display w-full border">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Service Name</th>
-                    <th>Estimated Cost</th>
-                    <th>Estimated Time (Min)</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
+	<div class="overflow-x-auto">
+		<table id="serviceTable" class="display w-full border">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Service Name</th>
+					<th>Service Type</th>
+					<th>Estimated Cost</th>
+					<th>Estimated Time (Min)</th>
+					<th>Status</th>
+					<th>Action</th>
+				</tr>
+			</thead>
 
-            <tbody>
-                <?php foreach ($services as $i => $s) { ?>
-                <tr>
-                    <td><?= $i+1 ?></td>
-                    <td><?= $s->service_name ?></td>
-                    <td><?= number_format($s->estimated_cost, 2) ?></td>
-                    <td><?= $s->estimated_time ?></td>
-                    <td>
-                        <span class="px-2 py-1 rounded text-sm font-semibold
+			<tbody>
+				<?php foreach ($services as $i => $s) { ?>
+					<tr>
+						<td><?= $i + 1 ?></td>
+						<td><?= $s->service_name ?></td>
+						<td><?= $s->service_type ?></td>
+						<td><?= number_format($s->estimated_cost, 2) ?></td>
+						<td><?= $s->estimated_time ?></td>
+						<td>
+							<span class="px-2 py-1 rounded text-sm font-semibold
                             <?= ($s->status == 'Active') ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800' ?>">
-                            <?= $s->status ?>
-                        </span>
-                    </td>
-                    <td>
-                        <a href="<?= base_url('index.php/servicemaster/edit/'.$s->master_service_id) ?>"
-                           class="px-2 py-1 bg-blue-600 text-white rounded text-sm">
-                            Edit
-                        </a>
+								<?= $s->status ?>
+							</span>
+						</td>
+						<td>
+							<a href="<?= base_url('index.php/servicemaster/edit/' . $s->master_service_id) ?>"
+								class="px-2 py-1 bg-blue-600 text-white rounded text-sm">
+								Edit
+							</a>
 
-                        <a href="<?= base_url('index.php/servicemaster/toggle_status/'.$s->master_service_id) ?>"
-                           class="px-2 py-1 bg-orange-500 text-white rounded text-sm">
-                            Toggle
-                        </a>
-                    </td>
-                </tr>
-                <?php } ?>
-            </tbody>
+							<a href="<?= base_url('index.php/servicemaster/toggle_status/' . $s->master_service_id) ?>"
+								class="px-2 py-1 bg-orange-500 text-white rounded text-sm">
+								Toggle
+							</a>
+						</td>
+					</tr>
+				<?php } ?>
+			</tbody>
 
-        </table>
-    </div>
+		</table>
+	</div>
 </div>
 
 <!-- ✅ Add Service Modal -->
@@ -72,6 +73,15 @@
 			<input type="text" name="service_name"
 				class="w-full border p-2 mb-3"
 				placeholder="Service Name" required>
+
+			<!-- Service Type -->
+			<select name="service_type"
+				class="w-full border p-2 mb-3" required>
+				<option value="">-- Select Service Type --</option>
+				<option value="SERVICE">Service</option>
+				<option value="LABOUR">Labour</option>
+				<option value="OTHER">Other</option>
+			</select>
 
 			<input type="number" step="0.01" name="estimated_cost"
 				class="w-full border p-2 mb-3"
@@ -135,14 +145,13 @@
 	}
 </script>
 <script>
-$(document).ready(function () {
-    $('#serviceTable').DataTable({
-        pageLength: 10,
-        lengthMenu: [10, 25, 50, 100],
-        ordering: true,
-        searching: true,
-        responsive: true
-    });
-});
+	$(document).ready(function() {
+		$('#serviceTable').DataTable({
+			pageLength: 10,
+			lengthMenu: [10, 25, 50, 100],
+			ordering: true,
+			searching: true,
+			responsive: true
+		});
+	});
 </script>
-

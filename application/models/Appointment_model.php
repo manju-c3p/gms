@@ -5,7 +5,7 @@ class Appointment_model extends CI_Model
 	public function add($data)
 	{
 		$this->db->insert('appointments', $data);
-    return $this->db->insert_id(); // 👈 return appointment_id
+		return $this->db->insert_id(); // 👈 return appointment_id
 	}
 
 	public function update($id, $data)
@@ -41,17 +41,58 @@ class Appointment_model extends CI_Model
 	public function get_all_appointments()
 	{
 		$this->db->select("
-            appointments.*,
-            customers.name AS customer_name,
-            vehicles.registration_no
-        ");
+        appointments.*,
+        customers.name AS customer_name,
+        vehicles.registration_no,
+
+        inspections.inspection_id,
+        inspections.status AS inspection_status,
+
+        estimations.estimation_id,
+        estimations.status AS estimation_status,
+
+        job_cards.jobcard_id,
+        job_cards.status AS jobcard_status
+    ");
+
 		$this->db->from("appointments");
-		$this->db->join("customers", "customers.customer_id = appointments.customer_id");
-		$this->db->join("vehicles", "vehicles.vehicle_id = appointments.vehicle_id");
+
+		$this->db->join(
+			"customers",
+			"customers.customer_id = appointments.customer_id",
+			"inner"
+		);
+
+		$this->db->join(
+			"vehicles",
+			"vehicles.vehicle_id = appointments.vehicle_id",
+			"inner"
+		);
+
+		// 🔹 LEFT JOINS FOR WORKFLOW
+		$this->db->join(
+			"inspections",
+			"inspections.appointment_id = appointments.appointment_id",
+			"left"
+		);
+
+		$this->db->join(
+			"estimations",
+			"estimations.appointment_id = appointments.appointment_id",
+			"left"
+		);
+
+		$this->db->join(
+			"job_cards",
+			"job_cards.appointment_id = appointments.appointment_id",
+			"left"
+		);
+
 		$this->db->order_by("appointments.appointment_date", "DESC");
 
 		return $this->db->get()->result();
 	}
+
 
 	//  public function get_appointment($appointment_id)
 	// {

@@ -1,207 +1,134 @@
 <?php
-class Jobcard_model extends CI_Model {
-
-    // Get all job cards with customer, vehicle & appointment info
-    public function get_all_jobcards() 
-    {
-        $this->db->select("
-            job_cards.*,
-            customers.name AS customer_name,
-            customers.phone,
-
-            vehicles.registration_no,
-            vehicles.brand,
-            vehicles.model,
-
-            appointments.appointment_date
-        ");
-
-        $this->db->from("job_cards");
-        $this->db->join("customers", "customers.customer_id = job_cards.customer_id");
-        $this->db->join("vehicles", "vehicles.vehicle_id = job_cards.vehicle_id");
-        $this->db->join("appointments", "appointments.appointment_id = job_cards.appointment_id", "left");
-
-        $this->db->order_by("job_cards.jobcard_id", "DESC");
-
-        return $this->db->get()->result();
-    }
-
-	  public function insert_jobcard($data) {
-        $this->db->insert("job_cards", $data);
-        return $this->db->insert_id();
-    }
-
-    public function insert_service($data) {
-        return $this->db->insert("jobcard_services", $data);
-    }
-
-    public function insert_part($data) {
-        return $this->db->insert("jobcard_parts", $data);
-    }
-
-    public function get_all() {
-        $this->db->select("
-            job_cards.*,
-            customers.name AS customer_name,
-            vehicles.registration_no
-        ");
-        $this->db->from("job_cards");
-        $this->db->join("customers", "customers.customer_id = job_cards.customer_id");
-        $this->db->join("vehicles", "vehicles.vehicle_id = job_cards.vehicle_id");
-        $this->db->order_by("job_cards.jobcard_id", "DESC");
-        return $this->db->get()->result();
-    }
-
-
-	public function get_jobcard($jobcard_id)
+class Jobcard_model extends CI_Model
 {
-    $this->db->select("
-        job_cards.*,
-        customers.name AS customer_name,
-        customers.phone,
-        customers.email,
-        vehicles.registration_no,
-        vehicles.brand,
-        vehicles.model,
-        vehicles.variant,
-        vehicles.year,
-        appointments.appointment_date
-    ");
 
-    $this->db->from("job_cards");
-    $this->db->join("customers", "customers.customer_id = job_cards.customer_id");
-    $this->db->join("vehicles", "vehicles.vehicle_id = job_cards.vehicle_id");
-    $this->db->join("appointments", "appointments.appointment_id = job_cards.appointment_id", "left");
-    $this->db->where("job_cards.jobcard_id", $jobcard_id);
+	public function create_jobcard($data)
+	{
+		$this->db->insert('job_cards', $data);
+		return $this->db->insert_id();
+	}
 
-    return $this->db->get()->row();
-}
-public function get_jobcard_services($jobcard_id)
-{
-    return $this->db->where("jobcard_id", $jobcard_id)
-                    ->get("jobcard_services")
-                    ->result();
-}
+	public function update_jobcard($jobcard_id, $data)
+	{
+		return $this->db
+			->where('jobcard_id', $jobcard_id)
+			->update('job_cards', $data);
+	}
 
-public function get_jobcard_parts($jobcard_id)
-{
-    $this->db->select("
-        jobcard_parts.*,
-        spare_parts.part_name
-    ");
-    $this->db->from("jobcard_parts");
-    $this->db->join("spare_parts", "spare_parts.part_id = jobcard_parts.part_id");
-    $this->db->where("jobcard_parts.jobcard_id", $jobcard_id);
+	public function get_by_appointment($appointment_id)
+	{
+		return $this->db
+			->where('appointment_id', $appointment_id)
+			->get('job_cards')
+			->row();
+	}
 
-    return $this->db->get()->result();
-}
+	public function save_job_descriptions($jobcard_id, $descriptions)
+	{
+		$this->db->where('jobcard_id', $jobcard_id)
+			->delete('jobcard_descriptions');
 
+		foreach ($descriptions as $desc) {
+			if (trim($desc) == '') continue;
 
-public function update_jobcard($jobcard_id, $data)
-{
-    return $this->db->where('jobcard_id', $jobcard_id)->update('job_cards', $data);
-}
+			$this->db->insert('jobcard_descriptions', [
+				'jobcard_id' => $jobcard_id,
+				'description'   => $desc
+			]);
+		}
+	}
 
-public function delete_services($jobcard_id)
-{
-    return $this->db->delete('jobcard_services', ['jobcard_id' => $jobcard_id]);
-}
+	public function save_parts($jobcard_id, $part_ids, $qtys, $unit_prices, $sell_prices, $totals)
+	{
+		$this->db->where('jobcard_id', $jobcard_id)
+			->delete('jobcard_parts');
 
-public function add_service($data)
-{
-    return $this->db->insert('jobcard_services', $data);
-}
+		foreach ($part_ids as $i => $part_id) {
+			if (!$part_id) continue;
 
-public function delete_parts($jobcard_id)
-{
-    return $this->db->delete('jobcard_parts', ['jobcard_id' => $jobcard_id]);
-}
+			$this->db->insert('jobcard_parts', [
+				'jobcard_id' => $jobcard_id,
+				'part_id'       => $part_id,
+				'qty'           => $qtys[$i],
+				'unit_price'    => $unit_prices[$i],
+				'selling_price' => $sell_prices[$i],
+				'total_price'   => $totals[$i]
+			]);
+		}
+	}
 
-public function add_part($data)
-{
-    return $this->db->insert('jobcard_parts', $data);
-}
+	public function save_services($jobcard_id, $service_names, $times, $costs, $totals)
+	{
+		log_message('error', '--- save_services called ---');
+		log_message('error', 'jobcard_id ID: ' . $jobcard_id);
 
-// AUTO STOCK DEDUCTION
-public function reduce_stock($part_id, $qty)
-{
-    $this->db->insert('stock_out', [
-        'part_id'   => $part_id,
-        'qty'       => $qty,
-        'date_out'  => date('Y-m-d'),
-        'created_at'=> date('Y-m-d H:i:s')
-    ]);
-}
+		log_message('error', 'Service Names: ' . print_r($service_names, true));
+		log_message('error', 'Times: ' . print_r($times, true));
+		log_message('error', 'Costs: ' . print_r($costs, true));
+		log_message('error', 'Totals: ' . print_r($totals, true));
+		$this->db->where('jobcard_id', $jobcard_id)
+			->delete('jobcard_services');
 
-public function get_jobcard_details($jobcard_id)
-{
-    $this->db->select("
-        job_cards.*,
-        customers.name AS customer_name,
-        customers.phone,
-        vehicles.registration_no,
-        vehicles.brand,
-        vehicles.model
-    ");
-    $this->db->from("job_cards");
-    $this->db->join("customers", "customers.customer_id = job_cards.customer_id");
-    $this->db->join("vehicles", "vehicles.vehicle_id = job_cards.vehicle_id");
-    $this->db->where("job_cards.jobcard_id", $jobcard_id);
+		foreach ($service_names as $i => $service_name) {
+			if (!$service_name) continue;
 
-    return $this->db->get()->row();
-}
+			$this->db->insert('jobcard_services', [
+				'jobcard_id' => $jobcard_id,
+				'service_id'    => $service_name, // optional: map later
+				'estimated_time' => $times[$i],
+				'estimated_cost' => $costs[$i],
+				'total_cost'    => $totals[$i]
+			]);
 
-public function get_jobcard_with_details($jobcard_id)
-{
-    // =========================
-    // MAIN JOBCARD DATA
-    // =========================
-    $this->db->select("job_cards.*, 
-                       customers.name AS customer_name, customers.phone AS customer_phone,
-                       vehicles.registration_no");
-    $this->db->from("job_cards");
-    $this->db->join("customers", "customers.customer_id = job_cards.customer_id");
-    $this->db->join("vehicles", "vehicles.vehicle_id = job_cards.vehicle_id");
-    $this->db->where("job_cards.jobcard_id", $jobcard_id);
+			log_message('error', $this->db->last_query());
+			log_message('error', json_encode($this->db->error()));
+		}
+	}
 
-    $jobcard = $this->db->get()->row();
-
-    if ($jobcard) {
-
-        // =========================
-        // SERVICES
-        // =========================
-        $jobcard->services = $this->db
-            ->get_where('jobcard_services', ['jobcard_id' => $jobcard_id])
-            ->result();
-
-        // =========================
-        // PARTS + SPARE PART DETAILS ✅✅✅
-        // =========================
-        $this->db->select("jobcard_parts.*, 
-                           spare_parts.part_name, 
-                           spare_parts.part_code, 
-                           spare_parts.unit_price");
-        $this->db->from("jobcard_parts");
-        $this->db->join("spare_parts", "spare_parts.part_id = jobcard_parts.part_id");
-        $this->db->where("jobcard_parts.jobcard_id", $jobcard_id);
-
-        $jobcard->parts = $this->db->get()->result();
-    }
-
-    return $jobcard;
-}
+	public function get_jobcard_with_basic_details($jobcard_id)
+	{
+		return $this->db
+			->select('
+            jc.*,
+            c.name AS customer_name,
+            v.registration_no
+        ')
+			->from('job_cards jc')
+			->join('customers c', 'c.customer_id = jc.customer_id')
+			->join('vehicles v', 'v.vehicle_id = jc.vehicle_id')
+			->where('jc.jobcard_id', $jobcard_id)
+			->get()
+			->row();
+	}
 
 
-public function update_status($jobcard_id, $status)
-{
-    return $this->db
-        ->where('jobcard_id', $jobcard_id)
-        ->update('job_cards', [
-            'status' => $status
-        ]);
-}
+	public function get_jobcard_by_id($id)
+	{
+		return $this->db->where('jobcard_id ', $id)
+			->get('job_cards')
+			->row();
+	}
+	public function get_job_descriptions($jobcard_id)
+	{
+		return $this->db->where('jobcard_id', $jobcard_id)
+			->get('jobcard_descriptions')
+			->result();
+	}
 
 
-
+	public function get_parts($jobcard_id)
+	{
+		$this->db->select('jobcard_parts.*, spare_parts.part_name');
+		$this->db->from('jobcard_parts');
+		$this->db->join('spare_parts', 'spare_parts.part_id = jobcard_parts.part_id');
+		$this->db->where('jobcard_id', $jobcard_id);
+		return $this->db->get()->result();
+	}
+	public function get_services($jobcard_id)
+	{
+		return $this->db->where('jobcard_id', $jobcard_id)
+			->get('jobcard_services')
+			->result();
+	}
+	
 }

@@ -91,7 +91,7 @@ $rightItems = array_slice($items, $half);
 				<td class="border p-1 font-bold">KM</td>
 				<td class="border p-1">
 					<input type="number" name="km_reading"
-						value=""
+						value="<?= $inspection->km_reading ?>"
 						class="w-full border px-2 py-1">
 				</td>
 			</tr>
@@ -121,17 +121,17 @@ $rightItems = array_slice($items, $half);
 							<td class="border text-center">
 								<input type="radio"
 									name="item_status[<?= $i->item_id ?>]"
-									value="A">
+									value="A" <?= ($item_results[$i->item_id] ?? '') == 'A' ? 'checked' : '' ?>>
 							</td>
 							<td class="border text-center">
 								<input type="radio"
 									name="item_status[<?= $i->item_id ?>]"
-									value="C">
+									value="C" <?= ($item_results[$i->item_id] ?? '') == 'C' ? 'checked' : '' ?>>
 							</td>
 							<td class="border text-center">
 								<input type="radio"
 									name="item_status[<?= $i->item_id ?>]"
-									value="S">
+									value="S" <?= ($item_results[$i->item_id] ?? '') == 'S' ? 'checked' : '' ?>>
 							</td>
 						</tr>
 					<?php endforeach; ?>
@@ -191,6 +191,19 @@ $rightItems = array_slice($items, $half);
 
 				<tbody>
 					<!-- dynamic rows -->
+					<?php foreach ($saved_services as $index => $srv): ?>
+						<tr>
+							<td><?= $index + 1 ?></td>
+							<td>
+								<?php if ($srv->service_id): ?>
+									<?= $service_map[$srv->service_id] ?>
+								<?php else: ?>
+									<?= $srv->custom_text ?>
+								<?php endif; ?>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+
 				</tbody>
 			</table>
 
@@ -208,7 +221,7 @@ $rightItems = array_slice($items, $half);
 		<h4 class="font-bold mb-1">WORKS REQUESTED</h4>
 		<div class="grid grid-cols-5 gap-2 mb-4">
 			<?php foreach ($works as $w): ?>
-				<label><input type="checkbox" name="works_requested[]" value="<?= $w->work_id ?>"> <?= $w->work_name ?></label>
+				<label><input type="checkbox" name="works_requested[]" value="<?= $w->work_id ?>" <?= in_array($w->work_id, $selected_works) ? 'checked' : '' ?>> <?= $w->work_name ?></label>
 			<?php endforeach; ?>
 		</div>
 
@@ -216,7 +229,7 @@ $rightItems = array_slice($items, $half);
 		<h4 class="font-bold mb-1">INVENTORY STATUS</h4>
 		<div class="grid grid-cols-5 gap-2 mb-4">
 			<?php foreach ($inventory as $inv): ?>
-				<label><input type="checkbox" name="inventory_status[]" value="<?= $inv->inventory_status_id ?>"> <?= $inv->status_name ?></label>
+				<label><input type="checkbox" name="inventory_status[]" value="<?= $inv->inventory_status_id ?>" <?= in_array($inv->inventory_status_id, $selected_inventory) ? 'checked' : '' ?>> <?= $inv->status_name ?></label>
 			<?php endforeach; ?>
 		</div>
 
@@ -227,7 +240,7 @@ $rightItems = array_slice($items, $half);
 				<div class="col-span-1">
 					<label class="font-bold block">Fuel</label>
 					<input name="fuel_level"
-						placeholder="1/2"
+						placeholder="1/2" value="<?= $inspection->fuel_level ?>"
 						class="border px-2 py-1 w-full">
 				</div>
 
@@ -240,41 +253,41 @@ $rightItems = array_slice($items, $half);
 
 				<div class="col-span-3">
 					<label class="font-bold block">Remarks</label>
-					<input name="remarks"
+					<input name="remarks" value="<?= $inspection->remarks ?>"
 						class="border px-2 py-1 w-full">
 				</div>
 			</div>
 
 			<!-- VEHICLE DAMAGE DIAGRAM -->
-		<!-- VEHICLE DAMAGE MARKING -->
-<div class="mt-6">
-    <h4 class="font-bold mb-2">Vehicle Damage Diagram</h4>
+			<!-- VEHICLE DAMAGE MARKING -->
+			<div class="mt-6">
+				<h4 class="font-bold mb-2">Vehicle Damage Diagram</h4>
 
-    <div id="damageContainer"
-         class="relative inline-block border p-2 cursor-crosshair">
+				<div id="damageContainer"
+					class="relative inline-block border p-2 cursor-crosshair">
 
-        <img src="<?= base_url('public/images/vehicle-diagram.jpg'); ?>"
-             id="vehicleImage"
-             class="w-64"
-             draggable="false">
+					<img src="<?= base_url('public/images/vehicle-diagram.jpg'); ?>"
+						id="vehicleImage"
+						class="w-64"
+						draggable="false">
 
-        <!-- Existing marks (edit/view) -->
-        <?php if (!empty($damage_marks)): ?>
-            <?php foreach ($damage_marks as $m): ?>
-                <span class="damage-mark absolute text-red-600 font-bold text-lg cursor-pointer"
-                      data-id="<?= $m->id ?>"
-                      style="left:<?= $m->x_coordinate ?>px;
+					<!-- Existing marks (edit/view) -->
+					<?php if (!empty($damage_marks)): ?>
+						<?php foreach ($damage_marks as $m): ?>
+							<span class="damage-mark absolute text-red-600 font-bold text-lg cursor-pointer"
+								data-id="<?= $m->id ?>"
+								style="left:<?= $m->x_coordinate ?>px;
                              top:<?= $m->y_coordinate ?>px;">
-                    ✖
-                </span>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </div>
+								✖
+							</span>
+						<?php endforeach; ?>
+					<?php endif; ?>
+				</div>
 
-    <p class="text-xs text-gray-500 mt-1">
-        Click on vehicle to mark damage. Click ❌ again to remove.
-    </p>
-</div>
+				<p class="text-xs text-gray-500 mt-1">
+					Click on vehicle to mark damage. Click ❌ again to remove.
+				</p>
+			</div>
 
 		</div>
 
@@ -368,66 +381,71 @@ $rightItems = array_slice($items, $half);
 </script>
 
 <script>
-const container = document.getElementById('damageContainer');
-const inspectionId = <?= $inspection_id ?>;
+	const container = document.getElementById('damageContainer');
+	const inspectionId = <?= $inspection_id ?>;
 
-// ADD DAMAGE MARK
-container.addEventListener('click', function (e) {
+	// ADD DAMAGE MARK
+	container.addEventListener('click', function(e) {
 
-    // Prevent adding when clicking existing mark
-    if (e.target.classList.contains('damage-mark')) return;
+		// Prevent adding when clicking existing mark
+		if (e.target.classList.contains('damage-mark')) return;
 
-    const rect = container.getBoundingClientRect();
-    const x = Math.round(e.clientX - rect.left);
-    const y = Math.round(e.clientY - rect.top);
+		const rect = container.getBoundingClientRect();
+		const x = Math.round(e.clientX - rect.left);
+		const y = Math.round(e.clientY - rect.top);
 
-    // Create mark visually
-    const mark = document.createElement('span');
-    mark.innerHTML = '✖';
-    mark.className = 'damage-mark absolute text-red-600 font-bold text-lg cursor-pointer';
-    mark.style.left = x + 'px';
-    mark.style.top = y + 'px';
+		// Create mark visually
+		const mark = document.createElement('span');
+		mark.innerHTML = '✖';
+		mark.className = 'damage-mark absolute text-red-600 font-bold text-lg cursor-pointer';
+		mark.style.left = x + 'px';
+		mark.style.top = y + 'px';
 
-    container.appendChild(mark);
+		container.appendChild(mark);
 
-    // Save to DB
-    fetch("<?= base_url('index.php/inspection/saveDamageMark'); ?>", {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            inspection_id: inspectionId,
-            x: x,
-            y: y
-        })
-    })
-    .then(res => res.json())
-    .then(resp => {
-        if (resp.id) {
-            mark.dataset.id = resp.id;
-        }
-    });
-});
+		// Save to DB
+		fetch("<?= base_url('index.php/inspection/saveDamageMark'); ?>", {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					inspection_id: inspectionId,
+					x: x,
+					y: y
+				})
+			})
+			.then(res => res.json())
+			.then(resp => {
+				if (resp.id) {
+					mark.dataset.id = resp.id;
+				}
+			});
+	});
 
-// REMOVE DAMAGE MARK
-document.addEventListener('click', function (e) {
-    if (!e.target.classList.contains('damage-mark')) return;
+	// REMOVE DAMAGE MARK
+	document.addEventListener('click', function(e) {
+		if (!e.target.classList.contains('damage-mark')) return;
 
-    const markId = e.target.dataset.id;
-    e.stopPropagation();
+		const markId = e.target.dataset.id;
+		e.stopPropagation();
 
-    if (!markId) return;
+		if (!markId) return;
 
-    fetch("<?= base_url('index.php/inspection/deleteDamageMark'); ?>", {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ id: markId })
-    })
-    .then(res => res.json())
-    .then(resp => {
-        if (resp.success) {
-            e.target.remove();
-        }
-    });
-});
+		fetch("<?= base_url('index.php/inspection/deleteDamageMark'); ?>", {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					id: markId
+				})
+			})
+			.then(res => res.json())
+			.then(resp => {
+				if (resp.success) {
+					e.target.remove();
+				}
+			});
+	});
 </script>
-

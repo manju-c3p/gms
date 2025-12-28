@@ -1,104 +1,171 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.tailwindcss.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.tailwindcss.min.js"></script>
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
 
-    <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold">Appointment List</h2>
+	<div class="flex justify-between items-center mb-4">
 
-        <a href="<?= base_url('index.php/appointment/add'); ?>"
-           class="px-4 py-2 bg-green-600 text-white rounded">
-           + Add Appointment
-        </a>
-    </div>
+<h2 class="text-2xl font-bold">Appointment List</h2>
 
-    <!-- DataTable -->
-    <table id="appointmentTable"
-           class="w-full border rounded text-sm">
+		<div class="flex gap-4 text-xs mb-3 mt-5">
+			<h4 class="font-bold">WorkFlow Status</h4>
+			<span class="flex items-center gap-1 text-gray-500">⬜ Not Started</span>
+			<span class="flex items-center gap-1 text-yellow-600">🟨 In Progress</span>
+			<span class="flex items-center gap-1 text-green-600">🟩 Completed</span>
+		</div>
 
-        <thead class="bg-gray-200">
-            <tr>
-                <th class="p-3 text-left">SL</th>
-                <th class="p-3 text-left">Customer</th>
-                <th class="p-3 text-left">Vehicle</th>
-                <th class="p-3 text-left">Date</th>
-                <th class="p-3 text-left">Time</th>
-                <th class="p-3 text-left">Service Type</th>
-                <th class="p-3 text-left">Status</th>
-                <th class="p-3 text-center">Actions</th>
-            </tr>
-        </thead>
+		<a href="<?= base_url('index.php/appointment/add'); ?>"
+			class="px-4 py-2 bg-green-600 text-white rounded">
+			+ Add Appointment
+		</a>
+	</div>
 
-        <tbody>
-            <?php $i = 1; foreach ($appointments as $a): ?>
-                <tr class="border-b hover:bg-gray-50">
+	<!-- DataTable -->
+	<table id="appointmentTable"
+		class="w-full border rounded text-sm">
 
-                    <td class="p-3"><?= $i++; ?></td>
+		<thead class="bg-gray-200">
+			<tr>
+				<th class="p-3 text-center">SL</th>
+				<th class="p-3 text-center">Customer & Vehicle No</th>
+				<!-- <th class="p-3 text-left">Vehicle</th> -->
+				<th class="p-3 text-center">Date & Time</th>
+				<!-- <th class="p-3 text-left">Time</th> -->
+				<th class="p-3 text-center">Service Type</th>
 
-                    <td class="p-3 font-medium"><?= $a->customer_name ?></td>
+				<th class="p-3 text-center">Workflow</th>
+				<th class="p-3 text-center">Status</th>
+				<th class="p-3 text-center">Actions</th>
+			</tr>
+		</thead>
 
-                    <td class="p-3"><?= $a->registration_no ?></td>
+		<tbody>
+			<?php $i = 1;
+			foreach ($appointments as $a): ?>
+				<tr class="border-b hover:bg-gray-50">
 
-                    <td class="p-3"><?= $a->appointment_date ?></td>
+					<td class="p-3"><?= $i++; ?></td>
 
-                    <td class="p-3"><?= $a->appointment_time ?></td>
+					<td class="p-3 font-medium"><?= $a->customer_name ?><br><?= $a->registration_no ?></td>
 
-                    <td class="p-3"><?= $a->service_type ?></td>
 
-                    <td class="p-3">
-                        <span class="px-2 py-1 rounded text-white text-xs
+
+					<td class="p-3"><?= $a->appointment_date ?><br><?= $a->appointment_time ?></td>
+
+
+
+					<td class="p-3"><?= $a->service_type ?></td>
+
+
+
+					<td class="p-3 text-center">
+						<div class="flex items-center justify-center gap-2">
+
+							<!-- INSPECTION -->
+							<a href="<?= base_url('index.php/inspection/create/' . $a->appointment_id); ?>"
+								title="Inspection"
+								class="px-3 py-1 text-xs rounded-full flex items-center gap-1
+           <?= $a->inspection_id ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600 hover:bg-blue-100' ?>">
+								🧾 <span>Inspection</span>
+							</a>
+
+							<!-- ESTIMATION -->
+							<?php if ($a->inspection_id): ?>
+								<a href="<?= base_url('index.php/estimation/create/' . $a->appointment_id); ?>"
+									title="Estimation"
+									class="px-3 py-1 text-xs rounded-full flex items-center gap-1
+               <?= $a->estimation_id ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' ?>">
+									💰 <span>Estimate</span>
+								</a>
+							<?php else: ?>
+								<span title="Complete Inspection first"
+									class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-400 cursor-not-allowed flex items-center gap-1">
+									💰 <span>Estimate</span>
+								</span>
+							<?php endif; ?>
+
+							<!-- JOBCARD -->
+							<?php if ($a->estimation_id): ?>
+								<a href="<?= base_url('index.php/jobcard/create/' . $a->appointment_id); ?>"
+									title="Job Card"
+									class="px-3 py-1 text-xs rounded-full flex items-center gap-1
+               <?= $a->jobcard_id ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' ?>">
+									🛠️ <span>Job Card</span>
+								</a>
+							<?php else: ?>
+								<span title="Complete Estimation first"
+									class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-400 cursor-not-allowed flex items-center gap-1">
+									🛠️ <span>Job Card</span>
+								</span>
+							<?php endif; ?>
+
+						</div>
+					</td>
+					<td class="p-3">
+						<span class="px-2 py-1 rounded text-white text-xs
                             <?= $a->status == 'Pending' ? 'bg-yellow-500' : '' ?>
                             <?= $a->status == 'Confirmed' ? 'bg-blue-600' : '' ?>
                             <?= $a->status == 'Completed' ? 'bg-green-600' : '' ?>
                             <?= $a->status == 'Cancelled' ? 'bg-red-600' : '' ?>
                         ">
-                            <?= $a->status ?>
-                        </span>
-                    </td>
+							<?= $a->status ?>
+						</span>
+					</td>
 
-                    <td class="p-3 text-center flex justify-center gap-3">
+					<td class="p-3 text-center flex justify-center gap-3">
 
-                        <!-- Edit -->
-                        <a href="<?= base_url('index.php/appointment/edit/'.$a->appointment_id); ?>"
-                           class="p-2 rounded bg-yellow-100 hover:bg-yellow-200"
-                           title="Edit">
-                            ✏️
-                        </a>
 
-                        <!-- Delete -->
-                        <a onclick="return confirm('Delete this appointment?');"
-                           href="<?= base_url('index.php/appointment/delete/'.$a->appointment_id); ?>"
-                           class="p-2 rounded bg-red-100 hover:bg-red-200"
-                           title="Delete">
-                            🗑️
-                        </a>
 
-                    </td>
+						<!-- Edit -->
+						<a href="<?= base_url('index.php/appointment/edit/' . $a->appointment_id); ?>"
+							class="p-2 rounded bg-yellow-100 hover:bg-yellow-200"
+							title="Edit">
+							✏️
+						</a>
 
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
+						<!-- Delete -->
+						<a onclick="return confirm('Delete this appointment?');"
+							href="<?= base_url('index.php/appointment/delete/' . $a->appointment_id); ?>"
+							class="p-2 rounded bg-red-100 hover:bg-red-200"
+							title="Delete">
+							🗑️
+						</a>
 
-    </table>
+					</td>
+
+				</tr>
+			<?php endforeach; ?>
+		</tbody>
+
+	</table>
 
 </div>
 
-<!-- DATATABLE SCRIPTS -->
-<link rel="stylesheet" 
-href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css" />
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script 
-src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js">
-</script>
 
 <script>
-$(document).ready(function() {
-    $('#appointmentTable').DataTable({
-        pageLength: 10,
-        order: [[3, 'desc']],
-        autoWidth: false,
-        columnDefs: [
-            { width: "40px", targets: 0 },
-            { orderable: false, targets: 7 },
-        ]
-    });
-});
+	$(document).ready(function() {
+
+
+
+		$('#appointmentTable').DataTable({
+			pageLength: 10,
+			lengthMenu: [
+				[5, 10, 25, -1],
+				[5, 10, 25, "All"]
+			],
+			responsive: true,
+
+			// Move search box to the RIGHT
+			dom: "<'flex justify-between items-center mb-3'l<f>>" +
+				"t" +
+				"<'flex justify-between items-center mt-3'p>",
+
+			language: {
+				search: "",
+				searchPlaceholder: "Search Appointments..."
+			}
+		});
+	});
 </script>
