@@ -12,7 +12,7 @@ class Estimation extends CI_Controller
 			'Inventory_status_model',
 			'Service_model',
 			'Estimation_model',
-			'SpareParts_model'
+			'SpareParts_model','Employee_model'
 		]);
 	}
 
@@ -66,6 +66,8 @@ class Estimation extends CI_Controller
 		$data['appointment']  = $appointment;
 		$data['inspection']   = $inspection;
 		$data['parts'] = $this->SpareParts_model->get_all_parts();
+		$data['brands'] = $this->SpareParts_model->get_all_brands();
+		$data['technicians'] = $this->Employee_model->get_active_technicians();
 
 		$data['services_master'] = $this->db->where('status', 'Active')
 			->where('service_type', 'LABOUR')
@@ -101,7 +103,7 @@ class Estimation extends CI_Controller
 			'tax_amount'      => $this->input->post('tax_amount'),
 			'discount'        => $this->input->post('discount'),
 			'grand_total'     => $this->input->post('grand_total'),
-			'status'          => 'Draft'
+			'status'          => 'Approved'
 		];
 
 		$this->Estimation_model->update_estimation($estimation_id, $estimationData);
@@ -110,7 +112,8 @@ class Estimation extends CI_Controller
 		// 2️⃣ JOB DESCRIPTIONS
 		// ---------------------------
 		$job_descriptions = $this->input->post('job_description') ?? [];
-		$this->Estimation_model->save_job_descriptions($estimation_id, $job_descriptions);
+		$employee_id  = $this->input->post('technician_id') ?? [];
+		$this->Estimation_model->save_job_descriptions($estimation_id, $job_descriptions,$employee_id );
 
 		// ---------------------------
 		// 3️⃣ PARTS USED
@@ -119,9 +122,12 @@ class Estimation extends CI_Controller
 			$estimation_id,
 			$this->input->post('part_id') ?? [],
 			$this->input->post('part_qty') ?? [],
-			$this->input->post('part_price') ?? [],
-			$this->input->post('sell_price') ?? [],
-			$this->input->post('total_price') ?? []
+			$this->input->post('unit_price') ?? [],
+			$this->input->post('selling_price') ?? [],
+			$this->input->post('total_price') ?? [],
+			$this->input->post('markup') ?? [],
+			$this->input->post('discount') ?? [],
+			$this->input->post('discountamt') ?? [],
 		);
 
 		// ---------------------------
@@ -129,7 +135,7 @@ class Estimation extends CI_Controller
 		// ---------------------------
 		$this->Estimation_model->save_services(
 			$estimation_id,
-			$this->input->post('service_name') ?? [],
+			$this->input->post('service_id') ?? [],
 			$this->input->post('service_time') ?? [],
 			$this->input->post('service_cost') ?? [],
 			$this->input->post('total_cost') ?? []
@@ -138,7 +144,8 @@ class Estimation extends CI_Controller
 		// ---------------------------
 		// 5️⃣ REDIRECT
 		// ---------------------------
-		redirect('estimation/view/' . $estimation_id);
+		redirect('estimation/edit/' . $estimation_id);
+		
 	}
 
 	public function edit($estimation_id)
@@ -163,7 +170,75 @@ class Estimation extends CI_Controller
 
 		// 4️⃣ Masters (dropdown data)
 		$data['parts']           = $this->SpareParts_model->get_all_parts();
+		$data['brands'] = $this->SpareParts_model->get_all_brands();
 		$data['services_master'] = $this->Service_model->get_active_services();
+		$data['technicians'] = $this->Employee_model->get_active_technicians();
+
+		// 5️⃣ Send data to view
+		$data['estimation']       = $estimation;
+		$data['appointment']      = $appointment;
+		$data['job_descriptions'] = $job_descriptions;
+		$data['parts_used']       = $parts_used;
+		$data['services_used']    = $services_used;
+
+		$data['estimation_id'] = $estimation_id;
+		$data['estimation_no'] = $estimation->estimation_no;
+
+		$data['title'] = 'Edit Estimation';
+		$data['main_content'] = 'estimation/create'; // SAME PAGE
+
+		$this->load->view('includes/template', $data);
+	}
+
+
+	public function get_parts_by_brand()
+	{
+		$brand_id = $this->input->post('brand_id');
+
+		if (!$brand_id) {
+			echo json_encode([]);
+			return;
+		}
+
+		$this->db->select('part_id, part_name, unit_price');
+		$this->db->from('spare_parts');
+		$this->db->group_start()
+			->where('brand_id IS NULL')
+			->or_where('brand_id', $brand_id)
+			->group_end();
+		$this->db->order_by('part_name', 'ASC');
+
+		$parts = $this->db->get()->result();
+
+		echo json_encode($parts);
+	}
+
+
+	public function view($estimation_id)
+	{
+		// 1️⃣ Get estimation header
+		$estimation = $this->Estimation_model->get_estimation_by_id($estimation_id);
+		if (!$estimation) show_404();
+
+		// 2️⃣ Appointment + customer + vehicle
+		$appointment = $this->Estimation_model
+			->get_appointment_details($estimation->appointment_id);
+
+		// 3️⃣ Sub tables
+		$job_descriptions = $this->Estimation_model
+			->get_job_descriptions($estimation_id);
+
+		$parts_used = $this->Estimation_model
+			->get_parts($estimation_id);
+
+		$services_used = $this->Estimation_model
+			->get_services($estimation_id);
+
+		// 4️⃣ Masters (dropdown data)
+		$data['parts']           = $this->SpareParts_model->get_all_parts();
+		$data['brands'] = $this->SpareParts_model->get_all_brands();
+		$data['services_master'] = $this->Service_model->get_active_services();
+		$data['technicians'] = $this->Employee_model->get_active_technicians();
 
 		// 5️⃣ Send data to view
 		$data['estimation']       = $estimation;

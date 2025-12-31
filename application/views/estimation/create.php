@@ -3,326 +3,561 @@
 ?>
 
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
-	<div class="page-header">
-		<h2 class="text-center text-xl font-bold mb-4">
-			Estimation
-		</h2>
-	</div>
+
 
 	<form method="post" action="<?= base_url('index.php/estimation/save'); ?>" class="p-6 bg-white">
 		<input type="hidden" name="estimation_id" value="<?= $estimation_id ?>">
+
+		<!-- ================================ -->
+
+
+		<div class="page-header flex items-center justify-between mb-4">
+
+			<h2 class="text-center text-xl font-bold mb-4">
+				Estimation
+			</h2>
+			<div class="text-right mt-6">
+				<!-- SAVE BUTTON -->
+				<button type="submit"
+					class="ml-3 px-6 py-2 bg-blue-600 text-white rounded">
+					Save Estimation
+				</button>
+				<a href="<?= base_url('index.php/appointment'); ?>"
+					class="ml-3 px-6 py-2 bg-gray-300 rounded">Cancel</a>
+			</div>
+		</div>
+		<hr class="border-gray-300 mb-6">
+
+
+		<!-- ============================================= -->
+
+
 
 
 
 		<!-- CUSTOMER / VEHICLE INFO -->
 		<!-- VEHICLE & CUSTOMER DETAILS -->
-		<div class="bg-white rounded-2xl shadow-md mb-6">
+		<div class="bg-white rounded-2xl shadow-md mb-6 p-4">
 
-			<!-- Section Header -->
-			<div class="rounded-t-2xl font-semibold">
-				Vehicle & Customer Details
-			</div>
+			<h3 class="font-semibold mb-4">Vehicle & Customer Details</h3>
 
-			<!-- Content -->
-			<div class="p-6 grid grid-cols-3 gap-6 text-sm">
+			<table class="w-full border-collapse text-sm">
+				<tbody>
 
-				<!-- COLUMN 1 -->
-				<div class="space-y-3">
-
-
-					<div>
-						<label class="font-medium block mb-1">Date</label>
-						<input type="date" class="w-full border rounded px-2 py-1"
-							value="<?= date('Y-m-d') ?>">
-
-					</div>
-
-					<div>
-						<label class="font-medium block mb-1">Customer Name</label>
-						<input type="text" class="w-full border rounded px-2 py-1" value="<?= $appointment->name ?>">
-					</div>
-
-
-
-					<div>
-						<label class="font-medium block mb-1">Vehicle Model</label>
-						<input type="text" class="w-full border rounded px-2 py-1" value="<?= $appointment->model ?>">
-					</div>
-
-					<div>
-						<label class="font-medium block mb-1">Customer Approval</label>
-						<select class="w-full border rounded px-2 py-1">
-							<option>-- Select --</option>
-						</select>
-					</div>
-
-					<div>
-						<label class="font-medium block mb-1">Customer Estimated Price</label>
-						<input type="text" class="w-full border rounded px-2 py-1">
-					</div>
-				</div>
-
-				<!-- COLUMN 2 -->
-				<div class="space-y-3">
-					<div>
-						<label class="font-medium block mb-1">Job Card No</label>
-						<input type="text" class="w-full border rounded px-2 py-1">
-					</div>
-
-					<div>
-						<label class="font-medium block mb-1">Time</label>
-						<input type="time" class="w-full border rounded px-2 py-1"
-							value="<?= date('H:i') ?>">
-
-					</div>
-
-					<div>
-						<label class="font-medium block mb-1">Email</label>
-						<input type="email" class="w-full border rounded px-2 py-1" value="<?= $appointment->email ?>">
-					</div>
-
-					<div>
-						<label class="font-medium block mb-1">Vehicle VIN No</label>
-						<input type="text" class="w-full border rounded px-2 py-1" value="<?= $appointment->chassis_no ?>">
-					</div>
-
-
-
-					<div>
-						<label class=" font-medium block mb-1">Estimated Delivery Date</label>
-						<input type="date" class="w-full border rounded px-2 py-1">
-					</div>
-
-					<div>
-						<label class="font-medium block mb-1">Check List Remark</label>
-						<input type="text" class="w-full border rounded px-2 py-1">
-					</div>
-				</div>
-
-				<!-- COLUMN 3 -->
-				<div class="space-y-3">
-					<div>
-						<label class="font-medium block mb-1">Estimation No</label>
-						<input type="text" class="w-full border rounded px-2 py-1 bg-gray-100" value="<?= $estimation_no; ?>">
-					</div>
-
-					<div>
-						<label class="font-medium block mb-1">Customer Contact No</label>
-						<input type="text" class="w-full border rounded px-2 py-1" value="<?= $appointment->phone ?? '-' ?>">
-					</div>
-
-					<div>
-						<label class="font-medium block mb-1">Registration No</label>
-						<input type="text" class="w-full border rounded px-2 py-1" value="<?= $appointment->registration_no ?>">
-					</div>
-
-
-
-					<div>
-						<label class="font-medium block mb-1">KM's In</label>
-						<input type="number" class="w-full border rounded px-2 py-1">
-					</div>
-
-					<div>
-						<label class="font-medium block mb-1">Completion Time</label>
-						<input type="time" class="w-full border rounded px-2 py-1">
-					</div>
-
-					<div>
-						<label class="font-medium block mb-1">Remark</label>
-						<textarea class="w-full border rounded px-2 py-1 h-20"></textarea>
-					</div>
-				</div>
-
-			</div>
-		</div>
-
-
-
-
-
-
-		<div class="bg-white rounded-xl shadow p-4 mt-6">
-
-			<h3 class="text-lg font-semibold mb-3">Job Description</h3>
-
-			<table class="w-full border text-sm" id="jobDescTable">
-				<thead class="bg-gray-100">
+					<!-- ROW 1 -->
 					<tr>
-						<th class="border px-3 py-2 w-20 text-center">Sl. No</th>
-						<th class="border px-3 py-2">Job Description</th>
-						<th class="border px-3 py-2 w-24 text-center">Action</th>
+						<td class="border p-2 font-medium">Date</td>
+						<td class="border p-2">
+							<input type="date" class="w-full border rounded px-2 py-1 bg-gray-100"
+								value="<?= date('Y-m-d') ?>">
+						</td>
+
+						<td class="border p-2 font-medium">Time</td>
+						<td class="border p-2">
+							<input type="time" class="w-full border rounded px-2 py-1 bg-gray-100"
+								value="<?= date('H:i') ?>" readonly>
+						</td>
+
+						<td class="border p-2 font-medium">Estimation No</td>
+						<td class="border p-2">
+							<input type="text" class="w-full border rounded px-2 py-1 bg-gray-100"
+								value="<?= $estimation_no ?>" readonly>
+						</td>
 					</tr>
-				</thead>
-				<tbody>
-					<!-- rows will be added dynamically -->
-					<?php if (!empty($job_descriptions)): ?>
-						<?php foreach ($job_descriptions as $i => $j): ?>
-							<tr>
-								<td class="text-center"><?= $i + 1 ?></td>
-								<td>
-									<input type="text" name="job_description[]"
-										value="<?= $j->description ?>"
-										class="w-full border p-2 rounded">
-								</td>
-								<td class="text-center">
-									<button type="button"
-										class="remove-row bg-red-500 text-white px-2 py-1 rounded">
-										X
-									</button>
-								</td>
-							</tr>
-						<?php endforeach; ?>
-					<?php endif; ?>
+
+					<!-- ROW 2 -->
+					<tr>
+						<td class="border p-2 font-medium">Customer Name</td>
+						<td class="border p-2">
+							<input type="text" class="w-full border rounded px-2 py-1"
+								value="<?= $appointment->name ?>">
+						</td>
+
+						<td class="border p-2 font-medium">Contact No</td>
+						<td class="border p-2">
+							<input type="text" class="w-full border rounded px-2 py-1"
+								value="<?= $appointment->phone ?? '-' ?>">
+						</td>
+
+						<td class="border p-2 font-medium">Email</td>
+						<td class="border p-2">
+							<input type="email" class="w-full border rounded px-2 py-1"
+								value="<?= $appointment->email ?>">
+						</td>
+					</tr>
+
+					<!-- ROW 3 -->
+					<tr>
+						<td class="border p-2 font-medium">Vehicle Model</td>
+						<td class="border p-2">
+							<input type="text" class="w-full border rounded px-2 py-1 bg-gray-100"
+								value="<?= $appointment->model ?>" readonly>
+						</td>
+
+						<td class="border p-2 font-medium">Registration No</td>
+						<td class="border p-2">
+							<input type="text" class="w-full border rounded px-2 py-1 bg-gray-100"
+								value="<?= $appointment->registration_no ?>" readonly>
+						</td>
+
+						<td class="border p-2 font-medium">VIN / Chassis No</td>
+						<td class="border p-2">
+							<input type="text" class="w-full border rounded px-2 py-1 bg-gray-100"
+								value="<?= $appointment->chassis_no ?>" readonly>
+						</td>
+					</tr>
+
+					<!-- ROW 4 -->
+					<tr>
+						<td class="border p-2 font-medium">Job Card No</td>
+						<td class="border p-2">
+							<input type="text" class="w-full border rounded px-2 py-1">
+						</td>
+
+						<td class="border p-2 font-medium">KM In</td>
+						<td class="border p-2">
+							<input type="number" class="w-full border rounded px-2 py-1">
+						</td>
+
+						<td class="border p-2 font-medium">Customer Approval</td>
+						<td class="border p-2">
+							<select class="w-full border rounded px-2 py-1">
+								<option value="">-- Select --</option>
+								<option value="APPROVED">Approved</option>
+								<option value="PENDING">Pending</option>
+								<option value="REJECTED">Rejected</option>
+							</select>
+						</td>
+					</tr>
+
+					<!-- ROW 5 -->
+					<tr>
+						<td class="border p-2 font-medium">Estimated Price</td>
+						<td class="border p-2">
+							<input type="text" class="w-full border rounded px-2 py-1">
+						</td>
+
+						<td class="border p-2 font-medium">Estimated Delivery Date</td>
+						<td class="border p-2">
+							<input type="date" class="w-full border rounded px-2 py-1">
+						</td>
+
+						<td class="border p-2 font-medium">Completion Time</td>
+						<td class="border p-2">
+							<input type="time" class="w-full border rounded px-2 py-1">
+						</td>
+					</tr>
+
+					<!-- ROW 6 -->
+					<tr>
+						<td class="border p-2 font-medium">Remark</td>
+						<td class="border p-2" colspan="5">
+							<textarea class="w-full border rounded px-2 py-1 h-20"></textarea>
+						</td>
+					</tr>
+
 				</tbody>
 			</table>
-
-			<button type="button"
-				onclick="addJobRow()"
-				class="mt-4 px-4 py-2 bg-blue-600 text-white rounded">
-				+ Add Row
-			</button>
 		</div>
-		<div class="bg-white rounded-xl shadow p-4 mt-6">
-			<h3 class="text-lg font-bold mt-5 mb-2">Spare Parts Used</h3>
 
-			<table class="w-full mb-4" id="partsTable">
-				<thead>
-					<tr class="bg-gray-200">
-						<th class="p-2">#</th>
-						<th class="p-2">Part</th>
-						<th class="p-2">Qty</th>
-						<th class="p-2">Unit Price</th>
-						<th class="p-2">Selling Price</th>
-						<th class="p-2">Total Price</th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ($parts_used as $i => $p): ?>
-						<tr>
-							<td><?= $i + 1 ?></td>
+		<!-- ============================================================= -->
 
-							<td>
-								<select name="part_id[]" class="partSelect w-full border p-2 rounded">
-									<?php foreach ($parts as $part): ?>
-										<option value="<?= $part->part_id ?>"
-											<?= $part->part_id == $p->part_id ? 'selected' : '' ?>>
-											<?= $part->part_name ?>
-										</option>
-									<?php endforeach; ?>
-								</select>
-							</td>
 
-							<td><input name="part_qty[]" class="partQty" value="<?= $p->qty ?>"></td>
-							<td><input name="part_price[]" class="unitPrice" value="<?= $p->unit_price ?>"></td>
-							<td><input name="sell_price[]" class="sellPrice" value="<?= $p->selling_price ?>"></td>
-							<td><input name="total_price[]" class="rowTotal" value="<?= $p->total_price ?>" readonly></td>
+		<div class="bg-white rounded-2xl shadow-md p-6 mt-8">
 
-							<td>
-								<button type="button" class="remove-row bg-red-500 text-white px-2 rounded">X</button>
-							</td>
+			<!-- Header -->
+			<div class="flex items-center justify-between mb-4">
+				<h3 class="text-lg font-semibold text-gray-800">
+					Job Description
+				</h3>
+
+				<button type="button"
+					onclick="addJobRow()"
+					class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+					<span class="text-lg">+</span> Add Job
+				</button>
+			</div>
+
+			<!-- Table -->
+			<div class="overflow-x-auto">
+				<table class="w-full border-collapse text-sm" id="jobDescTable">
+
+					<thead>
+						<tr class="bg-gray-100 text-gray-700">
+							<th class="border px-4 py-2 w-16 text-center">#</th>
+							<th class="border px-4 py-2">Job Description</th>
+							<th class="border px-4 py-2 w-48">Technician</th>
+							<th class="border px-4 py-2 w-24 text-center">Action</th>
 						</tr>
-					<?php endforeach; ?>
-				</tbody>
+					</thead>
 
-			</table>
+					<tbody>
+						<?php if (!empty($job_descriptions)): ?>
+							<?php foreach ($job_descriptions as $i => $j): ?>
+								<tr class="hover:bg-gray-50 transition" id="job_1">
+									<td class="border px-3 py-2 text-center font-medium">
+										<?= $i + 1 ?>
+									</td>
 
-			<button type="button" id="addPart"
-				class="px-3 py-1 bg-blue-600 text-white rounded mb-4">
-				+ Add Part
-			</button>
+									<!-- Job Description -->
+									<td class="border px-3 py-2">
+										<input type="text"
+											name="job_description[]"
+											value="<?= $j->description ?>"
+											placeholder="Enter job description..."
+											class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:outline-none">
+									</td>
+
+									<!-- Technician Dropdown -->
+									<td class="border px-3 py-2">
+										<select name="technician_id[]"
+											class="w-full border rounded-lg px-2 py-2 focus:ring-2 focus:ring-blue-300">
+											<option value="">-- Select Technician --</option>
+											<?php foreach ($technicians as $t): ?>
+												<option value="<?= $t->employee_id ?>"
+													<?= isset($j->employee_id) && $j->employee_id == $t->employee_id ? 'selected' : '' ?>>
+													<?= $t->employee_name ?>
+												</option>
+											<?php endforeach; ?>
+
+										</select>
+									</td>
+
+									<!-- Action -->
+									<td class="border px-3 py-2 text-center">
+										<button type="button"
+											class="remove-row inline-flex items-center justify-center 
+                                           bg-red-100 text-red-600 
+                                           hover:bg-red-500 hover:text-white 
+                                           px-3 py-1 rounded-lg transition">
+											✕
+										</button>
+									</td>
+								</tr>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					</tbody>
+
+				</table>
+			</div>
+
+			<p class="text-xs text-gray-500 mt-3">
+				Assign a technician for each job description for better tracking.
+			</p>
 
 		</div>
-		<div class="bg-white rounded-xl shadow p-4 mt-6">
-			<h3 class="text-lg font-bold mt-5 mb-2">Labour Charges</h3>
+		<!-- ================================================================== -->
 
-			<table class="w-full mb-4 border" id="serviceTable">
-				<thead>
-					<tr class="bg-gray-200">
-						<th class="p-2">Sl NO</th>
-						<th class="p-2">Service</th>
+		<div class="bg-white rounded-2xl shadow-md p-6 mt-8">
 
-						<th class="p-2">Time (Hr)</th>
-						<th class="p-2">Estimated Cost</th>
-						<th class="p-2">Total Cost</th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ($services_used as $i => $s): ?>
-						<tr>
-							<td><?= $i + 1 ?></td>
+			<!-- Header -->
+			<div class="flex items-center justify-between mb-4">
+				<h3 class="text-lg font-semibold text-gray-800">
+					Spare Parts Used
+				</h3>
 
-							<td>
-								<select name="service_id[]" class="serviceSelect w-full border p-2 rounded">
-									<option value="">-- Select --</option>
-									<?php foreach ($services_master as $sm): ?>
-										<option value="<?= $sm->master_service_id ?>"
-											<?= $sm->master_service_id == $s->service_id ? 'selected' : '' ?>>
-											<?= $sm->service_name ?>
-										</option>
-									<?php endforeach; ?>
-								</select>
-							</td>
+				<button type="button" id="addPart"
+					class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+					<span class="text-lg">+</span> Add Part
+				</button>
+			</div>
 
-							<td><input name="service_time[]" class="serviceTime" value="<?= $s->estimated_time ?>"></td>
-							<td><input name="service_cost[]" class="serviceCost" value="<?= $s->estimated_cost ?>"></td>
-							<td><input name="total_cost[]" class="totalCost" value="<?= $s->total_cost ?>" readonly></td>
+			<!-- Table -->
+			<div class="overflow-x-auto">
+				<table class="w-full border-collapse text-sm" id="partsTable">
 
-							<td>
-								<button type="button" class="remove-row bg-red-500 text-white px-2 rounded">X</button>
-							</td>
+					<thead>
+						<tr class="bg-gray-100 text-gray-700">
+							<th class="border px-3 py-2 w-14 text-center">#</th>
+							<th class="border px-3 py-2 w-32">Brand</th>
+							<th class="border px-3 py-2">Part</th>
+							<th class="border px-3 py-2 w-20 text-center">Qty</th>
+							<th class="border px-3 py-2 w-28 text-right">Unit Price</th>
+							<th class="border px-3 py-2 w-24 text-center">Markup %</th>
+							<th class="border px-3 py-2 w-28 text-right">Selling Price</th>
+							<th class="border px-3 py-2 w-24 text-center">Discount</th>
+							<th class="border px-3 py-2 w-24 text-center">Dis-Amount</th>
+							<th class="border px-3 py-2 w-32 text-right">Total Price</th>
+							<th class="border px-3 py-2 w-20 text-center">Action</th>
 						</tr>
-					<?php endforeach; ?>
-				</tbody>
+					</thead>
 
-			</table>
+					<tbody>
+						<?php if (!empty($parts_used)): ?>
+							<?php foreach ($parts_used as $i => $p): ?>
+								<tr class="hover:bg-gray-50 transition">
+									<!-- SL -->
+									<td class="border px-2 py-2 text-center font-medium">
+										<?= $i + 1 ?>
+									</td>
 
-			<button type="button" id="addService"
-				class="px-3 py-1 bg-blue-600 text-white rounded mb-4">
-				+ Add Service
-			</button>
+									<!-- Brand -->
+									<td class="border px-2 py-2">
+										<select name="brand_id[]"
+											class="brandSelect w-full border rounded-lg px-2 py-1">
+											<option value="">-- Select Brand --</option>
+											<?php foreach ($brands as $b): ?>
+												<option value="<?= $b->brand_id ?>"
+													<?= isset($p->brand_id) && $p->brand_id == $b->brand_id ? 'selected' : '' ?>>
+													<?= $b->brand_name ?>
+												</option>
+											<?php endforeach; ?>
+										</select>
+									</td>
+
+
+									<!-- Part -->
+									<td class="border px-2 py-2">
+										<select name="part_id[]"
+											class="partSelect w-full border rounded-lg px-2 py-1">
+											<option value="">-- Select Brand First --</option>
+										</select>
+									</td>
+
+									<!-- Qty -->
+									<td class="border px-2 py-2 text-center">
+										<input type="number" name="part_qty[]"
+											class="partQty w-20 border rounded-lg px-2 py-1 text-center"
+											value="<?= $p->qty ?>">
+									</td>
+
+									<!-- Unit Price -->
+									<td class="border px-2 py-2 text-right">
+										<input type="number" step="0.01" name="unit_price[]"
+											class="unitPrice w-full border rounded-lg px-2 py-1 text-right"
+											value="<?= $p->unit_price ?>">
+									</td>
+
+									<!-- Markup % -->
+									<td class="border px-2 py-2 text-center">
+										<input type="number" step="0.01" name="markup[]"
+											class="markup w-20 border rounded-lg px-2 py-1 text-center"
+											value="<?= $p->markup ?? 0 ?>" oninput="calculateSellingPrice(this)">
+									</td>
+
+									<!-- Selling Price -->
+									<td class="border px-2 py-2 text-right">
+										<input type="number" step="0.01" name="selling_price[]"
+											class="sellPrice w-full border rounded-lg px-2 py-1 text-right"
+											value="<?= $p->selling_price ?>">
+									</td>
+
+									<!-- Discount -->
+									<td class="border px-2 py-2 text-center">
+										<input type="text" name="discount[]"
+											onkeydown="allowNumberAndPercent(event)"
+											oninput="this.value = this.value.replace(/[^0-9%]/g, ''); calculateDiscount(this);"
+											class="discount w-20 border rounded-lg px-2 py-1 text-right"
+											value="<?= $p->discount ?? 0 ?>">
+									</td>
+									<!-- Discount amt-->
+									<td class="border px-2 py-2 text-center">
+										<input type="number" step="0.01" name="discountamt[]"
+											class="discountamt w-20 border rounded-lg px-2 py-1 text-right bg-gray-100"
+											value="<?= $p->discount ?? 0 ?>" readonly>
+									</td>
+
+									<!-- Total -->
+									<td class="border px-2 py-2 text-right">
+										<input type="number" step="0.01" name="total_price[]"
+											class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
+											value="<?= $p->total_price ?>" readonly>
+									</td>
+
+									<!-- Action -->
+									<td class="border px-2 py-2 text-center">
+										<button type="button"
+											class="remove-row inline-flex items-center justify-center
+                                       bg-red-100 text-red-600
+                                       hover:bg-red-500 hover:text-white
+                                       px-3 py-1 rounded-lg transition">
+											✕
+										</button>
+									</td>
+								</tr>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					</tbody>
+
+				</table>
+			</div>
+
+			<p class="text-xs text-gray-500 mt-3">
+				Markup and discounts are applied per item. Total updates automatically.
+			</p>
 
 		</div>
+
+
+		<!-- ============================================= -->
+		<div class="bg-white rounded-2xl shadow-md p-6 mt-8">
+
+			<!-- Header -->
+			<div class="flex items-center justify-between mb-4">
+				<h3 class="text-lg font-semibold text-gray-800">
+					Labour Charges
+				</h3>
+
+				<button type="button" id="addService"
+					class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+					<span class="text-lg">+</span> Add Service
+				</button>
+			</div>
+
+			<!-- Table -->
+			<div class="overflow-x-auto">
+				<table class="w-full border-collapse text-sm" id="serviceTable">
+
+					<thead>
+						<tr class="bg-gray-100 text-gray-700">
+							<th class="border px-3 py-2 w-16 text-center">#</th>
+							<th class="border px-3 py-2">Service</th>
+							<th class="border px-3 py-2 w-24 text-center">Time (Hr)</th>
+							<th class="border px-3 py-2 w-32 text-right">Estimated Cost</th>
+							<th class="border px-3 py-2 w-32 text-right">Total Cost</th>
+							<th class="border px-3 py-2 w-20 text-center">Action</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						<?php if (!empty($parts_used)): ?>
+							<?php foreach ($services_used as $i => $s): ?>
+								<tr class="hover:bg-gray-50 transition">
+									<!-- SL -->
+									<td class="border px-2 py-2 text-center font-medium">
+										<?= $i + 1 ?>
+									</td>
+
+									<!-- Service -->
+									<td class="border px-2 py-2">
+										<select name="service_id[]"
+											class="serviceSelect w-full border rounded-lg px-2 py-1 focus:ring-2 focus:ring-blue-300">
+											<option value="">-- Select Service --</option>
+											<?php foreach ($services_master as $sm): ?>
+												<option value="<?= $sm->master_service_id ?>"
+													<?= $sm->master_service_id == $s->service_id ? 'selected' : '' ?>>
+													<?= $sm->service_name ?>
+												</option>
+											<?php endforeach; ?>
+										</select>
+									</td>
+
+									<!-- Time -->
+									<td class="border px-2 py-2 text-center">
+										<input type="number" step="0.1"
+											name="service_time[]"
+											class="serviceTime w-20 border rounded-lg px-2 py-1 text-center"
+											value="<?= $s->estimated_time ?>">
+									</td>
+
+									<!-- Estimated Cost -->
+									<td class="border px-2 py-2 text-right">
+										<input type="number" step="0.01"
+											name="service_cost[]"
+											class="serviceCost w-full border rounded-lg px-2 py-1 text-right"
+											value="<?= $s->estimated_cost ?>">
+									</td>
+
+									<!-- Total -->
+									<td class="border px-2 py-2 text-right">
+										<input type="number" step="0.01"
+											name="total_cost[]"
+											class="totalCost w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
+											value="<?= $s->total_cost ?>" readonly>
+									</td>
+
+									<!-- Action -->
+									<td class="border px-2 py-2 text-center">
+										<button type="button"
+											class="remove-row inline-flex items-center justify-center
+                                       bg-red-100 text-red-600
+                                       hover:bg-red-500 hover:text-white
+                                       px-3 py-1 rounded-lg transition">
+											✕
+										</button>
+									</td>
+								</tr>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					</tbody>
+
+				</table>
+			</div>
+
+			<p class="text-xs text-gray-500 mt-3">
+				Labour cost is calculated automatically based on time and rate.
+			</p>
+
+		</div>
+
 		<!-- FOOTER DETAILS -->
 
-		<div class="bg-white rounded-xl shadow p-4 mt-6 text-sm">
-			<div class="grid grid-cols-4 gap-4">
+		<div class="bg-white rounded-2xl shadow-md p-6 mt-8 text-sm">
+
+			<h3 class="text-lg font-semibold text-gray-800 mb-4">
+				Cost Summary
+			</h3>
+
+			<div class="grid grid-cols-5 gap-4 items-end">
+
+				<!-- Subtotal -->
 				<div>
-					<label class="font-semibold">Subtotal</label>
-					<input id="subtotal" name="subtotal" value="<?= $estimation->subtotal ?>" readonly
-						class="w-full border px-2 py-1 bg-gray-100">
+					<label class="block text-gray-600 font-medium mb-1">Subtotal</label>
+					<input id="subtotal" name="subtotal"
+						value="<?= isset($estimation) && $estimation ? $estimation->subtotal : '0.00' ?>"
+
+						readonly
+						class="w-full border rounded-lg px-3 py-2 bg-gray-100 text-right font-medium">
 				</div>
 
+				<!-- Tax % -->
 				<div>
-					<label class="font-semibold">Tax (%)</label>
-					<input id="tax_percent" value="5"
-						class="w-full border px-2 py-1">
+					<label class="block text-gray-600 font-medium mb-1">Tax (%)</label>
+					<input id="tax_percent" name="tax_percent"
+						value="5"
+						class="w-full border rounded-lg px-3 py-2 text-right">
 				</div>
 
+				<!-- Tax Amount -->
 				<div>
-					<label class="font-semibold">Discount</label>
-					<input id="discount" value="<?= $estimation->discount ?>"
-						class="w-full border px-2 py-1">
+					<label class="block text-gray-600 font-medium mb-1">Tax Amount</label>
+					<input id="tax_amount" name="tax_amount"
+
+						value="<?= isset($estimation) && $estimation ? $estimation->tax_amount : '0.00' ?>"
+						readonly
+						class="w-full border rounded-lg px-3 py-2 bg-gray-100 text-right">
 				</div>
 
+				<!-- Discount -->
 				<div>
-					<label class="font-semibold">Grand Total</label>
-					<input id="grand_total" name="grand_total" value="<?= $estimation->grand_total ?>" readonly
-						class="w-full border px-2 py-1 bg-gray-100">
+					<label class="block text-gray-600 font-medium mb-1">Discount</label>
+					<input id="discount" name="discount"
+
+						value="<?= isset($estimation) && $estimation ? $estimation->discount : '0.00' ?>"
+						class="w-full border rounded-lg px-3 py-2 text-right">
 				</div>
+
+				<!-- Grand Total -->
+				<div>
+					<label class="block text-gray-600 font-semibold mb-1 text-green-700">
+						Grand Total
+					</label>
+					<input id="grand_total" name="grand_total"
+
+						value="<?= isset($estimation) && $estimation ? $estimation->grand_total : '0.00' ?>"
+						readonly
+						class="w-full border-2 border-green-600 rounded-lg px-3 py-2 
+                       bg-green-50 text-right text-lg font-bold text-green-800">
+				</div>
+
 			</div>
+
 		</div>
+
 
 		<!-- SAVE BUTTON -->
 		<!-- SAVE BUTTON -->
-		<div class="text-right mt-6">
-			<button type="submit"
-				class="px-6 py-2 bg-blue-600 text-white rounded">
-				Save Inspection
-			</button>
-		</div>
+
 
 
 
@@ -334,9 +569,12 @@
 	/* ===============================
   	 GLOBAL COUNTERS
 		================================ */
-	let jobRowCount = 0;
-	let partCount = 0;
-	let serviceCount = 0;
+	let jobRowCount =
+		document.querySelectorAll("#jobDescTable tbody tr").length;
+	let partCount =
+		document.querySelectorAll("#partsTable tbody tr").length;
+	let serviceCount =
+		document.querySelectorAll("#serviceTable tbody tr").length;
 
 	/* ===============================
 	   DATA FROM PHP
@@ -347,145 +585,343 @@
 	/* ===============================
 	   JOB DESCRIPTION
 	================================ */
+
+
+
 	function addJobRow() {
 		jobRowCount++;
 
+		const techOptions = `
+            <option value="">-- Select Technician --</option>
+            <?php foreach ($technicians as $t): ?>
+                <option value="<?= $t->employee_id ?>">
+                    <?= $t->employee_name ?>
+                </option>
+            <?php endforeach; ?>
+        `;
+
 		const row = `
-        <tr id="job_${jobRowCount}">
-            <td class="border px-3 py-2 text-center">${jobRowCount}</td>
-            <td class="border px-3 py-2">
-                <input type="text" name="job_description[]"
-                       class="w-full border px-2 py-1 rounded"
-                       placeholder="Enter job description">
-            </td>
-            <td class="border px-3 py-2 text-center">
-                <button type="button"
-                        onclick="removeJobRow(${jobRowCount})"
-                        class="bg-red-500 text-white px-3 py-1 rounded">
-                    Delete
-                </button>
-            </td>
-        </tr>    `;
-		document.querySelector("#jobDescTable tbody")
+            <tr class="hover:bg-gray-50 transition" id="job_${jobRowCount}">
+                <td class="border px-3 py-2 text-center font-medium">
+                    ${jobRowCount}
+                </td>
+
+                <!-- Job Description -->
+                <td class="border px-3 py-2">
+                    <input type="text"
+                        name="job_description[]"
+                        placeholder="Enter job description..."
+                        class="w-full border rounded-lg px-3 py-2 
+                               focus:ring-2 focus:ring-blue-300 focus:outline-none">
+                </td>
+
+                <!-- Technician -->
+                <td class="border px-3 py-2">
+                    <select name="technician_id[]"
+                        class="w-full border rounded-lg px-2 py-2 
+                               focus:ring-2 focus:ring-blue-300">
+                        ${techOptions}
+                    </select>
+                </td>
+
+                <!-- Action -->
+                <td class="border px-3 py-2 text-center">
+                    <button type="button"
+                       
+                        class="remove-row inline-flex items-center justify-center
+                               bg-red-100 text-red-600
+                               hover:bg-red-500 hover:text-white
+                               px-3 py-1 rounded-lg transition">
+                        ✕
+                    </button>
+                </td>
+            </tr>
+        `;
+
+		document
+			.querySelector("#jobDescTable tbody")
 			.insertAdjacentHTML("beforeend", row);
 	}
 
-	function removeJobRow(id) {
-		document.getElementById("job_" + id)?.remove();
-		renumber("#jobDescTable");
+	function removeJobRow(btn) {
+		btn.closest("tr").remove();
+		updateJobSlNo();
 	}
+
+	function updateJobSlNo() {
+		document
+			.querySelectorAll("#jobDescTable tbody tr")
+			.forEach((row, index) => {
+				row.querySelector("td").innerText = index + 1;
+			});
+
+		jobRowCount =
+			document.querySelectorAll("#jobDescTable tbody tr").length;
+	}
+
 
 	/* ===============================
 	   PARTS SECTION
 	================================ */
 	document.getElementById("addPart").addEventListener("click", function() {
+
 		partCount++;
 
-		let options = `<option value="">-- Select Part --</option>`;
-		partsList.forEach(p => {
-			options += `<option value="${p.part_id}" data-price="${p.unit_price}">
-                        ${p.part_name}
-                    </option>`;
-		});
+		// Brand options (from PHP)
+		const brandOptions = `
+        <option value="">-- Select Brand --</option>
+        <?php foreach ($brands as $brand): ?>
+            <option value="<?= $brand->brand_id ?>">
+                <?= $brand->brand_name ?>
+            </option>
+        <?php endforeach; ?>
+    `;
 
 		const row = `
-        <tr>
-            <td class="border px-3 py-2 text-center">${partCount}</td>
+        <tr class="hover:bg-gray-50 transition">
 
-            <td>
-                <select name="part_id[]" class="partSelect w-full border p-2 rounded">
-                    ${options}
+            <td class="border px-2 py-2 text-center font-medium">${partCount}</td>
+
+            <!-- Brand -->
+            <td class="border px-2 py-2">
+                <select name="brand_id[]"
+                        class="brandSelect w-full border rounded-lg px-2 py-1">
+                    ${brandOptions}
                 </select>
             </td>
 
-            <td>
+            <!-- Part (EMPTY INITIALLY) -->
+            <td class="border px-2 py-2">
+                <select name="part_id[]"
+                        class="partSelect w-full border rounded-lg px-2 py-1">
+                    <option value="">-- Select Brand First --</option>
+                </select>
+            </td>
+
+            <!-- Qty -->
+            <td class="border px-2 py-2 text-center">
                 <input type="number" name="part_qty[]"
-                       class="partQty w-full border p-2 rounded"
+                       class="partQty w-20 border rounded-lg px-2 py-1 text-center"
                        value="1" min="1">
             </td>
 
-            <td>
-                <input type="number" name="part_price[]"
-                       class="unitPrice w-full border p-2 rounded"
-                       placeholder="0.00">
+            <!-- Unit Price -->
+            <td class="border px-2 py-2 text-right">
+                <input type="number" step="0.01" name="unit_price[]"
+                       class="unitPrice w-full border rounded-lg px-2 py-1 text-right"
+                       value="0.00">
             </td>
 
-            <td>
-                <input type="number" name="sell_price[]"
-                       class="sellPrice w-full border p-2 rounded"
-                       placeholder="0.00">
+            <!-- Markup % -->
+            <td class="border px-2 py-2 text-center">
+                <input type="number" step="0.01" name="markup[]"
+                       oninput="calculateSellingPrice(this)"
+                       class="markup w-20 border rounded-lg px-2 py-1 text-center"
+                       value="0">
             </td>
 
-            <td>
-                <input type="number" name="total_price[]"
-                       class="rowTotal w-full border p-2 rounded bg-gray-100"
+            <!-- Selling Price -->
+            <td class="border px-2 py-2 text-right">
+                <input type="number" step="0.01" name="selling_price[]"
+                       class="sellPrice w-full border rounded-lg px-2 py-1 text-right"
+                       value="0.00">
+            </td>
+
+            <!-- Discount -->
+            <td class="border px-2 py-2 text-center">
+                <input type="text" name="discount[]"
+                       onkeydown="allowNumberAndPercent(event)"
+                       oninput="this.value=this.value.replace(/[^0-9%]/g,'');calculateDiscount(this);"
+                       class="discount w-20 border rounded-lg px-2 py-1 text-center"
+                       value="0">
+            </td>
+
+            <!-- Discount Amount -->
+            <td class="border px-2 py-2 text-center">
+                <input type="number" step="0.01" name="discountamt[]"
+                       class="discountamt w-20 border rounded-lg px-2 py-1 text-right bg-gray-100"
                        value="0.00" readonly>
             </td>
 
-            <td class="text-center">
+            <!-- Total -->
+            <td class="border px-2 py-2 text-right">
+                <input type="number" step="0.01" name="total_price[]"
+                       class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
+                       value="0.00" readonly>
+            </td>
+
+            <!-- Action -->
+            <td class="border px-2 py-2 text-center">
                 <button type="button"
-                        class="remove-row bg-red-500 text-white px-2 py-1 rounded">
-                    X
+                        class="remove-row bg-red-100 text-red-600
+                               hover:bg-red-500 hover:text-white
+                               px-3 py-1 rounded-lg transition">
+                    ✕
                 </button>
             </td>
-        </tr>    `;
-		document.querySelector("#partsTable tbody").insertAdjacentHTML("beforeend", row);
+
+        </tr>
+    `;
+
+		document.querySelector("#partsTable tbody")
+			.insertAdjacentHTML("beforeend", row);
 	});
 
+
+	document.addEventListener('change', function(e) {
+
+		if (!e.target.classList.contains('brandSelect')) return;
+
+		const brandId = e.target.value;
+		const row = e.target.closest('tr');
+		const partSelect = row.querySelector('.partSelect');
+
+		if (!brandId) {
+			partSelect.innerHTML = '<option value="">-- Select Brand First --</option>';
+			return;
+		}
+
+		partSelect.innerHTML = '<option value="">Loading...</option>';
+
+		fetch('<?= base_url("index.php/estimation/get_parts_by_brand") ?>', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded'
+				},
+				body: 'brand_id=' + brandId
+			})
+			.then(res => res.json())
+			.then(parts => {
+
+				let options = '<option value="">-- Select Part --</option>';
+
+				parts.forEach(p => {
+					options += `
+                <option value="${p.part_id}"
+                        data-price="${p.unit_price}">
+                    ${p.part_name}
+                </option>
+            `;
+				});
+
+				partSelect.innerHTML = options;
+			});
+	});
+
+
+	// Remove row + reindex
+	document.addEventListener("click", function(e) {
+		if (e.target.closest(".remove-row")) {
+			e.target.closest("tr").remove();
+			updatePartSlNo();
+		}
+	});
+
+	function updatePartSlNo() {
+		document
+			.querySelectorAll("#partsTable tbody tr")
+			.forEach((row, index) => {
+				row.querySelector("td").innerText = index + 1;
+			});
+
+		partCount =
+			document.querySelectorAll("#partsTable tbody tr").length;
+	}
 	/* ===============================
 	   SERVICE / LABOUR SECTION
 	================================ */
 	document.getElementById("addService").addEventListener("click", function() {
 		serviceCount++;
 
-		let options = `<option value="">-- Custom Service --</option>`;
-		servicesMaster.forEach(s => {
-			options += `<option value="${s.master_service_id}"
-                    data-price="${s.estimated_cost}"
-                    data-time="${s.estimated_time}">
-                    ${s.service_name}
-                </option>`;
-		});
+		// Service options from PHP
+		const serviceOptions = `
+            <option value="">-- Select Service --</option>
+            <?php foreach ($services_master as $sm): ?>
+                <option value="<?= $sm->master_service_id ?>"
+                    data-price="<?= $sm->estimated_cost ?>"
+                    data-time="<?= $sm->estimated_time ?>">
+                    <?= $sm->service_name ?>
+                </option>
+            <?php endforeach; ?>
+        `;
 
 		const row = `
-        <tr>
-            <td class="border px-3 py-2 text-center">${serviceCount}</td>
+            <tr class="hover:bg-gray-50 transition">
+                <!-- SL -->
+                <td class="border px-2 py-2 text-center font-medium">
+                    ${serviceCount}
+                </td>
 
-            <td>
-                <select class="serviceSelect w-full border p-2 rounded" name="service_name[]">
-                    ${options}
-                </select>
+                <!-- Service -->
+                <td class="border px-2 py-2">
+                    <select name="service_id[]"
+                        class="serviceSelect w-full border rounded-lg px-2 py-1 
+                               focus:ring-2 focus:ring-blue-300">
+                        ${serviceOptions}
+                    </select>
+                </td>
 
-              
-            </td>
+                <!-- Time -->
+                <td class="border px-2 py-2 text-center">
+                    <input type="number" step="0.1"
+                        name="service_time[]"
+                        class="serviceTime w-20 border rounded-lg px-2 py-1 text-center"
+                        value="1">
+                </td>
 
-            <td>
-                <input type="number" name="service_time[]"
-                       class="serviceTime w-full border p-2 rounded"
-                       value="1" min="1">
-            </td>
+                <!-- Estimated Cost -->
+                <td class="border px-2 py-2 text-right">
+                    <input type="number" step="0.01"
+                        name="service_cost[]"
+                        class="serviceCost w-full border rounded-lg px-2 py-1 text-right"
+                        value="0.00">
+                </td>
 
-            <td>
-                <input type="number" name="service_cost[]"
-                       class="serviceCost w-full border p-2 rounded"
-                       placeholder="0.00">
-            </td>
+                <!-- Total -->
+                <td class="border px-2 py-2 text-right">
+                    <input type="number" step="0.01"
+                        name="total_cost[]"
+                        class="totalCost w-full border rounded-lg px-2 py-1 
+                               text-right bg-gray-100"
+                        value="0.00" readonly>
+                </td>
 
-            <td>
-                <input type="number" name="total_cost[]"
-                       class="totalCost w-full border p-2 rounded bg-gray-100"
-                       value="0.00" readonly>
-            </td>
+                <!-- Action -->
+                <td class="border px-2 py-2 text-center">
+                    <button type="button"
+                        class="remove-row inline-flex items-center justify-center
+                               bg-red-100 text-red-600
+                               hover:bg-red-500 hover:text-white
+                               px-3 py-1 rounded-lg transition">
+                        ✕
+                    </button>
+                </td>
+            </tr>
+        `;
 
-            <td class="text-center">
-                <button type="button"
-                        class="remove-row bg-red-500 text-white px-2 py-1 rounded">
-                    X
-                </button>
-            </td>
-        </tr>    `;
-		document.querySelector("#serviceTable tbody").insertAdjacentHTML("beforeend", row);
+		document
+			.querySelector("#serviceTable tbody")
+			.insertAdjacentHTML("beforeend", row);
 	});
+
+	// Remove row + reindex
+	document.addEventListener("click", function(e) {
+		if (e.target.closest(".remove-row")) {
+			e.target.closest("tr").remove();
+			updateServiceSlNo();
+		}
+	});
+
+	function updateServiceSlNo() {
+		document
+			.querySelectorAll("#serviceTable tbody tr")
+			.forEach((row, index) => {
+				row.querySelector("td").innerText = index + 1;
+			});
+
+		serviceCount =
+			document.querySelectorAll("#serviceTable tbody tr").length;
+	}
 
 	/* ===============================
 	   CHANGE HANDLERS
@@ -497,6 +933,7 @@
 			let row = e.target.closest("tr");
 			let price = e.target.selectedOptions[0]?.dataset.price || 0;
 			row.querySelector(".unitPrice").value = price;
+			row.querySelector(".sellPrice").value = price;
 			updatePartRow(row);
 		}
 
@@ -542,9 +979,16 @@
 		let qty = parseFloat(row.querySelector(".partQty")?.value || 1);
 		let unit = parseFloat(row.querySelector(".unitPrice")?.value || 0);
 		let sell = parseFloat(row.querySelector(".sellPrice")?.value || 0);
+		let disc = parseFloat(row.querySelector(".discountamt")?.value || 0);
 
 		let price = sell > 0 ? sell : unit;
-		row.querySelector(".rowTotal").value = (qty * price).toFixed(2);
+
+		// Total = (Qty × Price) − Discount Amount
+		let total = (qty * price) - disc;
+
+		// Prevent negative total
+		if (total < 0) total = 0;
+		row.querySelector(".rowTotal").value = total.toFixed(2);
 	}
 
 	function updateServiceRow(row) {
@@ -561,6 +1005,7 @@
 			e.target.closest("tr").remove();
 			renumber("#partsTable");
 			renumber("#serviceTable");
+			renumber("#jobDescTable");
 			calculateGrandTotal();
 		}
 	});
@@ -587,7 +1032,7 @@
 
 		let taxAmount = subtotal * taxPercent / 100;
 		let grandTotal = subtotal + taxAmount - discount;
-
+		document.getElementById("tax_amount").value = taxAmount.toFixed(2);
 		document.getElementById("subtotal").value = subtotal.toFixed(2);
 		document.getElementById("grand_total").value = grandTotal.toFixed(2);
 	}
@@ -598,5 +1043,80 @@
 	function renumber(tableId) {
 		document.querySelectorAll(`${tableId} tbody tr`)
 			.forEach((row, i) => row.querySelector("td").innerText = i + 1);
+	}
+</script>
+
+<script>
+	function allowNumberAndPercent(e) {
+		const key = e.key;
+
+		// Allow numbers
+		if (key >= '0' && key <= '9') return true;
+
+		// Allow %
+		if (key === '%') return true;
+
+		// Allow control keys
+		if (
+			key === 'Backspace' ||
+			key === 'Delete' ||
+			key === 'ArrowLeft' ||
+			key === 'ArrowRight' ||
+			key === 'Tab'
+		) {
+			return true;
+		}
+
+		// Block everything else
+		e.preventDefault();
+		return false;
+	}
+
+
+	function calculateDiscount(input) {
+
+		const row = input.closest("tr");
+
+		const qty = parseFloat(row.querySelector(".partQty")?.value || 1);
+		const sellPrice = parseFloat(row.querySelector(".sellPrice")?.value || 0);
+		const discountAmtInput = row.querySelector(".discountamt");
+
+		let discountValue = input.value.trim();
+		let discountAmount = 0;
+
+		// If percentage
+		if (discountValue.endsWith("%")) {
+			let percent = parseFloat(discountValue.replace("%", ""));
+			if (!isNaN(percent)) {
+				discountAmount = (qty * sellPrice) * (percent / 100);
+			}
+		}
+		// Flat discount
+		else {
+			let flat = parseFloat(discountValue);
+			if (!isNaN(flat)) {
+				discountAmount = flat;
+			}
+		}
+
+		discountAmtInput.value = discountAmount.toFixed(2);
+	}
+
+
+	function calculateSellingPrice(input) {
+
+		const row = input.closest("tr");
+
+		const unitPriceInput = row.querySelector(".unitPrice");
+		const markupInput = row.querySelector(".markup");
+		const sellPriceInput = row.querySelector(".sellPrice");
+
+		const unitPrice = parseFloat(unitPriceInput.value) || 0;
+		const markup = parseFloat(markupInput.value) || 0;
+
+		// Selling Price = Unit Price + (Unit Price × Markup %)
+		const sellingPrice = unitPrice + (unitPrice * markup / 100);
+
+		sellPriceInput.value = sellingPrice.toFixed(2);
 	}
 </script>

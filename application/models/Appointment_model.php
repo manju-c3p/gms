@@ -25,7 +25,8 @@ class Appointment_model extends CI_Model
 		$this->db->from('appointments');
 		$this->db->join('customers', 'customers.customer_id = appointments.customer_id');
 		$this->db->join('vehicles', 'vehicles.vehicle_id = appointments.vehicle_id');
-		$this->db->order_by('appointment_date', 'DESC');
+		// $this->db->order_by('appointment_date', 'DESC');
+		$this->db->order_by('appointment_id', 'DESC');
 		return $this->db->get()->result();
 	}
 
@@ -88,7 +89,7 @@ class Appointment_model extends CI_Model
 			"left"
 		);
 
-		$this->db->order_by("appointments.appointment_date", "DESC");
+		$this->db->order_by("appointments.appointment_id", "DESC");
 
 		return $this->db->get()->result();
 	}

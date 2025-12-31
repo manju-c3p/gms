@@ -1,8 +1,8 @@
 <?php
-// require_once FCPATH . 'vendor/autoload.php';
+require_once FCPATH . 'vendor/autoload.php';
 
-// use Dompdf\Dompdf;
-// use Dompdf\Options;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class Jobcard extends CI_Controller
 {
@@ -23,6 +23,7 @@ class Jobcard extends CI_Controller
 		// 1️⃣ Prevent duplicate jobcard
 		$existing = $this->Jobcard_model->get_by_appointment($appointment_id);
 		if ($existing) {
+			log_message("error", $existing->status);
 			redirect('jobcard/edit/' . $existing->jobcard_id);
 		}
 
@@ -78,11 +79,12 @@ class Jobcard extends CI_Controller
 		$services_used = $this->Estimation_model
 			->get_services($estimation_id);
 
-
+		$jobcardstatus = $this->Jobcard_model->get_jobcard_status_by_id($jobcard_id);
 
 
 		$data['jobcard_id'] = $jobcard_id;
 		$data['jobcard_no'] = $jobcard_no;
+		$data['jobcardstatus'] = $jobcardstatus;
 
 		// 4️⃣ Masters (dropdown data)
 		$data['parts']           = $this->SpareParts_model->get_all_parts();
@@ -115,12 +117,17 @@ class Jobcard extends CI_Controller
 		// ---------------------------
 		// 1️⃣ SAVE MAIN ESTIMATION
 		// ---------------------------
+		// $jobcardData = [
+		// 	'subtotal'        => $this->input->post('subtotal'),
+		// 	'tax_amount'      => $this->input->post('tax_amount'),
+		// 	'discount'        => $this->input->post('discount'),
+		// 	'grand_total'     => $this->input->post('grand_total'),
+		// 	'status'          => 'In Progress'
+		// ];
+
 		$jobcardData = [
-			'subtotal'        => $this->input->post('subtotal'),
-			'tax_amount'      => $this->input->post('tax_amount'),
-			'discount'        => $this->input->post('discount'),
-			'grand_total'     => $this->input->post('grand_total'),
-			'status'          => 'Pending'
+
+			'status'          => 'In Progress'
 		];
 
 		$this->Jobcard_model->update_jobcard($jobcard_id, $jobcardData);
@@ -129,7 +136,8 @@ class Jobcard extends CI_Controller
 		// 2️⃣ JOB DESCRIPTIONS
 		// ---------------------------
 		$job_descriptions = $this->input->post('job_description') ?? [];
-		$this->Jobcard_model->save_job_descriptions($jobcard_id, $job_descriptions);
+		$employee_id = $this->input->post('empid') ?? [];
+		$this->Jobcard_model->save_job_descriptions($jobcard_id, $job_descriptions, $employee_id);
 
 		// ---------------------------
 		// 3️⃣ PARTS USED
@@ -138,26 +146,22 @@ class Jobcard extends CI_Controller
 			$jobcard_id,
 			$this->input->post('part_id') ?? [],
 			$this->input->post('part_qty') ?? [],
-			$this->input->post('part_price') ?? [],
-			$this->input->post('sell_price') ?? [],
-			$this->input->post('total_price') ?? []
+
 		);
 
 		// ---------------------------
 		// 4️⃣ SERVICES / LABOUR
 		// ---------------------------
-		$this->Jobcard_model->save_services(
-			$jobcard_id,
-			$this->input->post('service_name') ?? [],
-			$this->input->post('service_time') ?? [],
-			$this->input->post('service_cost') ?? [],
-			$this->input->post('total_cost') ?? []
-		);
+		// $this->Jobcard_model->save_services(
+		// 	$jobcard_id,
+		// 	$this->input->post('service_name') ?? [],
+
+		// );
 
 		// ---------------------------
 		// 5️⃣ REDIRECT
 		// ---------------------------
-		redirect('jobcard/view/' . $jobcard_id);
+		redirect('jobcard/edit/' . $jobcard_id);
 	}
 
 	public function edit($jobcard_id)
@@ -197,6 +201,7 @@ class Jobcard extends CI_Controller
 
 		$services_used = $this->Jobcard_model
 			->get_services($jobcard_id);
+		$jobcardstatus = $this->Jobcard_model->get_jobcard_status_by_id($jobcard_id);
 
 		// 4️⃣ Masters (dropdown data)
 		$data['parts']           = $this->SpareParts_model->get_all_parts();
@@ -211,6 +216,7 @@ class Jobcard extends CI_Controller
 
 		$data['jobcard_id'] = $jobcard_id;
 		$data['jobcard_no'] = $jobcard->jobcard_no;
+		$data['jobcardstatus'] = $jobcardstatus->status;
 		$data['estimation_id'] = $estimation_id;
 		$data['estimation_no'] = $estimation->estimation_no;
 
@@ -218,5 +224,49 @@ class Jobcard extends CI_Controller
 		$data['main_content'] = 'jobcard/create'; // SAME PAGE
 
 		$this->load->view('includes/template', $data);
+	}
+
+
+	public function view($jobcard_id)
+	{
+		$data['jobcard']  = $this->Jobcard_model->get_jobcard($jobcard_id);
+		$data['services'] = $this->Jobcard_model->get_jobcard_services($jobcard_id);
+		$data['parts']    = $this->Jobcard_model->get_jobcard_parts($jobcard_id);
+
+		$data['title'] = "Job Card #" . $jobcard_id;
+		$data['main_content'] = "jobcard/jobcard_view";
+		$this->load->view("includes/template", $data);
+	}
+
+
+	public function pdf($jobcard_id)
+	{
+		// ✅ Load Model FIRST
+		$this->load->model('Jobcard_model');
+
+		// ✅ Get Job Card with Full Details
+		$jobcard = $this->Jobcard_model->get_jobcard_with_details($jobcard_id);
+
+		if (!$jobcard) {
+			show_404();
+		}
+
+		// ✅ Load HTML from View
+		$data['jobcard'] = $jobcard;
+		$html = $this->load->view('jobcard/jobcard_pdf', $data, TRUE);
+
+		// ✅ Dompdf Configuration
+		$options = new Options();
+		$options->set('isRemoteEnabled', true);
+
+		$dompdf = new Dompdf($options);
+		$dompdf->loadHtml($html);
+		$dompdf->setPaper('A4', 'portrait');
+		$dompdf->render();
+
+		// ✅ Force Download
+		$dompdf->stream("jobcard_{$jobcard_id}.pdf", [
+			"Attachment" => true
+		]);
 	}
 }

@@ -3,32 +3,11 @@
 ?>
 
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
-
-
-	<div class="page-header flex items-center justify-between mb-4">
-
+	<div class="page-header">
 		<h2 class="text-center text-xl font-bold mb-4">
 			Job Card
 		</h2>
-		<div class="text-right mt-6">
-			<!-- SAVE BUTTON -->
-			<button type="submit"
-				class="ml-3 px-6 py-2 bg-blue-600 text-white rounded">
-				Save Job Card
-			</button>
-			<a href="<?= base_url('index.php/Jobcard/view/' . $jobcard_id); ?>"
-				class="ml-3 px-6 py-2 bg-gray-300 rounded">View</a>
-			<?php if ($jobcardstatus == "In Progress") { ?>
-				<a href="<?= base_url('index.php/materialissue/create/' . $jobcard_id) ?>"
-					class="px-4 py-2 bg-indigo-600 text-white rounded">
-					Material Issue
-				</a>
-			<?php } ?>
-			<a href="<?= base_url('index.php/appointment'); ?>"
-				class="ml-3 px-6 py-2 bg-gray-300 rounded">Cancel</a>
-		</div>
 	</div>
-	<hr class="border-gray-300 mb-6">
 
 	<form method="post" action="<?= base_url('index.php/jobcard/save'); ?>" class="p-6 bg-white">
 		<input type="hidden" name="jobcard_id" value="<?= $jobcard_id ?>">
@@ -197,9 +176,8 @@
 									</td>
 									<td class="border px-3 py-2">
 										<input type="text" name="technician[]"
-											value="<?= $j->employee_name ?>"
+											value=""
 											class="w-full border rounded px-3 py-1.5 focus:ring-2 focus:ring-blue-500">
-										<input type="hidden" name="empid[]" value="<?= $j->employee_id ?>">
 									</td>
 									<td class="border px-3 py-2 text-center">
 										<button type="button"
@@ -213,11 +191,11 @@
 					</tbody>
 				</table>
 
-				<!-- <button type="button"
+				<button type="button"
 					onclick="addJobRow()"
 					class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow-sm">
 					+ Add Job Description
-				</button> -->
+				</button>
 			</div>
 		</div>
 		<!-- ============================================  -->
@@ -234,7 +212,9 @@
 							<th class="border px-3 py-2 w-[50px] text-center">#</th>
 							<th class="border px-3 py-2">Part</th>
 							<th class="border px-3 py-2 w-[80px] text-center">Qty</th>
-
+							<th class="border px-3 py-2 w-[110px] text-right">Unit Price</th>
+							<th class="border px-3 py-2 w-[110px] text-right">Selling Price</th>
+							<th class="border px-3 py-2 w-[120px] text-right">Total</th>
 							<th class="border px-3 py-2 w-[70px] text-center">Action</th>
 						</tr>
 					</thead>
@@ -260,7 +240,20 @@
 										class="w-full border rounded px-2 py-1 text-center partQty">
 								</td>
 
+								<td class="border px-3 py-2">
+									<input name="part_price[]" value="<?= $p->unit_price ?>"
+										class="w-full border rounded px-2 py-1 text-right unitPrice">
+								</td>
 
+								<td class="border px-3 py-2">
+									<input name="sell_price[]" value="<?= $p->selling_price ?>"
+										class="w-full border rounded px-2 py-1 text-right sellPrice">
+								</td>
+
+								<td class="border px-3 py-2">
+									<input name="total_price[]" value="<?= $p->total_price ?>"
+										class="w-full border rounded px-2 py-1 text-right bg-gray-100 rowTotal" readonly>
+								</td>
 
 								<td class="border px-3 py-2 text-center">
 									<button type="button"
@@ -273,22 +266,127 @@
 					</tbody>
 				</table>
 
-				<!-- <button type="button" id="addPart"
+				<button type="button" id="addPart"
 					class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow-sm">
 					+ Add Part
-				</button> -->
+				</button>
 			</div>
 		</div>
 		<!-- ========================================================================== -->
+		<div class="bg-white rounded-2xl shadow-md mt-6 overflow-hidden">
+
+			<div class="px-6 py-3 font-semibold text-lg bg-gray-100 border-b">
+				Labour Charges
+			</div>
+
+			<div class="p-4">
+				<table class="w-full text-sm border-collapse" id="serviceTable">
+					<thead>
+						<tr class="bg-gray-50 border">
+							<th class="border px-3 py-2 w-[60px] text-center">Sl No</th>
+							<th class="border px-3 py-2">Service</th>
+							<th class="border px-3 py-2 w-[90px] text-center">Time (Hr)</th>
+							<th class="border px-3 py-2 w-[120px] text-right">Est. Cost</th>
+							<th class="border px-3 py-2 w-[120px] text-right">Total</th>
+							<th class="border px-3 py-2 w-[70px] text-center">Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ($services_used as $i => $s): ?>
+							<tr class="border hover:bg-gray-50">
+								<td class="border px-3 py-2 text-center font-medium"><?= $i + 1 ?></td>
+
+								<td class="border px-3 py-2">
+									<select name="service_name[]"
+										class="w-full border rounded px-2 py-1 serviceSelect">
+										<option value="">-- Select --</option>
+										<?php foreach ($services_master as $sm): ?>
+											<option value="<?= $sm->master_service_id ?>"
+												<?= $sm->master_service_id == $s->service_id ? 'selected' : '' ?>>
+												<?= $sm->service_name ?>
+											</option>
+										<?php endforeach; ?>
+									</select>
+								</td>
+
+								<td class="border px-3 py-2">
+									<input name="service_time[]" value="<?= $s->estimated_time ?>"
+										class="w-full border rounded px-2 py-1 text-center serviceTime">
+								</td>
+
+								<td class="border px-3 py-2">
+									<input name="service_cost[]" value="<?= $s->estimated_cost ?>"
+										class="w-full border rounded px-2 py-1 text-right serviceCost">
+								</td>
+
+								<td class="border px-3 py-2">
+									<input name="total_cost[]" value="<?= $s->total_cost ?>"
+										class="w-full border rounded px-2 py-1 text-right bg-gray-100 totalCost" readonly>
+								</td>
+
+								<td class="border px-3 py-2 text-center">
+									<button type="button"
+										class="remove-row text-red-600 hover:bg-red-50 px-3 py-1 rounded">
+										✕
+									</button>
+								</td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+
+				<button type="button" id="addService"
+					class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow-sm">
+					+ Add Service
+				</button>
+			</div>
+		</div>
 
 
 		<!-- FOOTER DETAILS -->
 
+		<div class="bg-white rounded-xl shadow p-4 mt-6 text-sm">
+			<div class="grid grid-cols-4 gap-4">
+				<div>
+					<label class="font-semibold">Subtotal</label>
+					<input id="subtotal" name="subtotal" value="<?= $estimation->subtotal ?>" readonly
+						class="w-full border px-2 py-1 bg-gray-100">
+				</div>
 
+				<div>
+					<label class="font-semibold">Tax (%)</label>
+					<input id="tax_percent" value="5"
+						class="w-full border px-2 py-1">
+				</div>
+
+				<div>
+					<label class="font-semibold">Discount</label>
+					<input id="discount" value="<?= $estimation->discount ?>"
+						class="w-full border px-2 py-1">
+				</div>
+
+				<div>
+					<label class="font-semibold">Grand Total</label>
+					<input id="grand_total" name="grand_total" value="<?= $estimation->grand_total ?>" readonly
+						class="w-full border px-2 py-1 bg-gray-100">
+				</div>
+			</div>
+		</div>
 
 		<!-- SAVE BUTTON -->
 		<!-- SAVE BUTTON -->
-	
+		<div class="text-right mt-6">
+			<button type="submit"
+				class="px-6 py-2 bg-blue-600 text-white rounded">
+				Save Job Card
+			</button>
+			<?php if ($jobcardstatus == "In Progress") { ?>
+				<a href="<?= base_url('index.php/materialissue/create/' . $jobcard_id) ?>"
+					class="px-4 py-2 bg-indigo-600 text-white rounded">
+					Material Issue
+				</a>
+			<?php } ?>
+		</div>
 
 
 

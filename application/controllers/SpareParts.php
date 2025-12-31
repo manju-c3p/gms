@@ -29,7 +29,10 @@ class SpareParts extends CI_Controller
 	public function add()
 	{
 
+
 		$data['title'] = "Inventory";
+		$data['brands'] = $this->SpareParts_model->get_all_brands();
+
 		$data['main_content'] = 'inventory/parts_add_form';
 		$this->load->view('includes/template', $data);
 	}
@@ -40,6 +43,8 @@ class SpareParts extends CI_Controller
 		$data = [
 			'part_name' => $this->input->post('part_name'),
 			'part_code' => $this->input->post('part_code'),
+			'brand_id'=>$this->input->post('brand_id'),
+			'vehicle_model_id'=>$this->input->post('vehicle_model_id'),
 			'unit_price' => $this->input->post('unit_price'),
 			'min_stock' => $this->input->post('min_stock'),
 		];
@@ -143,5 +148,28 @@ class SpareParts extends CI_Controller
 		$data['title'] = "Low Stock";
 		$data['main_content'] = 'inventory/low_stock_list';
 		$this->load->view('includes/template', $data);
+	}
+
+	// ===============================================
+
+	public function get_models_by_brand($brand_id)
+	{
+		
+		echo json_encode($this->SpareParts_model->get_models_by_brand($brand_id));
+	}
+
+	public function save_brand()
+	{
+		
+		$this->SpareParts_model->save_brand($this->input->post('name'));
+	}
+
+	public function save_model()
+	{
+		
+		$this->SpareParts_model->save_model(
+			$this->input->post('brand_id'),
+			$this->input->post('name')
+		);
 	}
 }

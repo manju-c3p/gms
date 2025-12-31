@@ -7,17 +7,35 @@ $rightItems = array_slice($items, $half);
 ?>
 
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
-	<div class="page-header">
-		<h2 class="text-center text-xl font-bold mb-4">
-			VEHICLE HEALTH CHECK (Inventory)
-		</h2>
-	</div>
+
 
 	<form method="post" action="<?= base_url('index.php/inspection/save'); ?>" class="p-6 bg-white">
-		<input type="text" name="inspection_id" value="<?= $inspection_id ?>">
+		<input type="hidden" name="inspection_id" value="<?= $inspection_id ?>">
 
+		<div class="page-header flex items-center justify-between mb-4">
 
+			<h2 class="text-xl font-bold">
+				VEHICLE HEALTH CHECK (Inventory)
+			</h2>
+			<div class="">
+				<!-- SAVE BUTTON -->
+				<button type="submit"
+					class="px-6 py-2 bg-blue-600 text-white rounded">
+					Save Inspection
+				</button>
 
+				<a href="<?= base_url('index.php/estimation/create/' . $appointment->appointment_id) ?>" class="px-6 py-2 bg-green-600 text-white rounded">
+					Estimation
+				</a>
+				<a href="<?= base_url('index.php/Inspection/view/' . $appointment->appointment_id) ?>" class="px-6 py-2 bg-gray-400 text-white rounded">
+					View Inspection
+				</a>
+
+				<a href="<?= base_url('index.php/appointment'); ?>"
+					class="ml-3 px-6 py-2 bg-gray-300 rounded">Cancel</a>
+			</div>
+		</div>
+		<hr class="border-gray-300 mb-6">
 		<!-- CUSTOMER / VEHICLE INFO -->
 		<table class="w-full border mb-4 text-sm">
 			<tr>
@@ -59,20 +77,20 @@ $rightItems = array_slice($items, $half);
 			<tr>
 				<td class="border p-1 font-bold">Driver Name</td>
 				<td class="border p-1">
-					<input type="text" name="driver_name"
+					<input type="text" name="driver_name" value="<?= $inspection->drivername ?>"
 						class="w-full border px-2 py-1">
 				</td>
 
 				<td class="border p-1 font-bold">Veh. Type</td>
 				<td class="border p-1">
-					<?= $appointment->vehicle_type ?? '-' ?>
+					<?= $appointment->variant ?? '-' ?>
 				</td>
 			</tr>
 
 			<tr>
 				<td class="border p-1 font-bold">Driver Mobile</td>
 				<td class="border p-1">
-					<input type="text" name="driver_mobile"
+					<input type="text" name="driver_mobile" value="<?= $inspection->driverphno ?>"
 						class="w-full border px-2 py-1">
 				</td>
 
@@ -99,7 +117,7 @@ $rightItems = array_slice($items, $half);
 
 
 		<!-- INSPECTION ITEMS -->
-		<!-- INSPECTION ITEMS (TWO COLUMN LAYOUT) -->
+
 		<div class="grid grid-cols-2 gap-6 mb-4 text-sm">
 
 			<!-- LEFT TABLE -->
@@ -247,7 +265,7 @@ $rightItems = array_slice($items, $half);
 				<div class="col-span-2">
 					<label class="font-bold block">Del. Time</label>
 					<input name="delivery_time"
-						placeholder="3.8.22, 14:17"
+						placeholder="3.8.22, 14:17" value="<?= $inspection->deliverytime ?>"
 						class="border px-2 py-1 w-full">
 				</div>
 
@@ -291,13 +309,7 @@ $rightItems = array_slice($items, $half);
 
 		</div>
 
-		<!-- SAVE BUTTON -->
-		<div class="text-right mt-6">
-			<button type="submit"
-				class="px-6 py-2 bg-blue-600 text-white rounded">
-				Save Inspection
-			</button>
-		</div>
+
 
 
 

@@ -42,22 +42,28 @@ class Estimation_model extends CI_Model
 			->where('estimation_id', $estimation_id)
 			->update('estimations', $data);
 	}
-
-	public function save_job_descriptions($estimation_id, $descriptions)
+	public function save_job_descriptions($estimation_id, $descriptions, $employee_ids)
 	{
+		// Remove existing records for this estimation
 		$this->db->where('estimation_id', $estimation_id)
 			->delete('estimation_job_descriptions');
 
-		foreach ($descriptions as $desc) {
-			if (trim($desc) == '') continue;
+		foreach ($descriptions as $i => $desc) {
+
+			// Skip empty rows
+			if (trim($desc) === '') {
+				continue;
+			}
 
 			$this->db->insert('estimation_job_descriptions', [
 				'estimation_id' => $estimation_id,
-				'description'   => $desc
+				'description'   => $desc,
+				'employee_id'   => $employee_ids[$i] ?? null
 			]);
 		}
 	}
-	public function save_parts($estimation_id, $part_ids, $qtys, $unit_prices, $sell_prices, $totals)
+
+	public function save_parts($estimation_id, $part_ids, $qtys, $unit_prices, $sell_prices, $totals, $markup, $discount, $discountamt)
 	{
 		$this->db->where('estimation_id', $estimation_id)
 			->delete('estimation_parts');
@@ -71,7 +77,10 @@ class Estimation_model extends CI_Model
 				'qty'           => $qtys[$i],
 				'unit_price'    => $unit_prices[$i],
 				'selling_price' => $sell_prices[$i],
-				'total_price'   => $totals[$i]
+				'total_price'   => $totals[$i],
+				'markup_percentage' => $markup[$i],
+				'discount' => $discount[$i],
+				'dis_amount' => $discountamt[$i],
 			]);
 		}
 	}
@@ -110,12 +119,31 @@ class Estimation_model extends CI_Model
 			->get('estimations')
 			->row();
 	}
-	public function get_job_descriptions($estimation_id)
+	public function get_job_descriptions111($estimation_id)
 	{
 		return $this->db->where('estimation_id', $estimation_id)
 			->get('estimation_job_descriptions')
 			->result();
 	}
+	public function get_job_descriptions($estimation_id)
+	{
+		return $this->db
+			->select('
+            ejd.*,
+            e.employee_name
+        ')
+			->from('estimation_job_descriptions ejd')
+			->join(
+				'employees e',
+				'e.employee_id = ejd.employee_id',
+				'left'
+			)
+			->where('ejd.estimation_id', $estimation_id)
+			->order_by('ejd.id', 'ASC')
+			->get()
+			->result();
+	}
+
 
 
 	public function get_parts($estimation_id)

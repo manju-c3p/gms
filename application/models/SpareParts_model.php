@@ -27,6 +27,39 @@ class SpareParts_model extends CI_Model {
 
         return ($in ?? 0) - ($out ?? 0);
     }
+
+
+	// =========================================
+
+	 public function get_all_brands()
+    {
+        return $this->db->order_by('brand_name','ASC')
+                        ->get('vehicle_brands')
+                        ->result();
+    }
+
+    public function get_models_by_brand($brand_id)
+    {
+        return $this->db->where('brand_id', $brand_id)
+                        ->order_by('model_name','ASC')
+                        ->get('vehicle_models')
+                        ->result();
+    }
+
+    public function save_brand($name)
+    {
+        $this->db->insert('vehicle_brands', ['brand_name' => $name]);
+        return $this->db->insert_id();
+    }
+
+    public function save_model($brand_id, $name)
+    {
+        $this->db->insert('vehicle_models', [
+            'brand_id' => $brand_id,
+            'model_name' => $name
+        ]);
+        return $this->db->insert_id();
+    }
 }
 
 

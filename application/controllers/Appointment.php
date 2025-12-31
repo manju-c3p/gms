@@ -50,7 +50,7 @@ class Appointment extends CI_Controller
 		$appointment_id = $this->Appointment_model->add($data);
 
 		// 🔴 Redirect to inspection with appointment_id
-		redirect('inspection/create/' . $appointment_id);
+		redirect('appointment/edit/' . $appointment_id);
 	}
 
 	// Edit Form

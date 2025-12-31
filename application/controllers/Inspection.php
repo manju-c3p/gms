@@ -68,7 +68,10 @@ class Inspection extends CI_Controller
 			'km_reading'    => $this->input->post('km_reading'),
 			'fuel_level'    => $this->input->post('fuel_level'),
 			'remarks'       => $this->input->post('remarks'),
-			'status'        => 'Completed'
+			'status'        => 'Completed',
+			'drivername'     => $this->input->post('driver_name'),
+			'driverphno' => $this->input->post('driver_mobile'),
+			'deliverytime'=> $this->input->post('delivery_time'),
 		];
 
 		$this->Inspection_model->update_inspection($inspection_id, $inspectionData);
@@ -103,7 +106,8 @@ class Inspection extends CI_Controller
 		$this->Inspection_model->save_inventory_status($inspection_id, $inventory);
 
 		// 6️⃣ Redirect to inspection view / preview
-		redirect('inspection/view/' . $inspection_id);
+		redirect('inspection/edit/' . $inspection_id);
+		// redirect('estimation/create/' . $inspection_id);
 	}
 
 
@@ -179,6 +183,55 @@ class Inspection extends CI_Controller
 
 		$data['title'] = "Edit Inspection";
 		$data['main_content'] = 'inspection/edit';
+		$this->load->view('includes/template', $data);
+	}
+
+	public function view($inspection_id)
+	{
+		// Get inspection
+		$inspection = $this->Inspection_model->get_by_id($inspection_id);
+		if (!$inspection) show_404();
+
+		// Get appointment details
+		$appointment = $this->Inspection_view_model
+			->get_appointment_details($inspection->appointment_id);
+
+		// Load saved data
+		$data['inspection']      = $inspection;
+		$data['inspection_id']   = $inspection_id;
+		$data['appointment']     = $appointment;
+
+		// Masters
+		$data['items']     = $this->Inspection_model->get_all_items();
+		$data['works']     = $this->Works_requested_model->get_all();
+		$data['inventory'] = $this->Inventory_status_model->get_all();
+		$data['services']  = $this->Service_model->get_active_services();
+
+		$service_map = [];
+		foreach ($data['services'] as $s) {
+			$service_map[$s->master_service_id] = $s->service_name;
+		}
+
+		$data['service_map'] = $service_map;
+
+		// Saved values
+		$data['item_results'] = $this->Inspection_model
+			->get_item_results($inspection_id);
+
+		$data['selected_works'] = $this->Inspection_model
+			->get_selected_works($inspection_id);
+
+		$data['selected_inventory'] = $this->Inspection_model
+			->get_selected_inventory($inspection_id);
+
+		$data['saved_services'] = $this->Inspection_model
+			->get_saved_services($inspection_id);
+
+		$data['damage_marks'] = $this->Inspection_model
+			->get_damage_marks($inspection_id);
+
+		$data['title'] = "View Inspection";
+		$data['main_content'] = 'inspection/view';
 		$this->load->view('includes/template', $data);
 	}
 }

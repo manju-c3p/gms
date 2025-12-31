@@ -7,7 +7,7 @@ class Inspection_view_model extends CI_Model
     {
         return $this->db
             ->select('a.*, c.name customer_name, c.phone,
-                      v.registration_no, v.model,v.year, v.vehicle_id')
+                      v.registration_no, v.model,v.variant,v.year, v.vehicle_id')
             ->from('appointments a')
             ->join('customers c','c.customer_id=a.customer_id')
             ->join('vehicles v','v.vehicle_id=a.vehicle_id')
