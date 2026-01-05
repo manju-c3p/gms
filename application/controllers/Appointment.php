@@ -16,7 +16,7 @@ class Appointment extends CI_Controller
 		$data['appointments'] = $this->Appointment_model->get_all_appointments();
 		
 		$data['title'] = "Appointments";
-		$data['main_content'] = 'Appointment/appointment_list';
+		$data['main_content'] = 'appointment/appointment_list';
 		$this->load->view('includes/template', $data);
 	}
 

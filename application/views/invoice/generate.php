@@ -10,7 +10,7 @@
 			<option value="">-- Select Job Card --</option>
 			<?php foreach ($jobcards as $jc): ?>
 				<option value="<?= $jc->jobcard_id ?>">
-					JC-<?= $jc->jobcard_id ?> | <?= $jc->registration_no ?>
+					<?= $jc->jobcard_no ?> | <?= $jc->registration_no ?>
 				</option>
 			<?php endforeach; ?>
 		</select>
@@ -100,71 +100,87 @@
 	</form>
 </div>
 <script>
-	document.getElementById('jobcard_id').addEventListener('change', function() {
+document.getElementById('jobcard_id').addEventListener('change', function () {
 
-		let jobcardId = this.value;
-		if (!jobcardId) return;
+    let jobcardId = this.value;
+    if (!jobcardId) return;
 
-		fetch(BASE_URL + 'invoice/get_jobcard_details/' + jobcardId)
-			.then(res => res.json())
-			.then(data => {
+    fetch(BASE_URL + 'invoice/get_jobcard_details/' + jobcardId)
+        .then(res => res.json())
+        .then(data => {
 
-				document.getElementById('invoiceForm').classList.remove('hidden');
-				document.getElementById('jobcard_hidden').value = jobcardId;
+            // Show form
+            document.getElementById('invoiceForm').classList.remove('hidden');
+            document.getElementById('jobcard_hidden').value = jobcardId;
 
-				// CUSTOMER & VEHICLE
-				document.getElementById('customer_name').innerText = data.customer_name;
-				document.getElementById('customer_phone').innerText = data.customer_phone;
-				document.getElementById('vehicle_no').innerText = data.registration_no;
-				document.getElementById('jobcard_no').innerText = 'JC-' + jobcardId;
+            // CUSTOMER & VEHICLE
+            document.getElementById('customer_name').innerText = data.customer_name || '';
+            document.getElementById('customer_phone').innerText = data.customer_phone || '';
+            document.getElementById('vehicle_no').innerText = data.registration_no || '';
+            document.getElementById('jobcard_no').innerText = data.jobcard_no || '';
 
-				// SERVICES
-				let serviceHTML = '';
-				data.services.forEach(s => {
-					serviceHTML += `
+            /* =========================
+               SERVICES
+            ========================= */
+            let serviceHTML = '';
+            data.services.forEach(s => {
+                serviceHTML += `
                     <tr>
                         <td class="border p-2">${s.service_name}</td>
-                        <td class="border p-2 text-right service-cost">${s.amount}</td>
+                        <td class="border p-2 text-right service-cost"
+                            data-amount="${parseFloat(s.total_cost)}">
+                            ${parseFloat(s.total_cost).toFixed(2)}
+                        </td>
                     </tr>`;
-				});
-				document.getElementById('serviceBody').innerHTML = serviceHTML;
+            });
+            document.getElementById('serviceBody').innerHTML = serviceHTML;
 
-				// PARTS
-				let partsHTML = '';
-				data.parts.forEach(p => {
-					let total = p.qty * p.rate;
-					partsHTML += `
+            /* =========================
+               PARTS
+            ========================= */
+            let partsHTML = '';
+            data.parts.forEach(p => {
+                partsHTML += `
                     <tr>
                         <td class="border p-2">${p.part_name}</td>
-                        <td class="border p-2">${p.qty}</td>
-                        <td class="border p-2 text-right part-cost">${total}</td>
+                        <td class="border p-2 text-center">${p.qty}</td>
+                        <td class="border p-2 text-right part-cost"
+                            data-amount="${parseFloat(p.total_price)}">
+                            ${parseFloat(p.total_price).toFixed(2)}
+                        </td>
                     </tr>`;
-				});
-				document.getElementById('partsBody').innerHTML = partsHTML;
+            });
+            document.getElementById('partsBody').innerHTML = partsHTML;
 
-				calculateTotals();
-			});
-	});
+            calculateTotals();
+        });
+});
 
-	document.getElementById('discount').addEventListener('keyup', calculateTotals);
+document.getElementById('discount').addEventListener('input', calculateTotals);
 
-	function calculateTotals() {
-		let subtotal = 0;
+function calculateTotals() {
 
-		document.querySelectorAll('.service-cost, .part-cost').forEach(el => {
-			subtotal += parseFloat(el.innerText);
-		});
+    let subtotal = 0;
 
-		let tax = subtotal * 0.05;
-		let discount = parseFloat(document.getElementById('discount').value || 0);
-		let grand = subtotal + tax - discount;
+    document.querySelectorAll('.service-cost, .part-cost').forEach(el => {
+        subtotal += parseFloat(el.dataset.amount || 0);
+    });
 
-		document.getElementById('subtotal').innerText = subtotal.toFixed(2);
-		document.getElementById('tax').innerText = tax.toFixed(2);
-		document.getElementById('grand_total').innerText = grand.toFixed(2);
+    let tax = subtotal * 0.05;
+    let discount = parseFloat(document.getElementById('discount').value || 0);
 
-		document.getElementById('subtotal_input').value = subtotal;
-		document.getElementById('tax_input').value = tax;
-		document.getElementById('grand_input').value = grand;
-	}
+    let grand = subtotal + tax - discount;
+    if (grand < 0) grand = 0;
+
+    // DISPLAY
+    document.getElementById('subtotal').innerText = subtotal.toFixed(2);
+    document.getElementById('tax').innerText = tax.toFixed(2);
+    document.getElementById('grand_total').innerText = grand.toFixed(2);
+
+    // HIDDEN INPUTS
+    document.getElementById('subtotal_input').value = subtotal.toFixed(2);
+    document.getElementById('tax_input').value = tax.toFixed(2);
+    document.getElementById('grand_input').value = grand.toFixed(2);
+}
 </script>
+

@@ -15,6 +15,7 @@ class Jobcard extends CI_Controller
 		$this->load->model("SpareParts_model");
 		$this->load->model("Service_model");
 		$this->load->model("Estimation_model");
+		$this->load->model("Inspection_view_model");
 	}
 
 	public function create($appointment_id)
@@ -36,6 +37,8 @@ class Jobcard extends CI_Controller
 			);
 			redirect('appointment');
 		}
+
+		$inspection = $this->Inspection_view_model->get_by_appointment($appointment_id);
 
 		$estimation_id = $estimation->estimation_id;
 		// 2️⃣ Get appointment + customer + vehicle
@@ -80,6 +83,9 @@ class Jobcard extends CI_Controller
 			->get_services($estimation_id);
 
 		$jobcardstatus = $this->Jobcard_model->get_jobcard_status_by_id($jobcard_id);
+
+		$data['kms'] = $inspection->km_reading;
+
 
 
 		$data['jobcard_id'] = $jobcard_id;
@@ -191,7 +197,7 @@ class Jobcard extends CI_Controller
 		}
 
 		$estimation_id = $estimation->estimation_id;
-
+		$inspection = $this->Inspection_view_model->get_by_appointment($appointment_id);
 		// 3️⃣ Sub tables
 		$job_descriptions = $this->Jobcard_model
 			->get_job_descriptions($jobcard_id);
@@ -213,6 +219,7 @@ class Jobcard extends CI_Controller
 		$data['job_descriptions'] = $job_descriptions;
 		$data['parts_used']       = $parts_used;
 		$data['services_used']    = $services_used;
+		$data['kms'] = $inspection->km_reading;
 
 		$data['jobcard_id'] = $jobcard_id;
 		$data['jobcard_no'] = $jobcard->jobcard_no;
@@ -268,5 +275,57 @@ class Jobcard extends CI_Controller
 		$dompdf->stream("jobcard_{$jobcard_id}.pdf", [
 			"Attachment" => true
 		]);
+	}
+
+	public function index()
+	{
+		$data['title'] = 'Job Cards';
+		$data['jobcards'] = $this->Jobcard_model->get_all_jobcards();
+
+		$data['main_content'] = 'jobcard/list';
+		$this->load->view('includes/template', $data);
+	}
+
+	public function delete($jobcard_id)
+	{
+		$this->Jobcard_model->delete_jobcard($jobcard_id);
+		redirect('jobcard');
+	}
+
+	public function timesheet($jobcard_id)
+	{
+		$data['jobcard'] = $this->Jobcard_model->get_jobcard_basic($jobcard_id);
+		$data['descriptions'] = $this->Jobcard_model->get_jobcard_descriptions_with_employee($jobcard_id);
+
+		// status
+		$logs = $this->Jobcard_model->get_latest_work_status($jobcard_id);
+		$statusMap = [];
+		foreach ($logs as $l) {
+			$statusMap[$l->jobcard_description_id] = $l->status;
+		}
+
+		// NEW: times
+		$data['timeMap'] = $this->Jobcard_model->get_jobcard_work_times($jobcard_id);
+		$data['statusMap'] = $statusMap;
+
+		$data['title'] = 'Time Sheet';
+		$data['main_content'] = 'jobcard/timesheet';
+		$this->load->view('includes/template', $data);
+	}
+
+
+	public function log_work_time()
+	{
+		$data = [
+			'jobcard_id' => $this->input->post('jobcard_id'),
+			'jobcard_description_id' => $this->input->post('description_id'),
+			'employee_id' => $this->input->post('employee_id'),
+			'status' => $this->input->post('status'),
+			'log_time' => date('Y-m-d H:i:s')
+		];
+
+		$this->db->insert('jobcard_work_logs', $data);
+
+		echo json_encode(['status' => 'success']);
 	}
 }

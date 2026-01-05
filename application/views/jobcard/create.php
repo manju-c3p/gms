@@ -5,36 +5,36 @@
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
 
 
-	<div class="page-header flex items-center justify-between mb-4">
 
-		<h2 class="text-center text-xl font-bold mb-4">
-			Job Card
-		</h2>
-		<div class="text-right mt-6">
-			<!-- SAVE BUTTON -->
-			<button type="submit"
-				class="ml-3 px-6 py-2 bg-blue-600 text-white rounded">
-				Save Job Card
-			</button>
-			<a href="<?= base_url('index.php/Jobcard/view/' . $jobcard_id); ?>"
-				class="ml-3 px-6 py-2 bg-gray-300 rounded">View</a>
-			<?php if ($jobcardstatus == "In Progress") { ?>
-				<a href="<?= base_url('index.php/materialissue/create/' . $jobcard_id) ?>"
-					class="px-4 py-2 bg-indigo-600 text-white rounded">
-					Material Issue
-				</a>
-			<?php } ?>
-			<a href="<?= base_url('index.php/appointment'); ?>"
-				class="ml-3 px-6 py-2 bg-gray-300 rounded">Cancel</a>
-		</div>
-	</div>
-	<hr class="border-gray-300 mb-6">
 
 	<form method="post" action="<?= base_url('index.php/jobcard/save'); ?>" class="p-6 bg-white">
 		<input type="hidden" name="jobcard_id" value="<?= $jobcard_id ?>">
 
 
+		<div class="page-header flex items-center justify-between mb-4">
 
+			<h2 class="text-center text-xl font-bold mb-4">
+				Job Card
+			</h2>
+			<div class="text-right mt-6">
+				<!-- SAVE BUTTON -->
+				<button type="submit"
+					class="ml-3 px-6 py-2 bg-blue-600 text-white rounded">
+					Save Job Card
+				</button>
+				<a href="<?= base_url('index.php/Jobcard/view/' . $jobcard_id); ?>"
+					class="ml-3 px-6 py-2 bg-gray-300 rounded">View</a>
+				<?php if ($jobcardstatus == "In Progress") { ?>
+					<a href="<?= base_url('index.php/materialissue/create/' . $jobcard_id) ?>"
+						class="px-4 py-2 bg-indigo-600 text-white rounded">
+						Material Issue
+					</a>
+				<?php } ?>
+				<a href="<?= base_url('index.php/appointment'); ?>"
+					class="ml-3 px-6 py-2 bg-gray-300 rounded">Cancel</a>
+			</div>
+		</div>
+		<hr class="border-gray-300 mb-6">
 		<!-- CUSTOMER / VEHICLE INFO -->
 		<!-- VEHICLE & CUSTOMER DETAILS -->
 
@@ -131,7 +131,7 @@
 						<td class="px-3 py-1  font-medium bg-gray-50">KM's In</td>
 						<td class="px-3 py-1 ">
 							<input type="number"
-								class="w-full border rounded px-2 py-1">
+								class="w-full border rounded px-2 py-1" value="<?= $kms ?>" >
 						</td>
 
 						<td class="px-3 py-1  font-medium bg-gray-50">Estimated Delivery Date</td>
@@ -288,7 +288,7 @@
 
 		<!-- SAVE BUTTON -->
 		<!-- SAVE BUTTON -->
-	
+
 
 
 

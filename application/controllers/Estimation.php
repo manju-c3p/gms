@@ -12,7 +12,8 @@ class Estimation extends CI_Controller
 			'Inventory_status_model',
 			'Service_model',
 			'Estimation_model',
-			'SpareParts_model','Employee_model'
+			'SpareParts_model',
+			'Employee_model'
 		]);
 	}
 
@@ -37,6 +38,7 @@ class Estimation extends CI_Controller
 			);
 			redirect('appointment');
 		}
+
 
 		// 4️⃣ Create estimation record (DRAFT)
 		$estimation_id = $this->Estimation_model->create_estimation([
@@ -68,6 +70,7 @@ class Estimation extends CI_Controller
 		$data['parts'] = $this->SpareParts_model->get_all_parts();
 		$data['brands'] = $this->SpareParts_model->get_all_brands();
 		$data['technicians'] = $this->Employee_model->get_active_technicians();
+		$data['kms'] = $inspection->km_reading;
 
 		$data['services_master'] = $this->db->where('status', 'Active')
 			->where('service_type', 'LABOUR')
@@ -113,7 +116,7 @@ class Estimation extends CI_Controller
 		// ---------------------------
 		$job_descriptions = $this->input->post('job_description') ?? [];
 		$employee_id  = $this->input->post('technician_id') ?? [];
-		$this->Estimation_model->save_job_descriptions($estimation_id, $job_descriptions,$employee_id );
+		$this->Estimation_model->save_job_descriptions($estimation_id, $job_descriptions, $employee_id);
 
 		// ---------------------------
 		// 3️⃣ PARTS USED
@@ -145,7 +148,6 @@ class Estimation extends CI_Controller
 		// 5️⃣ REDIRECT
 		// ---------------------------
 		redirect('estimation/edit/' . $estimation_id);
-		
 	}
 
 	public function edit($estimation_id)
@@ -168,11 +170,17 @@ class Estimation extends CI_Controller
 		$services_used = $this->Estimation_model
 			->get_services($estimation_id);
 
+		$inspection = $this->Inspection_view_model->get_by_appointment($estimation->appointment_id);
+
 		// 4️⃣ Masters (dropdown data)
 		$data['parts']           = $this->SpareParts_model->get_all_parts();
 		$data['brands'] = $this->SpareParts_model->get_all_brands();
-		$data['services_master'] = $this->Service_model->get_active_services();
+		$data['services_master'] = $this->db->where('status', 'Active')
+			->where('service_type', 'LABOUR')
+			->get('services_master')
+			->result();
 		$data['technicians'] = $this->Employee_model->get_active_technicians();
+		$data['kms'] = $inspection->km_reading;
 
 		// 5️⃣ Send data to view
 		$data['estimation']       = $estimation;
@@ -234,6 +242,8 @@ class Estimation extends CI_Controller
 		$services_used = $this->Estimation_model
 			->get_services($estimation_id);
 
+		$inspection = $this->Inspection_view_model->get_by_appointment($estimation->appointment_id);
+
 		// 4️⃣ Masters (dropdown data)
 		$data['parts']           = $this->SpareParts_model->get_all_parts();
 		$data['brands'] = $this->SpareParts_model->get_all_brands();
@@ -246,13 +256,28 @@ class Estimation extends CI_Controller
 		$data['job_descriptions'] = $job_descriptions;
 		$data['parts_used']       = $parts_used;
 		$data['services_used']    = $services_used;
-
+		$data['kms'] = $inspection->km_reading;
 		$data['estimation_id'] = $estimation_id;
 		$data['estimation_no'] = $estimation->estimation_no;
 
-		$data['title'] = 'Edit Estimation';
-		$data['main_content'] = 'estimation/create'; // SAME PAGE
+		$data['title'] = 'View Estimation';
+		$data['main_content'] = 'estimation/view'; // SAME PAGE
 
 		$this->load->view('includes/template', $data);
+	}
+
+	public function index()
+	{
+		$data['title'] = 'Estimation List';
+		$data['estimations'] = $this->Estimation_model->get_all_estimations();
+
+		$data['main_content'] = 'estimation/list';
+		$this->load->view('includes/template', $data);
+	}
+
+	public function delete($estimation_id)
+	{
+		$this->Estimation_model->delete_estimation($estimation_id);
+		redirect('estimation');
 	}
 }

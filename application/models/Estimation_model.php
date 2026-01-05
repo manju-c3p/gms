@@ -160,4 +160,33 @@ class Estimation_model extends CI_Model
 			->get('estimation_services')
 			->result();
 	}
+
+		public function get_all_estimations()
+    {
+        return $this->db
+            ->select('
+                e.*,
+              
+
+                c.name AS customer_name,
+                c.phone AS customer_phone,
+
+                v.registration_no,
+                v.brand,
+                v.model
+            ')
+            ->from('estimations e')
+            ->join('customers c', 'c.customer_id = e.customer_id')
+            ->join('vehicles v', 'v.vehicle_id = e.vehicle_id')
+            ->order_by('e.created_at', 'DESC')
+            ->get()
+            ->result();
+    }
+
+    public function delete_estimation($estimation_id)
+    {
+        return $this->db
+            ->where('estimation_id', $estimation_id)
+            ->delete('estimations');
+    }
 }

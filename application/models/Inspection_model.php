@@ -134,52 +134,90 @@ class Inspection_model extends CI_Model
 	}
 
 	public function get_item_results($inspection_id)
-{
-    $results = [];
+	{
+		$results = [];
 
-    $query = $this->db
-        ->where('inspection_id', $inspection_id)
-        ->get('inspection_item_results')
-        ->result();
+		$query = $this->db
+			->where('inspection_id', $inspection_id)
+			->get('inspection_item_results')
+			->result();
 
-    foreach ($query as $row) {
-        $results[$row->item_id] = $row->status;
+		foreach ($query as $row) {
+			$results[$row->item_id] = $row->status;
+		}
+
+		return $results;
+	}
+
+
+	public function get_selected_works($inspection_id)
+	{
+		return array_column(
+			$this->db
+				->select('work_id')
+				->where('inspection_id', $inspection_id)
+				->get('inspection_works_requested')
+				->result_array(),
+			'work_id'
+		);
+	}
+	public function get_selected_inventory($inspection_id)
+	{
+		return array_column(
+			$this->db
+				->select('inventory_status_id')
+				->where('inspection_id', $inspection_id)
+				->get('inspection_inventory_status')
+				->result_array(),
+			'inventory_status_id'
+		);
+	}
+
+
+	public function get_saved_services($inspection_id)
+	{
+		return $this->db
+			->where('inspection_id', $inspection_id)
+			->get('inspection_services')
+			->result();
+	}
+
+	/**
+     * Get all inspections with customer & vehicle details
+     */
+    public function get_all_inspections()
+    {
+        return $this->db
+            ->select('
+                i.inspection_id,
+                i.inspection_date,
+                i.inspection_time,
+                i.status,
+                i.km_reading,
+                i.fuel_level,
+
+                c.name AS customer_name,
+                c.phone AS customer_phone,
+
+                v.registration_no,
+                v.brand,
+                v.model
+            ')
+            ->from('inspections i')
+            ->join('customers c', 'c.customer_id = i.customer_id')
+            ->join('vehicles v', 'v.vehicle_id = i.vehicle_id')
+            ->order_by('i.created_at', 'DESC')
+            ->get()
+            ->result();
     }
 
-    return $results;
-}
-
-
-public function get_selected_works($inspection_id)
-{
-    return array_column(
-        $this->db
-            ->select('work_id')
+    /**
+     * Delete inspection (hard delete for now)
+     */
+    public function delete_inspection($inspection_id)
+    {
+        return $this->db
             ->where('inspection_id', $inspection_id)
-            ->get('inspection_works_requested')
-            ->result_array(),
-        'work_id'
-    );
-}
-public function get_selected_inventory($inspection_id)
-{
-    return array_column(
-        $this->db
-            ->select('inventory_status_id')
-            ->where('inspection_id', $inspection_id)
-            ->get('inspection_inventory_status')
-            ->result_array(),
-        'inventory_status_id'
-    );
-}
-
-
-public function get_saved_services($inspection_id)
-{
-    return $this->db
-        ->where('inspection_id', $inspection_id)
-        ->get('inspection_services')
-        ->result();
-}
-
+            ->delete('inspections');
+    }
 }

@@ -304,81 +304,7 @@ $rightItems = array_slice($items, $half);
 
 
 </div>
-<script>
-	let serviceCount = 0;
 
-	// services list from PHP
-	const services = <?= json_encode($services); ?>;
-
-	function addServiceRow() {
-		serviceCount++;
-
-		let options = `<option value="">-- Select Service --</option>
-                   <option value="custom">-- Custom Service --</option>`;
-
-		services.forEach(s => {
-			options += `<option value="${s.master_service_id}">
-                        ${s.service_name}
-                    </option>`;
-		});
-
-		const row = `
-        <tr id="srv_${serviceCount}">
-            <td class="border px-2 py-2 text-center">
-                ${serviceCount}
-            </td>
-
-            <td class="border px-2 py-2">
-                <select name="service_id[]"
-                        onchange="serviceChanged(this)"
-                        class="w-full border px-2 py-1 rounded">
-                    ${options}
-                </select>
-
-                <input type="text"
-                       name="custom_service[]"
-                       placeholder="Enter custom service description"
-                       class="w-full border px-2 py-1 rounded mt-1 hidden">
-            </td>
-
-            <td class="border px-2 py-2 text-center">
-                <button type="button"
-                        onclick="removeService(${serviceCount})"
-                        class="bg-red-500 text-white px-3 py-1 rounded">
-                    X
-                </button>
-            </td>
-        </tr>
-    `;
-
-		document.querySelector('#serviceTable tbody')
-			.insertAdjacentHTML('beforeend', row);
-	}
-
-	function removeService(id) {
-		document.getElementById('srv_' + id)?.remove();
-		renumberRows();
-	}
-
-	function renumberRows() {
-		let rows = document.querySelectorAll('#serviceTable tbody tr');
-		rows.forEach((row, index) => {
-			row.querySelector('td').innerText = index + 1;
-		});
-	}
-
-	function serviceChanged(select) {
-		const customInput = select.closest('td')
-			.querySelector('input[name="custom_service[]"]');
-
-		if (select.value === 'custom') {
-			customInput.classList.remove('hidden');
-		} else {
-			customInput.classList.add('hidden');
-			customInput.value = '';
-		}
-	}
-</script>
 
 <script>
 	const container = document.getElementById('damageContainer');
@@ -460,6 +386,18 @@ $rightItems = array_slice($items, $half);
 		.print\:hidden {
 			display: none !important;
 		}
+
+		 .topbar {
+        display: none;
+    }
+	  html, body {
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    * {
+        overflow: visible !important;
+    }
 
 		body {
 			background: white;

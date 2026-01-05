@@ -95,7 +95,7 @@ class MaterialIssue extends CI_Controller
 				'error',
 				'Material issue not allowed for this job card'
 			);
-			redirect('materialissue/create/' . $jobcard_id);
+			redirect('MaterialIssue/create/' . $jobcard_id);
 		}
 
 		/* ===============================
@@ -119,7 +119,7 @@ class MaterialIssue extends CI_Controller
 				'error',
 				'Please enter issue quantity for at least one part'
 			);
-			redirect('materialissue/create/' . $jobcard_id);
+			redirect('MaterialIssue/create/' . $jobcard_id);
 		}
 
 		/* ===============================
@@ -139,7 +139,7 @@ class MaterialIssue extends CI_Controller
 					'error',
 					'Issued quantity exceeds planned quantity'
 				);
-				redirect('materialissue/create/' . $jobcard_id);
+				redirect('MaterialIssue/create/' . $jobcard_id);
 			}
 
 			// Stock availability check
@@ -151,7 +151,7 @@ class MaterialIssue extends CI_Controller
 					'error',
 					'Insufficient stock available for one or more parts'
 				);
-				redirect('materialissue/create/' . $jobcard_id);
+				redirect('MaterialIssue/create/' . $jobcard_id);
 			}
 		}
 
@@ -219,7 +219,7 @@ class MaterialIssue extends CI_Controller
 				'Failed to save material issue'
 			);
 
-			redirect('materialissue/create/' . $jobcard_id);
+			redirect('MaterialIssue/create/' . $jobcard_id);
 		}
 	}
 }

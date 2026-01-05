@@ -234,4 +234,25 @@ class Inspection extends CI_Controller
 		$data['main_content'] = 'inspection/view';
 		$this->load->view('includes/template', $data);
 	}
+
+	 /**
+     * Inspection listing page
+     */
+    public function index()
+    {
+        $data['title'] = 'Inspection List';
+        $data['inspections'] = $this->Inspection_model->get_all_inspections();
+
+        $data['main_content'] = 'inspection/list';
+        $this->load->view('includes/template', $data);
+    }
+
+    /**
+     * Delete inspection
+     */
+    public function delete($inspection_id)
+    {
+        $this->Inspection_model->delete_inspection($inspection_id);
+        redirect('inspection');
+    }
 }

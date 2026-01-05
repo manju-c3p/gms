@@ -3,7 +3,7 @@
     <h2 class="text-2xl font-bold mb-4">Spare Parts Inventory</h2>
 
     <div class="flex justify-end mb-4">
-        <a href="<?= base_url('index.php/spareparts/add'); ?>"
+        <a href="<?= base_url('index.php/SpareParts/add'); ?>"
            class="px-4 py-2 bg-green-600 text-white rounded">
             + Add Spare Part
         </a>
@@ -54,21 +54,21 @@
                         <div class="flex justify-center gap-2">
 
                             <!-- Stock IN -->
-                            <a href="<?= base_url('index.php/spareparts/stock_in_form/'.$p->part_id); ?>"
+                            <a href="<?= base_url('index.php/SpareParts/stock_in_form/'.$p->part_id); ?>"
                                class="px-3 py-1 bg-blue-100 rounded text-blue-700"
                                title="Add Stock">
                                 + Stock In
                             </a>
 
                             <!-- Stock OUT -->
-                            <a href="<?= base_url('index.php/spareparts/stock_out_form/'.$p->part_id); ?>"
+                            <a href="<?= base_url('index.php/SpareParts/stock_out_form/'.$p->part_id); ?>"
                                class="px-3 py-1 bg-yellow-100 rounded text-yellow-700"
                                title="Remove Stock">
                                 − Stock Out
                             </a>
 
                             <!-- Edit -->
-                            <a href="<?= base_url('index.php/spareparts/edit/'.$p->part_id); ?>"
+                            <a href="<?= base_url('index.php/SpareParts/edit/'.$p->part_id); ?>"
                                class="px-3 py-1 bg-green-100 rounded text-green-700"
                                title="Edit">
                                 ✏️
@@ -76,7 +76,7 @@
 
                             <!-- Delete -->
                             <a onclick="return confirm('Delete this part?');"
-                               href="<?= base_url('index.php/spareparts/delete/'.$p->part_id); ?>"
+                               href="<?= base_url('index.php/SpareParts/delete/'.$p->part_id); ?>"
                                class="px-3 py-1 bg-red-100 rounded text-red-700"
                                title="Delete">
                                 🗑️

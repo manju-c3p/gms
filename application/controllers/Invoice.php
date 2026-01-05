@@ -74,7 +74,8 @@ class Invoice extends CI_Controller
 
 	public function get_jobcard_details($jobcard_id)
 	{
-		$jobcard = $this->Jobcard_model->get_jobcard_with_details($jobcard_id);
+		// $jobcard = $this->Jobcard_model->get_jobcard_with_details($jobcard_id);
+			$jobcard = $this->Jobcard_model->get_jobcard_full_details($jobcard_id);
 		echo json_encode($jobcard);
 	}
 

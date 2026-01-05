@@ -22,6 +22,9 @@
 					class="ml-3 px-6 py-2 bg-blue-600 text-white rounded">
 					Save Estimation
 				</button>
+				<a href="<?= base_url('index.php/Estimation/view/' .  $estimation_id) ?>" class="px-6 py-2 bg-gray-400 text-white rounded">
+					View Estimation
+				</a>
 				<a href="<?= base_url('index.php/appointment'); ?>"
 					class="ml-3 px-6 py-2 bg-gray-300 rounded">Cancel</a>
 			</div>
@@ -116,7 +119,7 @@
 
 						<td class="border p-2 font-medium">KM In</td>
 						<td class="border p-2">
-							<input type="number" class="w-full border rounded px-2 py-1">
+							<input type="number" class="w-full border rounded px-2 py-1" value="<?= $kms ?>">
 						</td>
 
 						<td class="border p-2 font-medium">Customer Approval</td>

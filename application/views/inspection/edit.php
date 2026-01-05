@@ -27,7 +27,7 @@ $rightItems = array_slice($items, $half);
 				<a href="<?= base_url('index.php/estimation/create/' . $appointment->appointment_id) ?>" class="px-6 py-2 bg-green-600 text-white rounded">
 					Estimation
 				</a>
-				<a href="<?= base_url('index.php/Inspection/view/' . $appointment->appointment_id) ?>" class="px-6 py-2 bg-gray-400 text-white rounded">
+				<a href="<?= base_url('index.php/Inspection/view/' . $inspection_id) ?>" class="px-6 py-2 bg-gray-400 text-white rounded">
 					View Inspection
 				</a>
 

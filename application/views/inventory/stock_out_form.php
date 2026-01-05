@@ -10,7 +10,7 @@
         </strong>
     </div>
 
-    <form method="POST" action="<?= base_url('index.php/spareparts/stock_out_save'); ?>">
+    <form method="POST" action="<?= base_url('index.php/SpareParts/stock_out_save'); ?>">
 
         <input type="hidden" name="part_id" value="<?= $part->part_id ?>">
 
@@ -47,7 +47,7 @@
             Stock Out
         </button>
 
-        <a href="<?= base_url('index.php/spareparts'); ?>"
+        <a href="<?= base_url('index.php/SpareParts'); ?>"
            class="ml-3 px-6 py-2 bg-gray-300 rounded">
             Cancel
         </a>

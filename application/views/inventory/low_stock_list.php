@@ -44,14 +44,14 @@
                         <td class="p-3 text-center flex justify-center gap-3">
 
                             <!-- Stock In -->
-                            <a href="<?= base_url('spareparts/stock_in_form/'.$p->part_id); ?>"
+                            <a href="<?= base_url('SpareParts/stock_in_form/'.$p->part_id); ?>"
                                class="p-2 bg-blue-100 rounded"
                                title="Add Stock">
                                 ➕
                             </a>
 
                             <!-- Edit Part -->
-                            <a href="<?= base_url('spareparts/edit/'.$p->part_id); ?>"
+                            <a href="<?= base_url('SpareParts/edit/'.$p->part_id); ?>"
                                class="p-2 bg-yellow-100 rounded"
                                title="Edit Part">
                                 ✏️

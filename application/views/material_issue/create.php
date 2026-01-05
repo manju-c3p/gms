@@ -19,7 +19,7 @@
     </div>
 <?php endif; ?>
 
-<form method="post" action="<?= base_url('index.php/materialissue/store') ?>">
+<form method="post" action="<?= base_url('index.php/MaterialIssue/store') ?>">
 
     <!-- ===============================
          HIDDEN FIELDS

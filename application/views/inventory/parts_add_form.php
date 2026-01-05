@@ -5,7 +5,7 @@
 
 	<h2 class="text-2xl font-bold mb-4">Add Spare Part</h2>
 
-	<form method="POST" action="<?= base_url('index.php/spareparts/save'); ?>">
+	<form method="POST" action="<?= base_url('index.php/SpareParts/save'); ?>">
 
 		<div class="grid grid-cols-2 gap-4">
 
@@ -72,7 +72,7 @@
 			Save Part
 		</button>
 
-		<a href="<?= base_url('index.php/spareparts'); ?>"
+		<a href="<?= base_url('index.php/SpareParts'); ?>"
 			class="ml-3 px-6 py-2 bg-gray-300 rounded">
 			Cancel
 		</a>
@@ -144,7 +144,7 @@
 
 		// Load models
 		$('#modelSelect').html('<option value="">Loading...</option>');
-		$.get('<?= base_url("index.php/spareparts/get_models_by_brand/") ?>' + val, function(res) {
+		$.get('<?= base_url("index.php/SpareParts/get_models_by_brand/") ?>' + val, function(res) {
 			let options = '<option value="">-- Select Model --</option>';
 			JSON.parse(res).forEach(m => {
 				options += `<option value="${m.model_id}">${m.model_name}</option>`;
@@ -165,7 +165,7 @@
 
 
 	function saveBrand() {
-		$.post('<?= base_url("index.php/spareparts/save_brand") ?>', {
+		$.post('<?= base_url("index.php/SpareParts/save_brand") ?>', {
 				name: $('#newBrandName').val()
 			},
 			function() {
@@ -185,7 +185,7 @@
     }
 
     $.post(
-        '<?= base_url("index.php/spareparts/save_model") ?>',
+        '<?= base_url("index.php/SpareParts/save_model") ?>',
         {
             brand_id: brandId,
             name: modelName

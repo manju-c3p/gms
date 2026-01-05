@@ -47,7 +47,7 @@ public function get_revenue_report($from_date, $to_date)
 public function get_inventory_usage_report($from, $to)
 {
     $this->db->select('
-        jp.part_item_id ,
+        jp.part_id ,
         jp.qty,
         jc.jobcard_date,
         sp.part_name,
