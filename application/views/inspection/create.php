@@ -7,7 +7,7 @@ $rightItems = array_slice($items, $half);
 ?>
 
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
-	<form method="post" action="<?= base_url('index.php/inspection/save'); ?>" class="p-6 bg-white">
+	<form method="post" enctype="multipart/form-data" action="<?= base_url('index.php/inspection/save'); ?>" class="p-6 bg-white">
 		<input type="hidden" name="inspection_id" value="<?= $inspection_id ?>">
 		<div class="page-header flex items-center justify-between mb-4">
 
@@ -252,6 +252,24 @@ $rightItems = array_slice($items, $half);
 					<input name="remarks"
 						class="border px-2 py-1 w-full">
 				</div>
+
+				<!-- VEHICLE PHOTOS UPLOAD -->
+				<div class="col-span-12">
+					<h4 class="font-bold mb-2">Vehicle Photos (Max 12)</h4>
+
+					<input type="file"
+						name="inspection_photos[]"
+						id="photoInput"
+						accept="image/*"
+						multiple
+						class="border p-2 rounded w-full">
+
+					<!-- Preview Grid -->
+					<div id="photoPreview"
+						class="grid grid-cols-6 gap-3 mt-3">
+					</div>
+				</div>
+
 			</div>
 
 			<!-- VEHICLE DAMAGE DIAGRAM -->
@@ -294,6 +312,23 @@ $rightItems = array_slice($items, $half);
 	</form>
 
 </div>
+<!-- ================================================================================== -->
+<!-- IMAGE PREVIEW MODAL -->
+<div id="imageModal"
+	class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-50">
+
+	<button onclick="closeImageModal()"
+		class="absolute top-4 right-4 text-white text-3xl font-bold">
+		✕
+	</button>
+
+	<img id="modalImage"
+		src=""
+		class="max-h-[90vh] max-w-[90vw] rounded shadow-lg">
+</div>
+
+
+<!-- =================================================================== -->
 <script>
 	let serviceCount = 0;
 
@@ -437,5 +472,88 @@ $rightItems = array_slice($items, $half);
 					e.target.remove();
 				}
 			});
+	});
+</script>
+<script>
+	const photoInput = document.getElementById('photoInput');
+	const previewContainer = document.getElementById('photoPreview');
+	const imageModal = document.getElementById('imageModal');
+	const modalImage = document.getElementById('modalImage');
+
+	let selectedFiles = []; // 🔹 STORE ALL FILES
+
+	photoInput.addEventListener('change', function () {
+
+		const newFiles = Array.from(this.files);
+
+		// 🔒 Max limit check (optional)
+		if (selectedFiles.length + newFiles.length > 12) {
+			alert('You can upload a maximum of 12 photos.');
+			this.value = '';
+			return;
+		}
+
+		// 🔹 Append new files
+		newFiles.forEach(file => selectedFiles.push(file));
+
+		this.value = ''; // 🔥 IMPORTANT: allows selecting same file again
+
+		renderPreview();
+	});
+
+	function renderPreview() {
+		previewContainer.innerHTML = '';
+
+		selectedFiles.forEach((file, index) => {
+			const reader = new FileReader();
+
+			reader.onload = function (e) {
+				const wrapper = document.createElement('div');
+				wrapper.className = "relative group";
+
+				const thumb = document.createElement('img');
+				thumb.src = e.target.result;
+				thumb.className = "w-full h-24 object-cover rounded cursor-pointer border hover:scale-105 transition";
+				thumb.onclick = () => openImageModal(e.target.result);
+
+				const removeBtn = document.createElement('button');
+				removeBtn.type = "button";
+				removeBtn.innerHTML = "✕";
+				removeBtn.className =
+					"absolute top-1 right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded hidden group-hover:block";
+				removeBtn.onclick = () => removeImage(index);
+
+				wrapper.appendChild(thumb);
+				wrapper.appendChild(removeBtn);
+				previewContainer.appendChild(wrapper);
+			};
+
+			reader.readAsDataURL(file);
+		});
+	}
+
+	function removeImage(index) {
+		selectedFiles.splice(index, 1);
+		renderPreview();
+	}
+
+	function openImageModal(src) {
+		modalImage.src = src;
+		imageModal.classList.remove('hidden');
+		imageModal.classList.add('flex');
+	}
+
+	function closeImageModal() {
+		imageModal.classList.add('hidden');
+		imageModal.classList.remove('flex');
+	}
+</script>
+<script>
+	document.querySelector('form').addEventListener('submit', function () {
+		const dataTransfer = new DataTransfer();
+
+		selectedFiles.forEach(file => dataTransfer.items.add(file));
+
+		photoInput.files = dataTransfer.files;
 	});
 </script>

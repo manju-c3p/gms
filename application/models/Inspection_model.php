@@ -183,15 +183,16 @@ class Inspection_model extends CI_Model
 	}
 
 	/**
-     * Get all inspections with customer & vehicle details
-     */
-    public function get_all_inspections()
-    {
-        return $this->db
-            ->select('
+	 * Get all inspections with customer & vehicle details
+	 */
+	public function get_all_inspections()
+	{
+		return $this->db
+			->select('
                 i.inspection_id,
                 i.inspection_date,
                 i.inspection_time,
+				i.appointment_id,
                 i.status,
                 i.km_reading,
                 i.fuel_level,
@@ -203,21 +204,62 @@ class Inspection_model extends CI_Model
                 v.brand,
                 v.model
             ')
-            ->from('inspections i')
-            ->join('customers c', 'c.customer_id = i.customer_id')
-            ->join('vehicles v', 'v.vehicle_id = i.vehicle_id')
-            ->order_by('i.created_at', 'DESC')
-            ->get()
-            ->result();
-    }
+			->from('inspections i')
+			->join('customers c', 'c.customer_id = i.customer_id')
+			->join('vehicles v', 'v.vehicle_id = i.vehicle_id')
+			->order_by('i.created_at', 'DESC')
+			->get()
+			->result();
+	}
 
-    /**
-     * Delete inspection (hard delete for now)
-     */
-    public function delete_inspection($inspection_id)
-    {
-        return $this->db
-            ->where('inspection_id', $inspection_id)
-            ->delete('inspections');
-    }
+	/**
+	 * Delete inspection (hard delete for now)
+	 */
+	public function delete_inspection($inspection_id)
+	{
+		return $this->db
+			->where('inspection_id', $inspection_id)
+			->delete('inspections');
+	}
+
+	public function save_inspection_photos($inspection_id, $files)
+	{
+		// 1. Delete existing DB records (files already handled separately if needed)
+		$this->db->where('inspection_id', $inspection_id)
+			->delete('inspection_photos');
+
+		// 2. No new files → stop here
+		if (empty($files['name'][0])) {
+			return;
+		}
+
+		$this->load->library('upload');
+
+		foreach ($files['name'] as $key => $name) {
+
+			$_FILES['photo']['name']     = $files['name'][$key];
+			$_FILES['photo']['type']     = $files['type'][$key];
+			$_FILES['photo']['tmp_name'] = $files['tmp_name'][$key];
+			$_FILES['photo']['error']    = $files['error'][$key];
+			$_FILES['photo']['size']     = $files['size'][$key];
+
+			$config = [
+				'upload_path'   => './uploads/inspection/',
+				'allowed_types' => 'jpg|jpeg|png',
+				'encrypt_name'  => TRUE
+			];
+
+			$this->upload->initialize($config);
+
+			if ($this->upload->do_upload('photo')) {
+
+				$img = $this->upload->data();
+
+				$this->db->insert('inspection_photos', [
+					'inspection_id' => $inspection_id,
+					'image_path'    => 'uploads/inspection/' . $img['file_name']
+				]);
+			}
+		}
+	}
 }

@@ -1,5 +1,12 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
+<style>
+    /* Works in most modern browsers */
+    option[data-special="true"] {
+        font-weight: 600;
+        color: #16a34a; /* green-600 */
+    }
+</style>
 
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
 
@@ -17,7 +24,9 @@
 					<?php foreach ($brands as $b): ?>
 						<option value="<?= $b->brand_id ?>"><?= $b->brand_name ?></option>
 					<?php endforeach; ?>
-					<option value="add_brand">+ Add Brand</option>
+					<option value="add_brand" data-special="true">
+						➕ Add New Brand
+					</option>
 				</select>
 			</div>
 
@@ -61,6 +70,17 @@
 				<input type="number" name="min_stock"
 					class="w-full border p-2 rounded"
 					placeholder="Alert when stock is below this">
+			</div>
+
+			<div>
+				<label class="font-medium">Part Type <span class="text-red-500">*</span></label>
+				<select name="parttype" class="w-full border p-2 rounded" required>
+					<option value="">-- Select Part Type --</option>
+					<option value="New Parts">New Parts</option>
+					<option value="Aftermarket Parts">Aftermarket Parts</option>
+					<option value="Used Parts">Used Parts</option>
+
+				</select>
 			</div>
 
 		</div>
@@ -176,28 +196,27 @@
 
 	function saveModel() {
 
-    let brandId = $('#modelBrandSelect').val();
-    let modelName = $('#newModelName').val();
+		let brandId = $('#modelBrandSelect').val();
+		let modelName = $('#newModelName').val();
 
-    if (!brandId || !modelName) {
-        alert('Brand and Model Name are required');
-        return;
-    }
+		if (!brandId || !modelName) {
+			alert('Brand and Model Name are required');
+			return;
+		}
 
-    $.post(
-        '<?= base_url("index.php/SpareParts/save_model") ?>',
-        {
-            brand_id: brandId,
-            name: modelName
-        },
-        function () {
-            closeModelModal();
+		$.post(
+			'<?= base_url("index.php/SpareParts/save_model") ?>', {
+				brand_id: brandId,
+				name: modelName
+			},
+			function() {
+				closeModelModal();
 
-            // Reload models for selected brand
-            $('#brandSelect').trigger('change');
-        }
-    );
-}
+				// Reload models for selected brand
+				$('#brandSelect').trigger('change');
+			}
+		);
+	}
 
 
 	function closeBrandModal() {

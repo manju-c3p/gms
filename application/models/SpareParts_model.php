@@ -17,9 +17,23 @@ class SpareParts_model extends CI_Model {
         return $this->db->order_by('part_name', 'ASC')->get('spare_parts')->result();
     }
 
-    public function get_part($part_id) {
-        return $this->db->where('part_id', $part_id)->get('spare_parts')->row();
-    }
+    // public function get_part($part_id) {
+    //     return $this->db->where('part_id', $part_id)->get('spare_parts')->row();
+    // }
+public function get_part($part_id)
+{
+    return $this->db
+        ->select('
+            p.*,
+            m.model_name
+        ')
+        ->from('spare_parts p')
+        ->join('vehicle_models m', 'm.model_id = p.vehicle_model_id', 'left')
+        ->where('p.part_id', $part_id)
+        ->get()
+        ->row();
+}
+
 
     public function get_stock($part_id) {
         $in  = $this->db->select_sum('qty')->where('part_id', $part_id)->get('stock_in')->row()->qty;
@@ -60,6 +74,25 @@ class SpareParts_model extends CI_Model {
         ]);
         return $this->db->insert_id();
     }
+
+public function get_brands_by_part_type($part_type)
+{
+    return $this->db
+        ->distinct()
+        ->select('vb.brand_id, vb.brand_name')
+        ->from('spare_parts sp')
+        ->join('vehicle_brands vb', 'vb.brand_id = sp.brand_id')
+        ->where('sp.part_type', $part_type)
+        ->order_by('vb.brand_name', 'ASC')
+        ->get()
+        ->result();
+}
+
+
+
+
+
+
 }
 
 

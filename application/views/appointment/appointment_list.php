@@ -106,7 +106,7 @@
 										<?php
 										if (!$a->estimation_id) {
 											// Inspection done but estimation not created
-											echo 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200';
+											echo 'bg-gray-100 text-yellow-700 hover:bg-yellow-200';
 										} elseif ($a->estimation_status === 'Draft') {
 											echo 'bg-yellow-100 text-yellow-700';
 										} elseif ($a->estimation_status === 'Approved') {
@@ -157,7 +157,7 @@
 								}
 								?>
 
-								<a href="<?= base_url('index.php/jobcard/create/' . $a->appointment_id); ?>"
+								<a href="<?= base_url('index.php/Jobcard/create/' . $a->appointment_id); ?>"
 									title="<?= $jobcardTitle ?>"
 									class="px-3 py-1 text-xs rounded-full flex items-center gap-1
        								<?php
@@ -202,7 +202,7 @@
 
 
 						<!-- Edit -->
-						<a href="<?= base_url('index.php/appointment/edit/' . $a->appointment_id); ?>"
+						<a href="<?= base_url('index.php/Appointment/edit/' . $a->appointment_id); ?>"
 							class="p-2 rounded bg-yellow-100 hover:bg-yellow-200"
 							title="Edit">
 							✏️
@@ -210,7 +210,7 @@
 
 						<!-- Delete -->
 						<a onclick="return confirm('Delete this appointment?');"
-							href="<?= base_url('index.php/appointment/delete/' . $a->appointment_id); ?>"
+							href="<?= base_url('index.php/Appointment/delete/' . $a->appointment_id); ?>"
 							class="p-2 rounded bg-red-100 hover:bg-red-200"
 							title="Delete">
 							🗑️

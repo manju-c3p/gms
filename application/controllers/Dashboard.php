@@ -20,54 +20,87 @@ class Dashboard extends CI_Controller
 		$data['username'] = $this->session->userdata('username');
 		$data['userid'] = $this->session->userdata('user_id');
 
-		   // Active Job Cards
-        $data['active_job_cards'] = $this->Dashboard_model->get_active_job_cards();
+		// Active Job Cards
+		$data['active_job_cards'] = $this->Dashboard_model->get_active_job_cards();
 		$data['recent_estimations'] = $this->Dashboard_model->get_recent_estimations();
 		$data['low_stock_items'] =  $this->Dashboard_model->get_low_stock_items();
 		$data['recent_inspections'] =  $this->Dashboard_model->get_recent_inspections();
+		$data['jobcardProgress'] = $this->Dashboard_model->get_jobcard_job_completion();
+		$data['jobcardProgress1'] = $this->Dashboard_model->get_jobcard_job_progress();
+		// $data['jobcardReport'] =  $this->Dashboard_model->get_jobcard_time_report();
+// log_message(
+// 	'error',
+// 	'Jobcard Report: ' . print_r($data['jobcardReport'], true)
+// );
 
+$data['jobcardReport'] = [
+	(object)[
+		'jobcard_no'     => 'JC-1001',
+		'employee_name'  => 'Ramesh Kumar',
+		'worked_hours'   => 4.5,
+		'total_jobs'     => 4,
+		'completed_jobs' => 1,
+		'progress'       => 25
+	],
+	(object)[
+		'jobcard_no'     => 'JC-1002',
+		'employee_name'  => 'Suresh Das',
+		'worked_hours'   => 7.25,
+		'total_jobs'     => 5,
+		'completed_jobs' => 3,
+		'progress'       => 60
+	],
+	(object)[
+		'jobcard_no'     => 'JC-1003',
+		'employee_name'  => 'Arun Singh',
+		'worked_hours'   => 10.0,
+		'total_jobs'     => 6,
+		'completed_jobs' => 6,
+		'progress'       => 100
+	],
+];
 
 
 		$data['main_content'] = 'dashboard.php';
 		$this->load->view('includes/template', $data);
 	}
 
-	
-    // ==============================================
-    // 🔸 Function: Get latest notifications
-    // ==============================================
-    // public function get_notifications()
-    // {
-    //     $user_id = $this->session->userdata('user_id');
-    //     if (!$user_id) {
-    //         echo json_encode([]);
-    //         return;
-    //     }
 
-    //     $notifications = $this->Notification_model->get_user_notifications($user_id);
-    //     echo json_encode($notifications);
-    // }
+	// ==============================================
+	// 🔸 Function: Get latest notifications
+	// ==============================================
+	// public function get_notifications()
+	// {
+	//     $user_id = $this->session->userdata('user_id');
+	//     if (!$user_id) {
+	//         echo json_encode([]);
+	//         return;
+	//     }
 
-    // ==============================================
-    // 🔸 Function: Get unread notification count
-    // ==============================================
-    // public function unread_count()
-    // {
-    //     $user_id = $this->session->userdata('user_id');
-    //     if (!$user_id) {
-    //         echo json_encode(['count' => 0]);
-    //         return;
-    //     }
+	//     $notifications = $this->Notification_model->get_user_notifications($user_id);
+	//     echo json_encode($notifications);
+	// }
 
-    //     $count = $this->Notification_model->count_unread($user_id);
-    //     echo json_encode(['count' => $count]);
-    // }
+	// ==============================================
+	// 🔸 Function: Get unread notification count
+	// ==============================================
+	// public function unread_count()
+	// {
+	//     $user_id = $this->session->userdata('user_id');
+	//     if (!$user_id) {
+	//         echo json_encode(['count' => 0]);
+	//         return;
+	//     }
 
-    // ==============================================
-    // 🔸 Function: Mark a notification as read
-    // ==============================================
-    // public function mark_as_read($msg_id)
-    // {
-    //     $this->Notification_model->mark_as_read($msg_id);
-    // }
+	//     $count = $this->Notification_model->count_unread($user_id);
+	//     echo json_encode(['count' => $count]);
+	// }
+
+	// ==============================================
+	// 🔸 Function: Mark a notification as read
+	// ==============================================
+	// public function mark_as_read($msg_id)
+	// {
+	//     $this->Notification_model->mark_as_read($msg_id);
+	// }
 }

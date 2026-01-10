@@ -4,20 +4,20 @@
 
 	<!-- STEP 1: JOB CARD SELECT -->
 	<div class="mb-6">
-		<label class="block text-sm font-medium mb-1">Select Job Card</label>
+		<label class="block text-sm font-medium mb-1">Select Quotation</label>
 		<select id="jobcard_id"
 			class="w-72 border rounded px-3 py-2">
-			<option value="">-- Select Job Card --</option>
+			<option value="">-- Select Quotation --</option>
 			<?php foreach ($jobcards as $jc): ?>
 				<option value="<?= $jc->jobcard_id ?>">
-					<?= $jc->jobcard_no ?> | <?= $jc->registration_no ?>
+					<?= $jc->quotation_no ?> | <?=$jc->jobcard_no ?> | <?= $jc->registration_no ?>
 				</option>
 			<?php endforeach; ?>
 		</select>
 	</div>
 
 	<!-- INVOICE FORM -->
-	<form method="post" action="<?= base_url('index.php/invoice/save') ?>" id="invoiceForm" class="hidden">
+	<form method="post" action="<?= base_url('index.php/Invoice/save') ?>" id="invoiceForm" class="hidden">
 
 		<input type="hidden" name="jobcard_id" id="jobcard_hidden">
 

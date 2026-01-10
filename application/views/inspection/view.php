@@ -4,6 +4,7 @@ $half = ceil($totalItems / 2);
 
 $leftItems  = array_slice($items, 0, $half);
 $rightItems = array_slice($items, $half);
+// echo $inspection_id;
 ?>
 
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
@@ -18,6 +19,8 @@ $rightItems = array_slice($items, $half);
 			class="px-4 py-2 bg-blue-600 text-white rounded">
 			🖨 Print
 		</button>
+		<a href="<?= base_url('index.php/Inspection/edit/'. $inspection_id); ?>"
+					class="ml-3 px-6 py-2 bg-gray-300 rounded print:hidden">Cancel</a>
 
 	
 	</div>
@@ -68,20 +71,20 @@ $rightItems = array_slice($items, $half);
 		<tr>
 			<td class="border p-1 font-bold">Driver Name</td>
 			<td class="border p-1">
-				<input type="text" name="driver_name"
+				<input type="text" name="driver_name" value="<?= $inspection->drivername ?>"
 					class="w-full border px-2 py-1">
 			</td>
 
 			<td class="border p-1 font-bold">Veh. Type</td>
 			<td class="border p-1">
-				<?= $appointment->vehicle_type ?? '-' ?>
+				<?= $appointment->variant ?? '-' ?>
 			</td>
 		</tr>
 
 		<tr>
 			<td class="border p-1 font-bold">Driver Mobile</td>
 			<td class="border p-1">
-				<input type="text" name="driver_mobile"
+				<input type="text" name="driver_mobile" value="<?= $inspection->driverphno ?>"
 					class="w-full border px-2 py-1">
 			</td>
 
@@ -261,6 +264,8 @@ $rightItems = array_slice($items, $half);
 				<input name="remarks" value="<?= $inspection->remarks ?>"
 					class="border px-2 py-1 w-full">
 			</div>
+			<!-- VEHICLE PHOTOS -->
+				
 		</div>
 
 		<!-- VEHICLE DAMAGE DIAGRAM -->

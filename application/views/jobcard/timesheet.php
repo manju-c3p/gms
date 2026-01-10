@@ -50,15 +50,15 @@
 
 			<tbody class="divide-y">
 				<?php $i = 1;
-				foreach ($descriptions as $d): 
-				$times = $timeMap[$d->jobcard_description_id] ?? [
-					'START' => null,
-					'PAUSE' => null,
-					'STOP' => null
+				foreach ($descriptions as $d):
+					$times = $timeMap[$d->jobcard_description_id] ?? [
+						'START' => null,
+						'PAUSE' => null,
+						'STOP' => null
 					];
-				
+					$hasStarted = isset($timeMap[$d->jobcard_description_id]['START']);
 				?>
-					
+
 					<tr>
 						<td class="px-3 py-3"><?= $i++ ?></td>
 
@@ -67,7 +67,7 @@
 						</td>
 
 						<td class="px-3 py-3 font-medium">
-							<?= $d->employee_name ?>
+
 						</td>
 
 						<td class="px-3 py-3 text-center">
@@ -106,26 +106,43 @@
 							<?= $times['STOP'] ? date('H:i:s', strtotime($times['STOP'])) : '-' ?>
 						</td>
 						<td class="px-3 py-3 text-center space-x-2">
+
+							<!-- START (ONLY ONCE) -->
 							<button
 								onclick="logTime(<?= $d->jobcard_description_id ?>, <?= $d->employee_id ?>, 'START', <?= $jobcard->jobcard_id ?>)"
-								<?= $currentStatus === 'START' ? 'disabled class="opacity-50 cursor-not-allowed"' : '' ?>
-								class="px-3 py-1 rounded bg-green-500 text-white hover:bg-yellow-600">
+								<?= $hasStarted ? 'disabled' : '' ?>
+								class="px-3 py-1 rounded bg-green-600 text-white
+		<?= $hasStarted ? 'opacity-50 cursor-not-allowed' : '' ?>">
 								Start
 							</button>
 
-							<button
-								onclick="logTime(<?= $d->jobcard_description_id ?>,<?= $d->employee_id ?>,'PAUSE',<?= $jobcard->jobcard_id ?>)"
-								class="px-3 py-1 rounded bg-yellow-500 text-white hover:bg-yellow-600">
-								Pause
-							</button>
+							<!-- PAUSE / RESUME TOGGLE -->
+							<?php if ($currentStatus === 'START' || $currentStatus === 'RESUME'): ?>
+								<button
+									onclick="logTime(<?= $d->jobcard_description_id ?>, <?= $d->employee_id ?>, 'PAUSE', <?= $jobcard->jobcard_id ?>)"
+									class="px-3 py-1 rounded bg-yellow-500 text-white">
+									Pause
+								</button>
 
+							<?php elseif ($currentStatus === 'PAUSE'): ?>
+								<button
+									onclick="logTime(<?= $d->jobcard_description_id ?>, <?= $d->employee_id ?>, 'RESUME', <?= $jobcard->jobcard_id ?>)"
+									class="px-3 py-1 rounded bg-blue-500 text-white">
+									Resume
+								</button>
+							<?php endif; ?>
+
+							<!-- STOP -->
 							<button
-								onclick="logTime(<?= $d->jobcard_description_id ?>,<?= $d->employee_id ?>,'STOP',<?= $jobcard->jobcard_id ?>)"
-								class="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700">
+								onclick="logTime(<?= $d->jobcard_description_id ?>, <?= $d->employee_id ?>, 'STOP', <?= $jobcard->jobcard_id ?>)"
+								class="px-3 py-1 rounded bg-red-600 text-white">
 								Stop
 							</button>
+
 						</td>
-					</tr>
+
+
+						
 				<?php endforeach; ?>
 			</tbody>
 		</table>
@@ -134,7 +151,7 @@
 </div>
 
 <!-- ================= JS ================= -->
-<script>
+<!-- <script>
 	function logTime(descriptionId, employeeId, status, jobcard_id) {
 
 		console.log("logTime() called with:");
@@ -176,6 +193,32 @@
 					badge.classList.add('bg-yellow-100', 'text-yellow-700');
 				if (status === 'STOP')
 					badge.classList.add('bg-red-100', 'text-red-700');
+			});
+	}
+</script> -->
+
+<script>
+	function logTime(descriptionId, employeeId, status, jobcard_id) {
+
+		fetch("<?= base_url('index.php/jobcard/log_work_time') ?>", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded"
+				},
+				body: "jobcard_id=" + encodeURIComponent(jobcard_id) +
+					"&description_id=" + encodeURIComponent(descriptionId) +
+					"&employee_id=" + encodeURIComponent(employeeId) +
+					"&status=" + encodeURIComponent(status)
+			})
+			.then(res => res.json())
+			.then(data => {
+				if (data.status === 'success') {
+					// ✅ Reload page to reflect updated DB state
+					location.reload();
+				}
+			})
+			.catch(err => {
+				console.error("Error logging time:", err);
 			});
 	}
 </script>

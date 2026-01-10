@@ -16,6 +16,8 @@ class Jobcard extends CI_Controller
 		$this->load->model("Service_model");
 		$this->load->model("Estimation_model");
 		$this->load->model("Inspection_view_model");
+		$this->load->model("Quotation_model");
+		$this->load->model("Employee_model");
 	}
 
 	public function create($appointment_id)
@@ -45,6 +47,8 @@ class Jobcard extends CI_Controller
 		$appointment = $this->Estimation_model->get_appointment_details($appointment_id);
 		if (!$appointment) show_404();
 
+		$quotation = $this->Quotation_model->get_quotation_details($appointment_id);
+		$quotation_id  = $quotation->quotation_id;
 		// 1️⃣ Create Job Card record
 		$jobcard_id = $this->Jobcard_model->create_jobcard([
 			'estimation_id' => $estimation_id,
@@ -53,7 +57,8 @@ class Jobcard extends CI_Controller
 			'appointment_id' => $appointment->appointment_id,
 			'jobcard_date'  => date('Y-m-d'),
 			'jobcard_time'  => date('H:i:s'),
-			'status'        => 'Pending'
+			'status'        => 'Pending',
+			'quotation_id'   => $quotation_id,
 		]);
 
 		// 2️⃣ Generate Job Card No
@@ -76,11 +81,11 @@ class Jobcard extends CI_Controller
 		$job_descriptions = $this->Estimation_model
 			->get_job_descriptions($estimation_id);
 
-		$parts_used = $this->Estimation_model
-			->get_parts($estimation_id);
+		$parts_used = $this->Quotation_model
+			->get_parts($quotation_id);
 
-		$services_used = $this->Estimation_model
-			->get_services($estimation_id);
+		$services_used = $this->Quotation_model
+			->get_services($quotation_id);
 
 		$jobcardstatus = $this->Jobcard_model->get_jobcard_status_by_id($jobcard_id);
 
@@ -95,7 +100,7 @@ class Jobcard extends CI_Controller
 		// 4️⃣ Masters (dropdown data)
 		$data['parts']           = $this->SpareParts_model->get_all_parts();
 		$data['services_master'] = $this->Service_model->get_active_services();
-
+		$data['technicians'] = $this->Employee_model->get_active_technicians();
 		// 5️⃣ Send data to view
 		$data['estimation']       = $estimation;
 		$data['appointment']      = $appointment;
@@ -141,8 +146,8 @@ class Jobcard extends CI_Controller
 		// ---------------------------
 		// 2️⃣ JOB DESCRIPTIONS
 		// ---------------------------
-		$job_descriptions = $this->input->post('job_description') ?? [];
-		$employee_id = $this->input->post('empid') ?? [];
+		$job_descriptions = $this->input->post('service_name') ?? [];
+		$employee_id = $this->input->post('technician_id') ?? [];
 		$this->Jobcard_model->save_job_descriptions($jobcard_id, $job_descriptions, $employee_id);
 
 		// ---------------------------
@@ -201,18 +206,81 @@ class Jobcard extends CI_Controller
 		// 3️⃣ Sub tables
 		$job_descriptions = $this->Jobcard_model
 			->get_job_descriptions($jobcard_id);
-
+		
 		$parts_used = $this->Jobcard_model
 			->get_parts($jobcard_id);
 
-		$services_used = $this->Jobcard_model
-			->get_services($jobcard_id);
+		$services_used = $this->Jobcard_model->get_services($jobcard_id);
+		// 
 		$jobcardstatus = $this->Jobcard_model->get_jobcard_status_by_id($jobcard_id);
 
 		// 4️⃣ Masters (dropdown data)
 		$data['parts']           = $this->SpareParts_model->get_all_parts();
 		$data['services_master'] = $this->Service_model->get_active_services();
+		$data['technicians'] = $this->Employee_model->get_active_technicians();
+		// 5️⃣ Send data to view
+		$data['estimation']       = $jobcard;
+		$data['appointment']      = $appointment;
+		$data['job_descriptions'] = $job_descriptions;
+		$data['parts_used']       = $parts_used;
+		$data['services_used']    = $services_used;
+		$data['kms'] = $inspection->km_reading;
 
+		$data['jobcard_id'] = $jobcard_id;
+		$data['jobcard_no'] = $jobcard->jobcard_no;
+		$data['jobcardstatus'] = $jobcardstatus->status;
+		$data['estimation_id'] = $estimation_id;
+		$data['estimation_no'] = $estimation->estimation_no;
+
+		$data['title'] = 'Edit Jobcard';
+		$data['main_content'] = 'jobcard/create'; // SAME PAGE
+
+		$this->load->view('includes/template', $data);
+	}
+
+	public function edit_by_quotation($quotation_id)
+	{
+		// 1️⃣ Get estimation header
+		$jobcard = $this->Jobcard_model->get_jobcard_by_qid($quotation_id);
+		if (!$jobcard) show_404();
+
+		$jobcard_id = $jobcard->jobcard_id;
+
+
+		// 2️⃣ Appointment + customer + vehicle
+		$appointment = $this->Estimation_model
+			->get_appointment_details($jobcard->appointment_id);
+
+		$appointment_id = $appointment->appointment_id;
+
+
+		// 3️⃣ Get estimation (jobcard MUST come after estimation)
+		$estimation = $this->Estimation_model->get_by_appointment($appointment_id);
+		if (!$estimation) {
+			$this->session->set_flashdata(
+				'error',
+				'Please complete inspection before creating estimation.'
+			);
+			redirect('appointment');
+		}
+
+		$estimation_id = $estimation->estimation_id;
+		$inspection = $this->Inspection_view_model->get_by_appointment($appointment_id);
+		// 3️⃣ Sub tables
+		$job_descriptions = $this->Jobcard_model
+			->get_job_descriptions($jobcard_id);
+	
+		$parts_used = $this->Jobcard_model
+			->get_parts($jobcard_id);
+
+		$services_used = $this->Jobcard_model->get_services($jobcard_id);
+		// 
+		$jobcardstatus = $this->Jobcard_model->get_jobcard_status_by_id($jobcard_id);
+
+		// 4️⃣ Masters (dropdown data)
+		$data['parts']           = $this->SpareParts_model->get_all_parts();
+		$data['services_master'] = $this->Service_model->get_active_services();
+		$data['technicians'] = $this->Employee_model->get_active_technicians();
 		// 5️⃣ Send data to view
 		$data['estimation']       = $jobcard;
 		$data['appointment']      = $appointment;
@@ -234,11 +302,14 @@ class Jobcard extends CI_Controller
 	}
 
 
+
 	public function view($jobcard_id)
 	{
 		$data['jobcard']  = $this->Jobcard_model->get_jobcard($jobcard_id);
 		$data['services'] = $this->Jobcard_model->get_jobcard_services($jobcard_id);
 		$data['parts']    = $this->Jobcard_model->get_jobcard_parts($jobcard_id);
+		$data['technicians'] = $this->Employee_model->get_active_technicians();
+		$data['job_descriptions'] = $this->Jobcard_model->get_job_descriptions($jobcard_id);
 
 		$data['title'] = "Job Card #" . $jobcard_id;
 		$data['main_content'] = "jobcard/jobcard_view";
@@ -296,6 +367,10 @@ class Jobcard extends CI_Controller
 	{
 		$data['jobcard'] = $this->Jobcard_model->get_jobcard_basic($jobcard_id);
 		$data['descriptions'] = $this->Jobcard_model->get_jobcard_descriptions_with_employee($jobcard_id);
+		log_message(
+			'Error',
+			'Jobcard Descriptions: ' . json_encode($data['descriptions'])
+		);
 
 		// status
 		$logs = $this->Jobcard_model->get_latest_work_status($jobcard_id);
@@ -314,7 +389,7 @@ class Jobcard extends CI_Controller
 	}
 
 
-	public function log_work_time()
+	public function log_work_time1()
 	{
 		$data = [
 			'jobcard_id' => $this->input->post('jobcard_id'),
@@ -327,5 +402,62 @@ class Jobcard extends CI_Controller
 		$this->db->insert('jobcard_work_logs', $data);
 
 		echo json_encode(['status' => 'success']);
+	}
+
+
+	public function log_work_time()
+	{
+		$jobcard_id = $this->input->post('jobcard_id');
+		$description_id = $this->input->post('description_id');
+		$employee_id = $this->input->post('employee_id');
+		$status = $this->input->post('status');
+
+		// ❌ Prevent START more than once
+		if ($status === 'START') {
+			$alreadyStarted = $this->db
+				->where('jobcard_description_id', $description_id)
+				->where('status', 'START')
+				->get('jobcard_work_logs')
+				->row();
+
+			if ($alreadyStarted) {
+				echo json_encode(['status' => 'already_started']);
+				return;
+			}
+		}
+
+		$data = [
+			'jobcard_id' => $jobcard_id,
+			'jobcard_description_id' => $description_id,
+			'employee_id' => $employee_id,
+			'status' => $status,
+			'log_time' => date('Y-m-d H:i:s')
+		];
+
+		$this->db->insert('jobcard_work_logs', $data);
+
+		echo json_encode(['status' => 'success']);
+	}
+
+
+	public function create_from_quotation($quotation_id)
+	{
+
+		// 1. Get quotation
+		$quotation = $this->Quotation_model->get_quotation($quotation_id);
+		if (!$quotation || $quotation->status !== 'Approved') {
+			show_error('Quotation not approved');
+		}
+		
+		// 2. Check if jobcard already exists
+		$existing = $this->Jobcard_model->get_by_quotation($quotation_id);
+		if ($existing) {
+			redirect('jobcard/edit/' . $existing->jobcard_id);
+		}
+
+		// 3. Create jobcard
+		$jobcard_id = $this->Jobcard_model->create_from_quotation($quotation_id);
+
+		redirect('jobcard/edit/' . $jobcard_id);
 	}
 }

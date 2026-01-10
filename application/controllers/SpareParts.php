@@ -47,17 +47,25 @@ class SpareParts extends CI_Controller
 			'vehicle_model_id'=>$this->input->post('vehicle_model_id'),
 			'unit_price' => $this->input->post('unit_price'),
 			'min_stock' => $this->input->post('min_stock'),
+			'part_type' => $this->input->post('parttype'),
 		];
 
 		$this->SpareParts_model->add_part($data);
-		redirect('spareparts');
+		redirect('SpareParts');
 	}
 
 	// Edit
 	public function edit($part_id)
 	{
+		
+		$data['title'] = "Inventory";
+		$data['brands'] = $this->SpareParts_model->get_all_brands();
 		$data['part'] = $this->SpareParts_model->get_part($part_id);
-		$this->load->view('inventory/parts_edit_form', $data);
+		
+
+		$data['main_content'] = 'inventory/parts_edit_form';
+		$this->load->view('includes/template', $data);
+	
 	}
 
 	// Update
@@ -70,17 +78,18 @@ class SpareParts extends CI_Controller
 			'part_code' => $this->input->post('part_code'),
 			'unit_price' => $this->input->post('unit_price'),
 			'min_stock' => $this->input->post('min_stock'),
+			'part_type' => $this->input->post('parttype'),
 		];
 
 		$this->SpareParts_model->update_part($part_id, $data);
-		redirect('spareparts');
+		redirect('SpareParts');
 	}
 
 	// Delete
 	public function delete($part_id)
 	{
 		$this->SpareParts_model->delete_part($part_id);
-		redirect('spareparts');
+		redirect('SpareParts');
 	}
 
 	// Stock In Screen
@@ -103,7 +112,7 @@ class SpareParts extends CI_Controller
 		];
 
 		$this->Stock_model->stock_in($data);
-		redirect('spareparts');
+		redirect('SpareParts');
 	}
 
 	// Stock Out Screen
@@ -126,7 +135,8 @@ class SpareParts extends CI_Controller
 		];
 
 		$this->Stock_model->stock_out($data);
-		redirect('spareparts');
+		redirect('SpareParts
+		');
 	}
 
 	public function low_stock()

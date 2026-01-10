@@ -87,7 +87,7 @@ class Invoice_model extends CI_Model
 		return $this->db->insert_id();
 	}
 
-	public function insert_invoice_items($invoice_id, $jobcard_id)
+	public function insert_invoice_items123($invoice_id, $jobcard_id)
 	{
 		// -------- SERVICES --------
 		$services = $this->db
@@ -127,6 +127,90 @@ class Invoice_model extends CI_Model
 			]);
 		}
 	}
+
+	public function insert_invoice_items($invoice_id, $jobcard_id)
+	{
+		/* =====================================================
+       1. Get quotation_id from jobcard
+       ===================================================== */
+		$jobcard = $this->db
+			->select('quotation_id')
+			->from('job_cards')
+			->where('jobcard_id', $jobcard_id)
+			->get()
+			->row();
+
+		if (!$jobcard || !$jobcard->quotation_id) {
+			return false;
+		}
+
+		$quotation_id = $jobcard->quotation_id;
+
+		/* =====================================================
+       2. SERVICES (from quotation_services)
+       ===================================================== */
+		$services = $this->db
+			->select('
+            sm.service_name,
+            qs.estimated_cost,
+            qs.total_cost
+        ')
+			->from('quotation_services qs')
+			->join(
+				'services_master sm',
+				'sm.master_service_id = qs.service_id',
+				'left'
+			)
+			->where('qs.quotation_id', $quotation_id)
+			->get()
+			->result();
+
+		foreach ($services as $s) {
+			$this->db->insert('invoice_items', [
+				'invoice_id'  => $invoice_id,
+				'item_type'   => 'Service',
+				'item_name'   => $s->service_name,
+				'quantity'    => 1,
+				'unit_price'  => $s->estimated_cost,
+				'total_price' => $s->total_cost
+			]);
+		}
+
+		/* =====================================================
+       3. PARTS (from quotation_parts)
+       ===================================================== */
+		$parts = $this->db
+			->select('
+            qp.qty,
+            qp.selling_price,
+            qp.total_price,
+            sp.part_name
+        ')
+			->from('quotation_parts qp')
+			->join(
+				'spare_parts sp',
+				'sp.part_id = qp.part_id',
+				'left'
+			)
+			->where('qp.quotation_id', $quotation_id)
+			->where('qp.selected', 1)
+			->get()
+			->result();
+
+		foreach ($parts as $p) {
+			$this->db->insert('invoice_items', [
+				'invoice_id'  => $invoice_id,
+				'item_type'   => 'Part',
+				'item_name'   => $p->part_name,
+				'quantity'    => $p->qty,
+				'unit_price'  => $p->selling_price,
+				'total_price' => $p->total_price
+			]);
+		}
+
+		return true;
+	}
+
 
 	public function get_all_invoices_with_payment()
 	{

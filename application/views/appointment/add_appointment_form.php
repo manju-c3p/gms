@@ -18,7 +18,7 @@
 	<div class="page-header">
 		<h2 class="page-title">Add Appointment</h2>
 
-		
+
 	</div>
 
 
@@ -32,7 +32,15 @@
 
 			<!-- Customer -->
 			<div class="col-span-2">
-				<label class="font-medium">Customer</label>
+				<label class="font-medium flex justify-between items-center">
+					<span>Customer</span>
+					<button type="button"
+						id="addCustomerBtn"
+						class="text-sm text-blue-600 hover:underline">
+						+ Add Customer
+					</button>
+				</label>
+
 				<select name="customer_id" id="customerSelect"
 					class="w-full border p-2 rounded" required>
 					<option value="">-- Select Customer --</option>
@@ -64,7 +72,7 @@
 			<!-- Time -->
 			<div>
 				<label class="font-medium">Time</label>
-				<input type="time" name="appointment_time"  value="<?= $current_time ?>"
+				<input type="time" name="appointment_time" value="<?= $current_time ?>"
 					class="w-full border p-2 rounded" required>
 			</div>
 
@@ -102,9 +110,27 @@
 	</form>
 </div>
 
+<!-- =================================popup ============================= -->
+<!-- Customer Modal -->
+<div id="customerModal"
+	class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+
+	<div class="bg-white w-full max-w-xl rounded-2xl shadow-lg p-6 relative">
+
+		<h3 class="text-xl font-bold mb-4">Add Customer</h3>
+
+		<button id="closeCustomerModal"
+			class="absolute top-3 right-4 text-gray-500 text-xl">&times;</button>
+
+		<!-- Customer form will load here -->
+		<div id="customerModalBody"></div>
+
+	</div>
+</div>
 
 
 
+<!-- ====================================================================================== -->
 <script>
 	$(document).ready(function() {
 		$('#customerSelect').select2({
@@ -151,4 +177,19 @@
 		});
 
 	});
+
+	// Open Add Customer Modal
+	$('#addCustomerBtn').on('click', function() {
+		$('#customerModal').removeClass('hidden');
+		$('#customerModalBody').load(
+			"<?= base_url('index.php/customer/add_spot_popup'); ?>"
+		);
+	});
+
+	// Close modal
+	$('#closeCustomerModal').on('click', function() {
+		$('#customerModal').addClass('hidden');
+	});
+
+
 </script>

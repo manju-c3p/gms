@@ -45,15 +45,13 @@
                 GMS
             </div> -->
 			<div class="brand flex items-center gap-3 px-4 py-3">
-				<img src="<?= base_url('public/images/car1.png') ?>"
+				<img src="<?= base_url('public/images/logoauto1.png') ?>"
 					alt="GMS Logo"
-					class="h-10 w-auto">
+					class="w-auto">
 
-				<h2 class="text-xl font-semibold text-gray-800 whitespace-nowrap">
-					Auto 360+
-				</h2>
+			
 			</div>
-			<h2 class="mt-4 text-2xl font-semibold text-gray-800">Sign in to your account</h2>
+			<h2 class="mt-4 text-2xl font-semibold text-gray-800">Sign in</h2>
 			<!-- <p class="text-sm text-gray-500">Garage Management System</p> -->
 		</div>
 

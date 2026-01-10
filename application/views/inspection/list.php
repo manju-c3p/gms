@@ -8,10 +8,7 @@
 	<div class="flex items-center justify-between mb-4">
 		<h2 class="text-2xl font-bold">Inspections</h2>
 
-		<a href="<?= base_url('index.php/inspection/add'); ?>"
-			class="px-4 py-2 bg-green-600 text-white rounded">
-			+ New Inspection
-		</a>
+		
 	</div>
 
 	<div class="overflow-x-auto">
@@ -84,7 +81,7 @@
 							<!-- Estimation -->
 							<td class="border px-3 py-2 text-center">
 								<?php if ($i->status == 'Completed'): ?>
-									<a href="<?= base_url('index.php/estimation/create/' . $i->inspection_id); ?>"
+									<a href="<?= base_url('index.php/Estimation/create/' . $i->appointment_id); ?>"
 										class="px-3 py-1 text-xs bg-indigo-600 text-white rounded">
 										Create
 									</a>

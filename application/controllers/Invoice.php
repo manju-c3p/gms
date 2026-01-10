@@ -15,7 +15,7 @@ class Invoice extends CI_Controller
 
 		// Get all invoices with customer & vehicle details
 		$data['invoices'] = $this->Invoice_model->get_all_invoices();
-		$data['jobcards'] = $this->Jobcard_model->get_all_jobcards();
+		$data['jobcards'] = $this->Jobcard_model->get_all_jobcards_completed();
 		$data['main_content'] = 'invoice/generate';
 		$this->load->view('includes/template', $data);
 	}
@@ -49,7 +49,8 @@ class Invoice extends CI_Controller
 			'tax_amount'      => $this->input->post('tax_amount'),
 			'discount_amount' => $this->input->post('discount_amount'),
 			'grand_total'     => $this->input->post('grand_total'),
-			'status'          => 'Unpaid'
+			'status'          => 'Unpaid',
+			// 'quotation_id'    => 'Unpaid'
 		];
 
 		$invoice_id = $this->Invoice_model->create_invoice($invoiceData);
@@ -75,8 +76,10 @@ class Invoice extends CI_Controller
 	public function get_jobcard_details($jobcard_id)
 	{
 		// $jobcard = $this->Jobcard_model->get_jobcard_with_details($jobcard_id);
-			$jobcard = $this->Jobcard_model->get_jobcard_full_details($jobcard_id);
+			$jobcard = $this->Jobcard_model->get_jobcard_full_details_quotation($jobcard_id);
 		echo json_encode($jobcard);
+
+	
 	}
 
 

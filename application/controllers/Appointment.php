@@ -14,7 +14,7 @@ class Appointment extends CI_Controller
 	public function index()
 	{
 		$data['appointments'] = $this->Appointment_model->get_all_appointments();
-		
+
 		$data['title'] = "Appointments";
 		$data['main_content'] = 'appointment/appointment_list';
 		$this->load->view('includes/template', $data);
@@ -189,4 +189,6 @@ class Appointment extends CI_Controller
 			echo json_encode(['status' => 'ok', 'data' => $a]);
 		}
 	}
+
+	
 }

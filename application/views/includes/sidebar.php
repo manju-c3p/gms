@@ -65,13 +65,11 @@
 <!-- =============================================== -->
 <aside id="sidebar" class="sidebar flex flex-col">
 <div class="brand flex items-center gap-3 px-4 py-3">
-    <img src="<?= base_url('public/images/car1.png') ?>"
+    <img src="<?= base_url('public/images/logoauto1.png') ?>"
          alt="GMS Logo"
-         class="h-10 w-auto">
+         class="w-auto">
 
-    <h2 class="text-xl font-semibold text-gray-800 whitespace-nowrap">
-        Auto 360+
-    </h2>
+ 
 </div>
 
 

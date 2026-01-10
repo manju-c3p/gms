@@ -468,6 +468,40 @@
 		</div>
 
 
+		<?php foreach ($jobcardProgress as $row):
+			$percent = ($row->total_jobs > 0)
+				? round(($row->completed_jobs / $row->total_jobs) * 100)
+				: 0;
+		?>
+
+			<div class="bg-white p-4 rounded shadow p-6 mt-6 mb-4">
+				<div class="flex justify-between items-center mb-1">
+					<div>
+						<div class="font-semibold text-gray-800">
+							<?= $row->jobcard_no ?>
+						</div>
+						<div class="text-sm text-gray-500">
+							<?= $row->completed_jobs ?> / <?= $row->total_jobs ?> jobs completed
+						</div>
+					</div>
+
+					<div class="text-right">
+						<div class="text-sm font-semibold"><?= $percent ?>%</div>
+					</div>
+				</div>
+
+				<div class="w-full bg-gray-200 rounded-full h-2">
+					<div
+						class="h-2 rounded-full transition-all"
+						style="width: <?= $percent ?>%;
+                   background-color:
+                   <?= $percent == 100 ? '#22c55e' : ($percent >= 50 ? '#3b82f6' : '#facc15') ?>;">
+					</div>
+				</div>
+			</div>
+
+		<?php endforeach; ?>
+
 
 
 

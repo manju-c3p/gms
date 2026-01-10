@@ -9,27 +9,30 @@ $rightItems = array_slice($items, $half);
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
 
 
-	<form method="post" action="<?= base_url('index.php/inspection/save'); ?>" class="p-6 bg-white">
+	<form method="post" enctype="multipart/form-data" action="<?= base_url('index.php/inspection/save'); ?>" class="p-6 bg-white">
 		<input type="hidden" name="inspection_id" value="<?= $inspection_id ?>">
 
 		<div class="page-header flex items-center justify-between mb-4">
 
 			<h2 class="text-xl font-bold">
-				VEHICLE HEALTH CHECK (Inventory)
+				VEHICLE HEALTH CHECK (Inventary)
 			</h2>
 			<div class="">
-				<!-- SAVE BUTTON -->
-				<button type="submit"
-					class="px-6 py-2 bg-blue-600 text-white rounded">
-					Save Inspection
-				</button>
+				
 
-				<a href="<?= base_url('index.php/estimation/create/' . $appointment->appointment_id) ?>" class="px-6 py-2 bg-green-600 text-white rounded">
+				
+				<a href="<?= base_url('index.php/Inspection/view/' . $inspection_id) ?>" class="ml-3 px-6 py-2 bg-gray-400 text-white rounded">
+					View & Print
+				</a>
+				<a href="<?= base_url('index.php/estimation/create/' . $appointment->appointment_id) ?>" class="ml-3 px-6 py-2 bg-green-600 text-white rounded">
 					Estimation
 				</a>
-				<a href="<?= base_url('index.php/Inspection/view/' . $inspection_id) ?>" class="px-6 py-2 bg-gray-400 text-white rounded">
-					View Inspection
-				</a>
+
+				<!-- SAVE BUTTON -->
+				<button type="submit"
+					class="ml-3 px-6 py-2 bg-blue-600 text-white rounded">
+					Update
+				</button>
 
 				<a href="<?= base_url('index.php/appointment'); ?>"
 					class="ml-3 px-6 py-2 bg-gray-300 rounded">Cancel</a>
@@ -274,6 +277,41 @@ $rightItems = array_slice($items, $half);
 					<input name="remarks" value="<?= $inspection->remarks ?>"
 						class="border px-2 py-1 w-full">
 				</div>
+
+				<!-- VEHICLE PHOTOS -->
+				<div class="col-span-12">
+					<h4 class="font-bold mb-2">Vehicle Photos (Max 12)</h4>
+
+					<!-- Upload new photos -->
+					<input type="file"
+						name="inspection_photos[]"
+						id="photoInput"
+						accept="image/*"
+						multiple
+						class="border p-2 rounded w-full">
+
+					<!-- Preview Grid -->
+					<div id="photoPreview"
+						class="grid grid-cols-6 gap-3 mt-3">
+
+						<!-- EXISTING PHOTOS -->
+						<?php foreach ($inspection_photos as $p): ?>
+							<div class="relative group" id="photo_<?= $p->photo_id ?>">
+								<img src="<?= base_url($p->image_path) ?>"
+									onclick="openImageModal(this.src)"
+									class="w-full h-24 object-cover rounded cursor-pointer border">
+
+								<button type="button"
+									onclick="deletePhoto(<?= $p->photo_id ?>)"
+									class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 text-xs hidden group-hover:flex items-center justify-center">
+									✕
+								</button>
+							</div>
+						<?php endforeach; ?>
+
+					</div>
+				</div>
+
 			</div>
 
 			<!-- VEHICLE DAMAGE DIAGRAM -->
@@ -316,6 +354,20 @@ $rightItems = array_slice($items, $half);
 	</form>
 
 </div>
+
+<div id="imageModal"
+	class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-50">
+
+	<button onclick="closeImageModal()"
+		class="absolute top-4 right-4 text-white text-3xl font-bold">
+		✕
+	</button>
+
+	<img id="modalImage"
+		src=""
+		class="max-h-[90vh] max-w-[90vw] rounded shadow-lg">
+</div>
+
 <script>
 	let serviceCount = 0;
 
@@ -459,5 +511,114 @@ $rightItems = array_slice($items, $half);
 					e.target.remove();
 				}
 			});
+	});
+</script>
+<script>
+	const photoInput = document.getElementById('photoInput');
+	const previewContainer = document.getElementById('photoPreview');
+	const imageModal = document.getElementById('imageModal');
+	const modalImage = document.getElementById('modalImage');
+
+	let selectedFiles = []; // 🔹 NEW: store newly added images only
+
+	photoInput.addEventListener('change', function() {
+
+		const newFiles = Array.from(this.files);
+
+		// Count existing previews (saved + new)
+		const existingCount = previewContainer.querySelectorAll('.preview-item').length;
+
+		if (existingCount + newFiles.length > 12) {
+			alert('Maximum 12 photos allowed');
+			this.value = '';
+			return;
+		}
+
+		newFiles.forEach(file => selectedFiles.push(file));
+		this.value = ''; // 🔥 allow selecting same file again
+
+		renderNewPreviews();
+	});
+
+	function renderNewPreviews() {
+
+		// Remove only NEW previews before re-render
+		document.querySelectorAll('.new-photo').forEach(el => el.remove());
+
+		selectedFiles.forEach((file, index) => {
+			const reader = new FileReader();
+
+			reader.onload = function(e) {
+
+				const wrap = document.createElement('div');
+				wrap.className = 'relative preview-item new-photo group';
+
+				wrap.innerHTML = `
+					<img src="${e.target.result}"
+						onclick="openImageModal(this.src)"
+						class="w-full h-24 object-cover rounded border cursor-pointer hover:scale-105 transition">
+
+					<button type="button"
+						onclick="removeNewPhoto(${index})"
+						class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded hidden group-hover:block">
+						✕
+					</button>
+				`;
+
+				previewContainer.appendChild(wrap);
+			};
+
+			reader.readAsDataURL(file);
+		});
+	}
+
+	function removeNewPhoto(index) {
+		selectedFiles.splice(index, 1);
+		renderNewPreviews();
+	}
+
+	/* MODAL */
+	function openImageModal(src) {
+		modalImage.src = src;
+		imageModal.classList.remove('hidden');
+		imageModal.classList.add('flex');
+	}
+
+	function closeImageModal() {
+		imageModal.classList.add('hidden');
+		imageModal.classList.remove('flex');
+	}
+
+	/* DELETE SAVED PHOTO (DB IMAGE) */
+	function deletePhoto(photoId) {
+
+		if (!confirm('Are you sure you want to delete this photo?')) {
+			return;
+		}
+
+		fetch("<?= base_url('index.php/inspection/deletePhoto'); ?>", {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					photo_id: photoId
+				})
+			})
+			.then(res => res.json())
+			.then(resp => {
+				if (resp.success) {
+					document.getElementById('photo_' + photoId)?.remove();
+				} else {
+					alert('Failed to delete photo');
+				}
+			});
+	}
+
+	/* 🔥 IMPORTANT: Attach new files before submit */
+	document.querySelector('form').addEventListener('submit', function() {
+		const dt = new DataTransfer();
+		selectedFiles.forEach(file => dt.items.add(file));
+		photoInput.files = dt.files;
 	});
 </script>

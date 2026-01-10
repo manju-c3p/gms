@@ -28,6 +28,9 @@
 			<a href="<?= base_url('index.php/estimation'); ?>" class="topbar-btn estimation-btn">
 				Estimation
 			</a>
+			<a href="<?= base_url('index.php/Quotation'); ?>" class="topbar-btn quotation-btn">
+				Quotation
+			</a>
 			<a href="<?= base_url('index.php/jobcard'); ?>" class="topbar-btn jobcard-btn">
 				Job Card
 			</a>
@@ -83,7 +86,10 @@
 .jobcard-btn {
     background: #198754; /* green */
 }
-
+.quotation-btn {
+    background: #0d6efd; /* indigo / primary blue */
+    color: #fff;
+}
 /* Hover effects */
 .topbar-btn:hover {
     transform: translateY(-1px);

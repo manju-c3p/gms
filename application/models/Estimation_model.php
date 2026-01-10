@@ -42,34 +42,38 @@ class Estimation_model extends CI_Model
 			->where('estimation_id', $estimation_id)
 			->update('estimations', $data);
 	}
-	public function save_job_descriptions($estimation_id, $descriptions, $employee_ids)
-	{
-		// Remove existing records for this estimation
-		$this->db->where('estimation_id', $estimation_id)
-			->delete('estimation_job_descriptions');
+public function save_job_descriptions($estimation_id, $descriptions, $jamt)
+{
+    // Remove existing records for this estimation
+    $this->db->where('estimation_id', $estimation_id)
+             ->delete('estimation_job_descriptions');
 
-		foreach ($descriptions as $i => $desc) {
+    foreach ($descriptions as $i => $desc) {
 
-			// Skip empty rows
-			if (trim($desc) === '') {
-				continue;
-			}
+        // Skip empty rows
+        if (trim($desc) === '') {
+            continue;
+        }
 
-			$this->db->insert('estimation_job_descriptions', [
-				'estimation_id' => $estimation_id,
-				'description'   => $desc,
-				'employee_id'   => $employee_ids[$i] ?? null
-			]);
-		}
-	}
+        $this->db->insert('estimation_job_descriptions', [
+            'estimation_id' => $estimation_id,
+            'description'   => $desc,
+            'amount'        => isset($jamt[$i]) ? $jamt[$i] : 0
+        ]);
+    }
+}
 
-	public function save_parts($estimation_id, $part_ids, $qtys, $unit_prices, $sell_prices, $totals, $markup, $discount, $discountamt)
+
+	public function save_parts($estimation_id, $part_ids, $qtys, $unit_prices, $sell_prices, $totals, $markup, $discount, $discountamt, $parttype, $brandid, $selected)
 	{
 		$this->db->where('estimation_id', $estimation_id)
 			->delete('estimation_parts');
 
 		foreach ($part_ids as $i => $part_id) {
 			if (!$part_id) continue;
+
+			// ✅ checkbox-safe logic
+			$is_selected = in_array($part_id, $selected) ? 1 : 0;
 
 			$this->db->insert('estimation_parts', [
 				'estimation_id' => $estimation_id,
@@ -81,6 +85,9 @@ class Estimation_model extends CI_Model
 				'markup_percentage' => $markup[$i],
 				'discount' => $discount[$i],
 				'dis_amount' => $discountamt[$i],
+				'part_type' => $parttype[$i],
+				'brand_id' => $brandid[$i],
+				'selected' => $is_selected,
 			]);
 		}
 	}
@@ -154,6 +161,18 @@ class Estimation_model extends CI_Model
 		$this->db->where('estimation_id', $estimation_id);
 		return $this->db->get()->result();
 	}
+	public function get_parts_type($estimation_id, $parttype)
+	{
+		return $this->db
+			->select('ep.*, sp.part_name')
+			->from('estimation_parts ep')
+			->join('spare_parts sp', 'sp.part_id = ep.part_id')
+			->where('ep.estimation_id', $estimation_id)
+			->where('ep.part_type', $parttype)
+			->get()
+			->result();
+	}
+
 	public function get_services($estimation_id)
 	{
 		return $this->db->where('estimation_id', $estimation_id)
@@ -161,10 +180,30 @@ class Estimation_model extends CI_Model
 			->result();
 	}
 
-		public function get_all_estimations()
-    {
-        return $this->db
-            ->select('
+	public function get_services_print($estimation_id)
+	{
+		return $this->db
+			->select('
+            es.*,
+            sm.service_name,
+            sm.service_type
+        ')
+			->from('estimation_services es')
+			->join(
+				'services_master sm',
+				'sm.master_service_id = es.service_id',
+				'left'
+			)
+			->where('es.estimation_id', $estimation_id)
+			->get()
+			->result();
+	}
+
+
+	public function get_all_estimations()
+	{
+		return $this->db
+			->select('
                 e.*,
               
 
@@ -175,18 +214,18 @@ class Estimation_model extends CI_Model
                 v.brand,
                 v.model
             ')
-            ->from('estimations e')
-            ->join('customers c', 'c.customer_id = e.customer_id')
-            ->join('vehicles v', 'v.vehicle_id = e.vehicle_id')
-            ->order_by('e.created_at', 'DESC')
-            ->get()
-            ->result();
-    }
+			->from('estimations e')
+			->join('customers c', 'c.customer_id = e.customer_id')
+			->join('vehicles v', 'v.vehicle_id = e.vehicle_id')
+			->order_by('e.created_at', 'DESC')
+			->get()
+			->result();
+	}
 
-    public function delete_estimation($estimation_id)
-    {
-        return $this->db
-            ->where('estimation_id', $estimation_id)
-            ->delete('estimations');
-    }
+	public function delete_estimation($estimation_id)
+	{
+		return $this->db
+			->where('estimation_id', $estimation_id)
+			->delete('estimations');
+	}
 }

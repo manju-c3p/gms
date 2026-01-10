@@ -69,13 +69,13 @@
 			</div>
 
 			<!-- Status -->
-			<div class="col-span-2">
+			<div class="col-span-2" style="display:none">
 				<label class="font-medium">Status</label>
 				<select name="status" class="w-full border p-2 rounded">
-					<option value="Pending" <?= $appointment->status == "Pending" ? "selected" : "" ?>>Pending</option>
-					<option value="Confirmed" <?= $appointment->status == "Confirmed" ? "selected" : "" ?>>Confirmed</option>
-					<option value="Completed" <?= $appointment->status == "Completed" ? "selected" : "" ?>>Completed</option>
-					<option value="Cancelled" <?= $appointment->status == "Cancelled" ? "selected" : "" ?>>Cancelled</option>
+					
+					<option value="Confirmed" selected>Confirmed</option>
+					
+					
 				</select>
 			</div>
 

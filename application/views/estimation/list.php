@@ -3,10 +3,7 @@
     <div class="flex items-center justify-between mb-4">
         <h2 class="text-2xl font-bold">Estimations</h2>
 
-        <a href="<?= base_url('index.php/estimation/add'); ?>"
-           class="px-4 py-2 bg-green-600 text-white rounded">
-            + New Estimation
-        </a>
+        
     </div>
 
     <div class="overflow-x-auto">
@@ -20,7 +17,7 @@
                     <th class="border px-3 py-2">Vehicle</th>
                     <th class="border px-3 py-2 text-right">Amount</th>
                     <th class="border px-3 py-2 text-center">Status</th>
-                    <th class="border px-3 py-2 text-center">Job Card</th>
+                    <th class="border px-3 py-2 text-center">Quotation</th>
                     <th class="border px-3 py-2 text-center">Actions</th>
                 </tr>
             </thead>
@@ -86,7 +83,7 @@
                         <!-- Job Card -->
                         <td class="border px-3 py-2 text-center">
                             <?php if ($e->status == 'Approved'): ?>
-                                <a href="<?= base_url('index.php/jobcard/create/'.$e->appointment_id); ?>"
+                                <a href="<?= base_url('index.php/Quotation/create_from_estimation/'.$e->estimation_id); ?>"
                                    class="px-3 py-1 text-xs bg-indigo-600 text-white rounded">
                                     Create
                                 </a>

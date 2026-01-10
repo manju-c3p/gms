@@ -5,6 +5,7 @@ class Inspection extends CI_Controller
 	public function __construct()
 	{
 		parent::__construct();
+		$this->load->library('upload');
 		$this->load->model([
 			'Inspection_model',
 			'Inspection_view_model',
@@ -71,7 +72,7 @@ class Inspection extends CI_Controller
 			'status'        => 'Completed',
 			'drivername'     => $this->input->post('driver_name'),
 			'driverphno' => $this->input->post('driver_mobile'),
-			'deliverytime'=> $this->input->post('delivery_time'),
+			'deliverytime' => $this->input->post('delivery_time'),
 		];
 
 		$this->Inspection_model->update_inspection($inspection_id, $inspectionData);
@@ -104,6 +105,14 @@ class Inspection extends CI_Controller
 		// 5️⃣ Save Inventory Status
 		$inventory = $this->input->post('inventory_status') ?? [];
 		$this->Inspection_model->save_inventory_status($inspection_id, $inventory);
+
+		// inspection photos
+
+		$this->Inspection_model->save_inspection_photos(
+			$inspection_id,
+			$_FILES['inspection_photos']
+		);
+
 
 		// 6️⃣ Redirect to inspection view / preview
 		redirect('inspection/edit/' . $inspection_id);
@@ -146,6 +155,11 @@ class Inspection extends CI_Controller
 		// Get appointment details
 		$appointment = $this->Inspection_view_model
 			->get_appointment_details($inspection->appointment_id);
+
+		$data['inspection_photos'] = $this->db
+			->get_where('inspection_photos', [
+				'inspection_id' => $inspection_id
+			])->result();
 
 		// Load saved data
 		$data['inspection']      = $inspection;
@@ -230,29 +244,60 @@ class Inspection extends CI_Controller
 		$data['damage_marks'] = $this->Inspection_model
 			->get_damage_marks($inspection_id);
 
+			$data['inspection_photos'] = $this->db
+			->get_where('inspection_photos', [
+				'inspection_id' => $inspection_id
+			])->result();
+
 		$data['title'] = "View Inspection";
 		$data['main_content'] = 'inspection/view';
 		$this->load->view('includes/template', $data);
 	}
 
-	 /**
-     * Inspection listing page
-     */
-    public function index()
-    {
-        $data['title'] = 'Inspection List';
-        $data['inspections'] = $this->Inspection_model->get_all_inspections();
+	/**
+	 * Inspection listing page
+	 */
+	public function index()
+	{
+		$data['title'] = 'Inspection List';
+		$data['inspections'] = $this->Inspection_model->get_all_inspections();
 
-        $data['main_content'] = 'inspection/list';
-        $this->load->view('includes/template', $data);
-    }
+		$data['main_content'] = 'inspection/list';
+		$this->load->view('includes/template', $data);
+	}
 
-    /**
-     * Delete inspection
-     */
-    public function delete($inspection_id)
-    {
-        $this->Inspection_model->delete_inspection($inspection_id);
-        redirect('inspection');
-    }
+	/**
+	 * Delete inspection
+	 */
+	public function delete($inspection_id)
+	{
+		$this->Inspection_model->delete_inspection($inspection_id);
+		redirect('inspection');
+	}
+
+	public function deletePhoto()
+	{
+		$data = json_decode(file_get_contents("php://input"), true);
+		$photo_id = $data['photo_id'];
+
+		$photo = $this->db
+			->get_where('inspection_photos', ['photo_id' => $photo_id])
+			->row();
+
+		if ($photo) {
+
+			if (file_exists(FCPATH . $photo->image_path)) {
+				unlink(FCPATH . $photo->image_path);
+			}
+
+			$this->db->delete('inspection_photos', [
+				'photo_id' => $photo_id
+			]);
+
+			echo json_encode(['success' => true]);
+			return;
+		}
+
+		echo json_encode(['success' => false]);
+	}
 }

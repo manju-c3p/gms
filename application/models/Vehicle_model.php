@@ -105,4 +105,105 @@ class Vehicle_model extends CI_Model
 			->order_by('registration_no')
 			->get('vehicles')->result();
 	}
+	// ===================================brand and model masters =======================================
+
+	/* ===============================
+       VEHICLE BRANDS
+       =============================== */
+
+	public function get_all_brands()
+	{
+		return $this->db
+			->order_by('brand_name', 'ASC')
+			->get('vehicle_brands')
+			->result();
+	}
+
+	public function get_brand_by_id($brand_id)
+	{
+		return $this->db
+			->where('brand_id', $brand_id)
+			->get('vehicle_brands')
+			->row();
+	}
+
+	public function insert_brand($data)
+	{
+		return $this->db->insert('vehicle_brands', $data);
+	}
+
+	public function update_brand($brand_id, $data)
+	{
+		return $this->db
+			->where('brand_id', $brand_id)
+			->update('vehicle_brands', $data);
+	}
+
+	public function delete_brand($brand_id)
+	{
+		return $this->db
+			->where('brand_id', $brand_id)
+			->delete('vehicle_brands');
+	}
+
+	/* ===============================
+       VEHICLE MODELS
+       =============================== */
+
+	public function get_all_models()
+	{
+		return $this->db
+			->select('vm.*, vb.brand_name')
+			->from('vehicle_models vm')
+			->join('vehicle_brands vb', 'vb.brand_id = vm.brand_id')
+			->order_by('vb.brand_name, vm.model_name')
+			->get()
+			->result();
+	}
+
+	public function get_models_by_brand($brand_id)
+	{
+		return $this->db
+			->where('brand_id', $brand_id)
+			->get('vehicle_models')
+			->result();
+	}
+
+	public function get_models_by_brand_edit($brand_id)
+{
+    return $this->db
+        ->select('model_id, model_name')
+        ->from('models')
+        ->where('brand_id', $brand_id)
+        ->order_by('model_name', 'ASC')
+        ->get()
+        ->result();
+}
+
+	public function get_model_by_id($model_id)
+	{
+		return $this->db
+			->where('model_id', $model_id)
+			->get('vehicle_models')
+			->row();
+	}
+
+	public function insert_model($data)
+	{
+		return $this->db->insert('vehicle_models', $data);
+	}
+
+	public function update_model($model_id, $data)
+	{
+		return $this->db
+			->where('model_id', $model_id)
+			->update('vehicle_models', $data);
+	}
+
+	public function delete_model($model_id)
+	{
+		return $this->db
+			->where('model_id', $model_id)
+			->delete('vehicle_models');
+	}
 }

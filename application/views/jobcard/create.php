@@ -25,7 +25,7 @@
 				<a href="<?= base_url('index.php/Jobcard/view/' . $jobcard_id); ?>"
 					class="ml-3 px-6 py-2 bg-gray-300 rounded">View</a>
 				<?php if ($jobcardstatus == "In Progress") { ?>
-					<a href="<?= base_url('index.php/materialissue/create/' . $jobcard_id) ?>"
+					<a href="<?= base_url('index.php/MaterialIssue/create/' . $jobcard_id) ?>"
 						class="px-4 py-2 bg-indigo-600 text-white rounded">
 						Material Issue
 					</a>
@@ -170,53 +170,67 @@
 		<div class="bg-white rounded-2xl shadow-md mt-6 overflow-hidden">
 
 			<div class="px-6 py-3 font-semibold text-lg bg-gray-100 border-b">
-				Job Description
+				Services
 			</div>
 
 			<div class="p-4">
-				<table class="w-full text-sm border-collapse" id="jobDescTable">
+				<table class="w-full text-sm border-collapse" id="serviceTable">
 					<thead>
 						<tr class="bg-gray-50 border">
-							<th class="border px-3 py-2 w-[60px] text-center">Sl. No</th>
-							<th class="border px-3 py-2 text-left">Job Description</th>
-							<th class="border px-3 py-2 text-left">Technician</th>
-							<th class="border px-3 py-2 w-[80px] text-center">Action</th>
+							<th class="border px-3 py-2 w-[90px] text-center">Sl No</th>
+							<th class="border px-3 py-2">Service</th>
+							<th class="border px-3 py-2 text-center">Technician</th>
+							<th class="border px-3 py-2 w-[90px] text-center">Actions</th>
 						</tr>
 					</thead>
 					<tbody>
-						<?php if (!empty($job_descriptions)): ?>
-							<?php foreach ($job_descriptions as $i => $j): ?>
-								<tr class="border hover:bg-gray-50">
-									<td class="border px-3 py-2 text-center font-medium">
-										<?= $i + 1 ?>
-									</td>
+						<?php foreach ($job_descriptions as $i => $s): ?>
+							<tr class="border hover:bg-gray-50">
+								<td class="border px-3 py-2 text-center font-medium"><?= $i + 1 ?></td>
+
+								<td class="border px-3 py-2">
+									<select name="service_name[]"
+										class="w-full border rounded px-2 py-1 serviceSelect">
+										<option value="">-- Select --</option>
+										<?php foreach ($services_master as $sm): ?>
+											<option value="<?= $sm->master_service_id ?>"
+												<?= $sm->master_service_id == $s->service_id ? 'selected' : '' ?>>
+												<?= $sm->service_name ?>
+											</option>
+										<?php endforeach; ?>
+									</select>
+								</td>
+
+								<!-- Technician Dropdown -->
 									<td class="border px-3 py-2">
-										<input type="text" name="job_description[]"
-											value="<?= $j->description ?>"
-											class="w-full border rounded px-3 py-1.5 focus:ring-2 focus:ring-blue-500">
+										<select name="technician_id[]"
+											class="w-full border rounded-lg px-2 py-2 focus:ring-2 focus:ring-blue-300">
+											<option value="">-- Select Technician --</option>
+											<?php foreach ($technicians as $t): ?>
+												<option value="<?= $t->employee_id ?>"
+													<?= isset($s->employee_id) && $s->employee_id == $t->employee_id ? 'selected' : '' ?>>
+													<?= $t->employee_name ?>
+												</option>
+											<?php endforeach; ?>
+
+										</select>
 									</td>
-									<td class="border px-3 py-2">
-										<input type="text" name="technician[]"
-											value="<?= $j->employee_name ?>"
-											class="w-full border rounded px-3 py-1.5 focus:ring-2 focus:ring-blue-500">
-										<input type="hidden" name="empid[]" value="<?= $j->employee_id ?>">
-									</td>
-									<td class="border px-3 py-2 text-center">
-										<button type="button"
-											class="remove-row text-red-600 hover:bg-red-50 px-3 py-1 rounded">
-											✕
-										</button>
-									</td>
-								</tr>
-							<?php endforeach; ?>
-						<?php endif; ?>
+
+								
+								<td class="border px-3 py-2 text-center">
+									<button type="button"
+										class="remove-row text-red-600 hover:bg-red-50 px-3 py-1 rounded">
+										✕
+									</button>
+								</td>
+							</tr>
+						<?php endforeach; ?>
 					</tbody>
 				</table>
 
-				<!-- <button type="button"
-					onclick="addJobRow()"
+				<!-- <button type="button" id="addService"
 					class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow-sm">
-					+ Add Job Description
+					+ Add Service
 				</button> -->
 			</div>
 		</div>
