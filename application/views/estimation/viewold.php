@@ -1,592 +1,605 @@
-<?php
+<!DOCTYPE html>
+<html lang="en">
 
-?>
+<head>
+	<meta charset="UTF-8">
+	<title>Estimation Print</title>
 
-<div class="w-full bg-white rounded-2xl shadow-md p-6">
+	<style>
+		/* ================= PAGE ================= */
+		/* @page {
+			margin: 10mm;
+		} */
+
+		/* html,
+		body {
+			margin: 0;
+			padding: 0;
+			background: #fff;
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 12px;
+			color: #000;
+		} */
+
+		@page {
+			size: A4;
+			margin: 12mm;
+			/* equal margin on all sides */
+		}
+
+		body {
+			margin: 0;
+			padding: 0;
+		}
+
+		.print-wrapper {
+			width: 100%;
+			/* max-width: 190mm; */
+			/* A4 width minus margins */
+			margin: 0 auto;
+			/* 🔥 centers content */
+			box-sizing: border-box;
+			font-family: Arial, sans-serif;
+			font-size: 12px;
+			background: #fff;
+			padding: 0 2mm; 
+		}
 
 
+		/* ================= LAYOUT ================= */
+		.container {
+			width: 100%;
+			background: #fff;
+		}
 
-	<input type="hidden" name="estimation_id" value="<?= $estimation_id ?>">
+		/* ================= HEADER ================= */
+		.header {
+			border-bottom: 2px solid #000;
+			padding-bottom: 8px;
+			margin-bottom: 10px;
+			display: table;
+			width: 100%;
+		}
 
-	<!-- ================================ -->
+		.logo,
+		.company-info {
+			display: table-cell;
+			vertical-align: middle;
+		}
+
+		.logo {
+			width: 40%;
+		}
+
+		.company-info {
+			width: 60%;
+			text-align: right;
+			font-size: 11px;
+		}
+
+		.print-logo {
+			height: 100px;
+			width: auto;
+		}
+
+		/* ================= TITLE ================= */
+		.est-title-line {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			/* 🔥 left & right */
+			font-weight: bold;
+			border-top: 2px solid #000;
+			border-bottom: 2px solid #000;
+			padding: 6px 10px;
+			margin: 10px 0;
+		}
+
+		.est-title-line .center {
+			flex: 1;
+			text-align: center;
+			/* ESTIMATION in center */
+		}
+
+		.est-title-line .left,
+		.est-title-line .right {
+			white-space: nowrap;
+		}
 
 
-	<div class="page-header flex items-center justify-between mb-4">
+		/* ================= TABLES ================= */
+		table {
+			width: 100%;
+			max-width: 100%;
+			box-sizing: border-box;
+			/* 🔥 MOST IMPORTANT */
+			border-collapse: collapse;
+		}
 
-		<h2 class="text-center text-xl font-bold mb-4">
-			Estimation
-		</h2>
-		<div class="text-right mt-6">
-			<!-- SAVE BUTTON -->
-			<button onclick="window.print()"
-				class="px-4 py-2 bg-blue-600 text-white rounded">
-				🖨 Print
-			</button>
-			<button >
-				<a href="<?= base_url('index.php/appointment'); ?>"
-					class="ml-3 px-6 py-2 bg-gray-300 rounded">Cancel</a></button>
+		table.data th,
+		table.data td,
+		table.totals td {
+			border: 1px solid #000;
+			padding: 3px 4px;
+			/* not more than this */
+			box-sizing: border-box;
+		}
+
+
+		.est-info td {
+			padding: 2px 4px;
+		}
+
+		.section-title {
+			font-weight: bold;
+			border-bottom: 1px solid #000;
+			margin: 12px 0 6px;
+		}
+
+		table.data th,
+		table.data td,
+		table.totals td {
+			border: 1px solid #000;
+			padding: 4px;
+		}
+
+		table.data th {
+			background: #f5f5f5;
+		}
+
+		.text-right {
+			text-align: right;
+		}
+
+		.text-center {
+			text-align: center;
+		}
+
+		/* ================= FOOTER ================= */
+		.footer {
+			font-size: 10px;
+			page-break-inside: avoid;
+		}
+
+		.terms-list {
+			font-size: 11px;
+			padding-left: 18px;
+		}
+
+		.terms-list li {
+			margin-bottom: 4px;
+			line-height: 1.4;
+		}
+
+		/* ================= PAGE BREAK ================= */
+		.page-break {
+			page-break-before: always;
+			break-before: page;
+		}
+
+		/* ================= PRINT (🔥 CRITICAL FIX) ================= */
+		@media print {
+
+			/* Hide UI */
+			button,
+			.topbar,
+			.sidebar,
+			.navbar,
+			.hide-on-print {
+				display: none !important;
+			}
+
+			/* 🔥 THIS FIXES SINGLE-PAGE ISSUE */
+			html,
+			body,
+			* {
+				height: auto !important;
+				overflow: visible !important;
+				max-height: none !important;
+			}
+
+			body {
+				background: #fff !important;
+			}
+
+			div {
+				box-shadow: none !important;
+			}
+
+			table {
+				page-break-inside: auto;
+			}
+
+			tr {
+				page-break-inside: avoid;
+			}
+
+			thead {
+				display: table-header-group;
+			}
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="print-wrapper">
+
+		<!-- ACTIONS -->
+		<div class="hide-on-print" style="margin-bottom:10px;">
+			<button onclick="window.print()" class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded">🖨 Print</button>
+			<a href="<?= base_url('index.php/estimation/edit/' . $estimation->estimation_id) ?>" class="w-full sm:w-auto  ml-3 px-6 py-2 bg-gray-300 rounded print:hidden">Cancel</a>
 		</div>
-	</div>
-	<hr class="border-gray-300 mb-6">
 
+		<!-- HEADER -->
+		<div class="header">
+			<div class="logo">
+				<img src="<?= base_url('public/images/logocooling.png') ?>" class="print-logo">
+			</div>
+			<div class="company-info">
+				Cool Runnings Garage Co LLC<br>
+				Al Quoz 3, Dubai, UAE<br>
+				www.coolrunningsgarage.com<br>
+				Tel: +971 4 265 4887<br>
+				TRN: 104026094300003
+			</div>
+		</div>
 
-	<!-- ============================================= -->
+		<div class="est-title-line">
+			<span>Est # <?= $estimation->estimation_no ?></span>
+			<span class="est-title">ESTIMATION</span>
+			<span>Date <?= date('d/m/Y', strtotime($estimation->estimation_date)) ?></span>
+		</div>
 
-
-
-
-
-	<!-- CUSTOMER / VEHICLE INFO -->
-	<!-- VEHICLE & CUSTOMER DETAILS -->
-	<div class="bg-white rounded-2xl shadow-md mb-6 p-4">
-
-		<h3 class="font-semibold mb-4">Vehicle & Customer Details</h3>
-
-		<table class="w-full border-collapse text-sm">
-			<tbody>
-
-				<!-- ROW 1 -->
-				<tr>
-					<td class="border p-2 font-medium">Date</td>
-					<td class="border p-2">
-						<input type="date" class="w-full border rounded px-2 py-1 bg-gray-100"
-							value="<?= date('Y-m-d') ?>">
-					</td>
-
-					<td class="border p-2 font-medium">Time</td>
-					<td class="border p-2">
-						<input type="time" class="w-full border rounded px-2 py-1 bg-gray-100"
-							value="<?= date('H:i') ?>" readonly>
-					</td>
-
-					<td class="border p-2 font-medium">Estimation No</td>
-					<td class="border p-2">
-						<input type="text" class="w-full border rounded px-2 py-1 bg-gray-100"
-							value="<?= $estimation_no ?>" readonly>
-					</td>
-				</tr>
-
-				<!-- ROW 2 -->
-				<tr>
-					<td class="border p-2 font-medium">Customer Name</td>
-					<td class="border p-2">
-						<input type="text" class="w-full border rounded px-2 py-1"
-							value="<?= $appointment->name ?>">
-					</td>
-
-					<td class="border p-2 font-medium">Contact No</td>
-					<td class="border p-2">
-						<input type="text" class="w-full border rounded px-2 py-1"
-							value="<?= $appointment->phone ?? '-' ?>">
-					</td>
-
-					<td class="border p-2 font-medium">Email</td>
-					<td class="border p-2">
-						<input type="email" class="w-full border rounded px-2 py-1"
-							value="<?= $appointment->email ?>">
-					</td>
-				</tr>
-
-				<!-- ROW 3 -->
-				<tr>
-					<td class="border p-2 font-medium">Vehicle Model</td>
-					<td class="border p-2">
-						<input type="text" class="w-full border rounded px-2 py-1 bg-gray-100"
-							value="<?= $appointment->model ?>" readonly>
-					</td>
-
-					<td class="border p-2 font-medium">Registration No</td>
-					<td class="border p-2">
-						<input type="text" class="w-full border rounded px-2 py-1 bg-gray-100"
-							value="<?= $appointment->registration_no ?>" readonly>
-					</td>
-
-					<td class="border p-2 font-medium">VIN / Chassis No</td>
-					<td class="border p-2">
-						<input type="text" class="w-full border rounded px-2 py-1 bg-gray-100"
-							value="<?= $appointment->chassis_no ?>" readonly>
-					</td>
-				</tr>
-
-				<!-- ROW 4 -->
-				<tr>
-					<td class="border p-2 font-medium">Job Card No</td>
-					<td class="border p-2">
-						<input type="text" class="w-full border rounded px-2 py-1">
-					</td>
-
-					<td class="border p-2 font-medium">KM In</td>
-					<td class="border p-2">
-						<input type="number" class="w-full border rounded px-2 py-1"  value="<?= $kms ?>">
-					</td>
-
-					<td class="border p-2 font-medium">Customer Approval</td>
-					<td class="border p-2">
-						<select class="w-full border rounded px-2 py-1">
-							<option value="">-- Select --</option>
-							<option value="APPROVED">Approved</option>
-							<option value="PENDING">Pending</option>
-							<option value="REJECTED">Rejected</option>
-						</select>
-					</td>
-				</tr>
-
-				<!-- ROW 5 -->
-				<tr>
-					<td class="border p-2 font-medium">Estimated Price</td>
-					<td class="border p-2">
-						<input type="text" class="w-full border rounded px-2 py-1">
-					</td>
-
-					<td class="border p-2 font-medium">Estimated Delivery Date</td>
-					<td class="border p-2">
-						<input type="date" class="w-full border rounded px-2 py-1">
-					</td>
-
-					<td class="border p-2 font-medium">Completion Time</td>
-					<td class="border p-2">
-						<input type="time" class="w-full border rounded px-2 py-1">
-					</td>
-				</tr>
-
-				<!-- ROW 6 -->
-				<tr>
-					<td class="border p-2 font-medium">Remark</td>
-					<td class="border p-2" colspan="5">
-						<textarea class="w-full border rounded px-2 py-1 h-20"></textarea>
-					</td>
-				</tr>
-
-			</tbody>
+		<!-- CUSTOMER / VEHICLE -->
+		<table class="est-info">
+			<tr>
+				<td width="50%">
+					<strong>Name:</strong> <?= $appointment->customer_name ?? $customer->name ?><br>
+					<strong>Phone:</strong> <?= $appointment->phone ?? $customer->phone ?><br>
+					<strong>Email:</strong> <?= $appointment->email ?? $customer->email ?><br>
+				</td>
+				<td width="50%">
+					<strong>Vehicle:</strong> <?= $appointment->brand ?? $vehicle->brand ?> <?= $appointment->model ?? $vehicle->model ?><br>
+					<strong>Plate:</strong> <?= $appointment->registration_no ?? $vehicle->registration_no ?><br>
+					<strong>Year:</strong> <?= $appointment->year ?? $vehicle->year ?><br>
+				</td>
+			</tr>
 		</table>
-	</div>
 
-	<!-- ============================================================= -->
+		<!-- SERVICES -->
+		<div class="section-title">Services</div>
+		<table class="data">
+			<tr>
+				<th>#</th>
+				<th>Description</th>
+				<th class="text-right">Amount</th>
+			</tr>
+			<?php $i = 1;
+			$total = 0;
+			$totalvat = 0;
+			foreach ($services_used as $s): $total += $s->total_cost;
+
+			?>
+				<tr>
+					<td class="text-center"><?= $i++ ?></td>
+					<td><?= $s->service_name ?></td>
+					<td class="text-right"><?= number_format($s->total_cost, 2) ?></td>
+				</tr>
+			<?php endforeach;
+			?>
+			<tr>
+				<td colspan="2" class="text-right"><strong>Service Total</strong></td>
+				<td class="text-right"><strong><?= number_format($total, 2) ?></strong></td>
+			</tr>
+			<tr>
+				<?php $totalvat = $total * 5 / 100; ?>
+				<td colspan="2" class="text-right"><strong>Service VAT (5%)</strong></td>
+				<td class="text-right"><strong><?= number_format($totalvat, 2) ?></strong></td>
+			</tr>
+			<tr>
+
+				<?php $totalservice = $total + $totalvat; ?>
+				<td colspan="2" class="text-right"><strong>Service Total (Including VAT)</strong></td>
+				<td class="text-right"><strong><?= number_format($totalservice, 2) ?></strong></td>
+			</tr>
+
+		</table>
+
+		<?php
+		$new_total = 0;
+		$i = 1;
+		$discount = 0;
+		$taxamt = 0;
+		$vatamt = 0;
+		$totalparts = 0;
+
+		?>
+
+		<div class="section-title">New Spare Parts</div>
+		<table class="data">
+			<tr>
+				<th>#</th>
+				<th>Parts Description</th>
+				<th>Unit Price</th>
+				<th>Qty</th>
+				<th>Dis Amt</th>
+				<th class="text-right">Amount</th>
+			</tr>
+
+			<?php foreach ($parts_used_new as $p):
+				$new_total += $p->total_price;
+				$discount += $p->dis_amount;
+			?>
+				<tr>
+					<td class="text-center"><?= $i++ ?></td>
+					<td><?= $p->part_name ?></td>
+					<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
+					<td class="text-center"><?= $p->qty ?></td>
+					<td class="text-center"><?= number_format($p->dis_amount, 2) ?></td>
+					<td class="text-right"><?= number_format($p->total_price, 2) ?></td>
+				</tr>
+			<?php endforeach; ?>
+
+			<tr>
+				<td colspan="5" class="text-right"><strong>Parts Sub Total</strong></td>
+				<td class="text-right"><strong><?= number_format($new_total, 2) ?></strong></td>
+			</tr>
+			<tr>
+				<td colspan="5" class="text-right"><strong>Total Discount</strong></td>
+				<td class="text-right"><strong><?= number_format($discount, 2) ?></strong></td>
+			</tr>
+			<?php $taxamt = $new_total -  $discount; ?>
+			<tr>
+				<td colspan="5" class="text-right"><strong>Taxable Amount</strong></td>
+				<td class="text-right"><strong><?= number_format($taxamt, 2) ?></strong></td>
+			</tr>
+			<?php $vatamt = $taxamt * 5 / 100;; ?>
+			<tr>
+				<td colspan="5" class="text-right"><strong>VAT (5%)</strong></td>
+				<td class="text-right"><strong><?= number_format($vatamt, 2) ?></strong></td>
+			</tr>
+			<?php $totalparts = $taxamt + $vatamt; ?>
+			<tr>
+				<td colspan="5" class="text-right"><strong>Parts Total (Including VAT)</strong></td>
+				<td class="text-right"><strong><?= number_format($totalparts, 2) ?></strong></td>
+			</tr>
+
+		</table>
+		<?php
+		$after_total = 0;
+		$i = 1;
+
+		$discount1 = 0;
+		$taxamt1 = 0;
+		$vatamt1 = 0;
+		$totalparts1 = 0;
+		?>
+
+		<div class="section-title">Aftermarket Spare Parts</div>
+		<table class="data">
+			<tr>
+				<th>#</th>
+				<th>Parts Description</th>
+				<th>Unit Price</th>
+				<th>Qty</th>
+				<th>Dis Amt</th>
+				<th class="text-right">Amount</th>
+			</tr>
+
+			<?php foreach ($parts_used_after as $p):
+				$after_total += $p->total_price;
+				$discount1 += $p->dis_amount; ?>
+				<tr>
+					<td class="text-center"><?= $i++ ?></td>
+					<td><?= $p->part_name ?></td>
+					<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
+					<td class="text-center"><?= $p->qty ?></td>
+					<td class="text-center"><?= number_format($p->dis_amount, 2) ?></td>
+					<td class="text-right"><?= number_format($p->total_price, 2) ?></td>
+				</tr>
+			<?php endforeach; ?>
+
+			<tr>
+				<td colspan="5" class="text-right"><strong>Total Aftermarket Parts</strong></td>
+				<td class="text-right"><strong><?= number_format($after_total, 2) ?></strong></td>
+			</tr>
+			<tr>
+				<td colspan="5" class="text-right"><strong>Total Discount</strong></td>
+				<td class="text-right"><strong><?= number_format($discount1, 2) ?></strong></td>
+			</tr>
+			<?php $taxamt1 = $after_total -  $discount1; ?>
+			<tr>
+				<td colspan="5" class="text-right"><strong>Taxable Amount</strong></td>
+				<td class="text-right"><strong><?= number_format($taxamt1, 2) ?></strong></td>
+			</tr>
+			<?php $vatamt1 = $taxamt1 * 5 / 100;; ?>
+			<tr>
+				<td colspan="5" class="text-right"><strong>VAT (5%)</strong></td>
+				<td class="text-right"><strong><?= number_format($vatamt1, 2) ?></strong></td>
+			</tr>
+			<?php $totalparts1 = $taxamt1 + $vatamt1; ?>
+			<tr>
+				<td colspan="5" class="text-right"><strong>Parts Total (Including VAT)</strong></td>
+				<td class="text-right"><strong><?= number_format($totalparts1, 2) ?></strong></td>
+			</tr>
+		</table>
+		<?php
+		$used_total = 0;
+		$i = 1;
 
 
-	<div class="bg-white rounded-2xl shadow-md p-6 mt-8">
+		$discount2 = 0;
+		$taxamt2 = 0;
+		$vatamt2 = 0;
+		$totalparts2 = 0;
+		?>
 
-		<!-- Header -->
-		<div class="flex items-center justify-between mb-4">
-			<h3 class="text-lg font-semibold text-gray-800">
-				Job Description
-			</h3>
+		<div class="section-title">Used Spare Parts</div>
+		<table class="data">
+			<tr>
+				<th>#</th>
+				<th>Parts Description</th>
+				<th>Unit Price</th>
+				<th>Qty</th>
+				<th>Dis Amt</th>
+				<th class="text-right">Amount</th>
+			</tr>
 
+			<?php foreach ($parts_used_used as $p):
+				$used_total += $p->total_price;
+				$discount2 += $p->dis_amount;
+			?>
+				<tr>
+					<td class="text-center"><?= $i++ ?></td>
+					<td><?= $p->part_name ?></td>
+					<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
+					<td class="text-center"><?= $p->qty ?></td>
+					<td class="text-center"><?= number_format($p->dis_amount, 2) ?></td>
+					<td class="text-right"><?= number_format($p->total_price, 2) ?></td>
+				</tr>
+			<?php endforeach; ?>
 
-		</div>
+			<tr>
+				<td colspan="5" class="text-right"><strong>Total Used Parts</strong></td>
+				<td class="text-right"><strong><?= number_format($used_total, 2) ?></strong></td>
+			</tr>
+			<tr>
+				<td colspan="5" class="text-right"><strong>Total Discount</strong></td>
+				<td class="text-right"><strong><?= number_format($discount2, 2) ?></strong></td>
+			</tr>
+			<?php $taxamt2 = $used_total -  $discount2; ?>
+			<tr>
+				<td colspan="5" class="text-right"><strong>Taxable Amount</strong></td>
+				<td class="text-right"><strong><?= number_format($taxamt2, 2) ?></strong></td>
+			</tr>
+			<?php $vatamt2 = $taxamt2 * 5 / 100;; ?>
+			<tr>
+				<td colspan="5" class="text-right"><strong>VAT (5%)</strong></td>
+				<td class="text-right"><strong><?= number_format($vatamt2, 2) ?></strong></td>
+			</tr>
+			<?php $totalparts2 = $taxamt2 + $vatamt2; ?>
+			<tr>
+				<td colspan="5" class="text-right"><strong>Parts Total (Including VAT)</strong></td>
+				<td class="text-right"><strong><?= number_format($totalparts2, 2) ?></strong></td>
+			</tr>
+		</table>
+		<!-- Sublet services -->
+		<div class="section-title">Sublet Services</div>
+		<table class="data">
+			<tr>
+				<th width="5%">#</th>
+				<th>Work Description</th>
+				<th width="20%" class="text-right">Amount</th>
+			</tr>
+			<?php $i = 1;
+			$jd_total = 0;
 
-		<!-- Table -->
-		<div class="overflow-x-auto">
-			<table class="w-full border-collapse text-sm" id="jobDescTable">
+			$totalvat3 = 0;
+			$totalservice3 = 0;
+			foreach ($job_descriptions as $s): $jd_total += $s->amount;
 
-				<thead>
-					<tr class="bg-gray-100 text-gray-700">
-						<th class="border px-4 py-2 w-16 text-center">#</th>
-						<th class="border px-4 py-2">Job Description</th>
-						<th class="border px-4 py-2 w-48">Technician</th>
-						<!-- <th class="border px-4 py-2 w-24 text-center">Action</th> -->
-					</tr>
-				</thead>
+			?>
+				<tr>
+					<td class="text-center"><?= $i++ ?></td>
+					<td><?= $s->description ?></td>
+					<td class="text-right"><?= number_format($s->amount, 2) ?></td>
+				</tr>
+			<?php endforeach; ?>
+			<tr>
+				<td colspan="2" class="text-right"><strong>Total Services</strong></td>
+				<td class="text-right"><strong><?= number_format($jd_total, 2) ?></strong></td>
+			</tr>
 
-				<tbody>
-					<?php if (!empty($job_descriptions)): ?>
-						<?php foreach ($job_descriptions as $i => $j): ?>
-							<tr class="hover:bg-gray-50 transition" id="job_1">
-								<td class="border px-3 py-2 text-center font-medium">
-									<?= $i + 1 ?>
-								</td>
+			<tr>
+				<?php $totalvat3 = $jd_total * 5 / 100; ?>
+				<td colspan="2" class="text-right"><strong>Service VAT (5%)</strong></td>
+				<td class="text-right"><strong><?= number_format($totalvat, 2) ?></strong></td>
+			</tr>
+			<tr>
 
-								<!-- Job Description -->
-								<td class="border px-3 py-2">
-									<input type="text"
-										name="job_description[]"
-										value="<?= $j->description ?>"
-										placeholder="Enter job description..."
-										class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:outline-none">
-								</td>
+				<?php $totalservice3 = $jd_total + $totalvat3; ?>
+				<td colspan="2" class="text-right"><strong>Service Total (Including VAT)</strong></td>
+				<td class="text-right"><strong><?= number_format($totalservice3, 2) ?></strong></td>
+			</tr>
+		</table>
 
-								<!-- Technician Dropdown -->
-								<td class="border px-3 py-2">
-									<select name="technician_id[]"
-										class="w-full border rounded-lg px-2 py-2 focus:ring-2 focus:ring-blue-300">
-										<option value="">-- Select Technician --</option>
-										<?php foreach ($technicians as $t): ?>
-											<option value="<?= $t->employee_id ?>"
-												<?= isset($j->employee_id) && $j->employee_id == $t->employee_id ? 'selected' : '' ?>>
-												<?= $t->employee_name ?>
-											</option>
-										<?php endforeach; ?>
+		<div class="page-break"></div>
 
-									</select>
-								</td>
+		<!-- TOTALS -->
+		<table class="totals">
+			<tr>
+				<td>Subtotal</td>
+				<td class="text-right"><?= number_format($estimation->subtotal, 2) ?></td>
+			</tr>
+			<tr>
+				<td>VAT</td>
+				<td class="text-right"><?= number_format($estimation->tax_amount, 2) ?></td>
+			</tr>
+			<tr>
+				<td><strong>Grand Total</strong></td>
+				<td class="text-right"><strong><?= number_format($estimation->grand_total, 2) ?></strong></td>
+			</tr>
+		</table>
 
-								<!-- Action -->
-								<!-- <td class="border px-3 py-2 text-center">
-										<button type="button"
-											class="remove-row inline-flex items-center justify-center 
-                                           bg-red-100 text-red-600 
-                                           hover:bg-red-500 hover:text-white 
-                                           px-3 py-1 rounded-lg transition">
-											✕
-										</button>
-									</td> -->
-							</tr>
-						<?php endforeach; ?>
-					<?php endif; ?>
-				</tbody>
+		<!-- <div class="page-break"></div> -->
 
+		<!-- FOOTER -->
+		<div class="footer">
+
+			<p>
+				<strong>Total Amount in Words:</strong><br>
+				<strong><?= $amount_in_words ?></strong>
+			</p>
+
+			<br>
+
+			<strong>Conditions :</strong>
+
+			<ul class="terms-list">
+				<li>After dismantling, if any additional work or spare parts not covered in this estimate are required, a supplementary estimate will be provided.</li>
+				<li>All deliveries are subject to availability of spare parts.</li>
+				<li>Spare parts prices are subject to change without prior notice. Prices prevailing at the time of actual delivery shall be charged.</li>
+				<li>This estimate is valid for <strong>15 days</strong> from the date of issue.</li>
+				<li>Payment can only be made by cash or card. Cheque payments are not accepted.</li>
+				<li>Used parts are not covered under warranty.</li>
+				<li>Brand new electronic parts are not covered under warranty.</li>
+				<li>The client authorizes Cool Runnings Garage to test drive the serviced vehicle.</li>
+				<li>The company will not be held liable for any missing items inside the client’s vehicle.</li>
+				<li>The client is responsible for removing all personal belongings from the vehicle before service or repair.</li>
+				<li>A minimum of <strong>50%</strong> of the total estimate value is required as a down payment for any service.</li>
+				<li>Once the client approves and confirms the estimate, it cannot be withdrawn.</li>
+				<li>All approved estimates are subject to change or revision as per specialist advice during the course of work.</li>
+				<li>The company will not be responsible for damage to other vehicle parts due to brittleness or friability.</li>
+				<li>Free parking for <strong>7 days</strong> will be provided after completion of repairs. Thereafter, parking will be charged at <strong>AED 100 per day</strong>.</li>
+				<li>The company is not liable for any loss or damage to vehicles parked outside the garage.</li>
+				<li>The vehicle will not be released until full payment is received.</li>
+				<li>Replaced parts must be collected by the client within <strong>2–3 days</strong>, failing which they will be treated as scrap.</li>
+				<li>The company may take photographs of the vehicle and repair process for marketing purposes only.</li>
+			</ul>
+
+			<br>
+
+			<p>
+				<strong>I / We hereby accept the above terms and conditions.</strong>
+			</p>
+
+			<br>
+
+			<table width="100%" style="margin-top:15px;">
+				<tr>
+					<td width="50%">
+						Name: _______________________________
+					</td>
+					<td width="50%" class="text-right">
+						Signature: _______________________________
+					</td>
+				</tr>
 			</table>
+
 		</div>
-
-		<!-- <p class="text-xs text-gray-500 mt-3">
-				Assign a technician for each job description for better tracking.
-			</p> -->
-
+		<p>Printed By : <?php echo $username; ?></p>
 	</div>
-	<!-- ================================================================== -->
+</body>
 
-	<div class="bg-white rounded-2xl shadow-md p-6 mt-8">
-
-		<!-- Header -->
-		<div class="flex items-center justify-between mb-4">
-			<h3 class="text-lg font-semibold text-gray-800">
-				Spare Parts Used
-			</h3>
-
-
-		</div>
-
-		<!-- Table -->
-		<div class="overflow-x-auto">
-			<table class="w-full border-collapse text-sm" id="partsTable">
-
-				<thead>
-					<tr class="bg-gray-100 text-gray-700">
-						<th class="border px-3 py-2 w-14 text-center">#</th>
-						<th class="border px-3 py-2 w-32">Brand</th>
-						<th class="border px-3 py-2">Part</th>
-						<th class="border px-3 py-2 w-20 text-center">Qty</th>
-						<th class="border px-3 py-2 w-28 text-right">Unit Price</th>
-						<th class="border px-3 py-2 w-24 text-center">Markup %</th>
-						<th class="border px-3 py-2 w-28 text-right">Selling Price</th>
-						<th class="border px-3 py-2 w-24 text-center">Discount</th>
-						<th class="border px-3 py-2 w-24 text-center">Dis-Amount</th>
-						<th class="border px-3 py-2 w-32 text-right">Total Price</th>
-						<!-- <th class="border px-3 py-2 w-20 text-center">Action</th> -->
-					</tr>
-				</thead>
-
-				<tbody>
-					<?php if (!empty($parts_used)): ?>
-						<?php foreach ($parts_used as $i => $p): ?>
-							<tr class="hover:bg-gray-50 transition">
-								<!-- SL -->
-								<td class="border px-2 py-2 text-center font-medium">
-									<?= $i + 1 ?>
-								</td>
-
-								<!-- Brand -->
-								<td class="border px-2 py-2">
-									<select name="brand_id[]"
-										class="brandSelect w-full border rounded-lg px-2 py-1">
-										<option value="">-- Select Brand --</option>
-										<?php foreach ($brands as $b): ?>
-											<option value="<?= $b->brand_id ?>"
-												<?= isset($p->brand_id) && $p->brand_id == $b->brand_id ? 'selected' : '' ?>>
-												<?= $b->brand_name ?>
-											</option>
-										<?php endforeach; ?>
-									</select>
-								</td>
-
-
-								<!-- Part -->
-								<td class="border px-2 py-2">
-									<select name="part_id[]"
-										class="partSelect w-full border rounded-lg px-2 py-1">
-										<option value="">-- Select Brand First --</option>
-									</select>
-								</td>
-
-								<!-- Qty -->
-								<td class="border px-2 py-2 text-center">
-									<input type="number" name="part_qty[]"
-										class="partQty w-20 border rounded-lg px-2 py-1 text-center"
-										value="<?= $p->qty ?>">
-								</td>
-
-								<!-- Unit Price -->
-								<td class="border px-2 py-2 text-right">
-									<input type="number" step="0.01" name="unit_price[]"
-										class="unitPrice w-full border rounded-lg px-2 py-1 text-right"
-										value="<?= $p->unit_price ?>">
-								</td>
-
-								<!-- Markup % -->
-								<td class="border px-2 py-2 text-center">
-									<input type="number" step="0.01" name="markup[]"
-										class="markup w-20 border rounded-lg px-2 py-1 text-center"
-										value="<?= $p->markup ?? 0 ?>" oninput="calculateSellingPrice(this)">
-								</td>
-
-								<!-- Selling Price -->
-								<td class="border px-2 py-2 text-right">
-									<input type="number" step="0.01" name="selling_price[]"
-										class="sellPrice w-full border rounded-lg px-2 py-1 text-right"
-										value="<?= $p->selling_price ?>">
-								</td>
-
-								<!-- Discount -->
-								<td class="border px-2 py-2 text-center">
-									<input type="text" name="discount[]"
-										onkeydown="allowNumberAndPercent(event)"
-										oninput="this.value = this.value.replace(/[^0-9%]/g, ''); calculateDiscount(this);"
-										class="discount w-20 border rounded-lg px-2 py-1 text-right"
-										value="<?= $p->discount ?? 0 ?>">
-								</td>
-								<!-- Discount amt-->
-								<td class="border px-2 py-2 text-center">
-									<input type="number" step="0.01" name="discountamt[]"
-										class="discountamt w-20 border rounded-lg px-2 py-1 text-right bg-gray-100"
-										value="<?= $p->discount ?? 0 ?>" readonly>
-								</td>
-
-								<!-- Total -->
-								<td class="border px-2 py-2 text-right">
-									<input type="number" step="0.01" name="total_price[]"
-										class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
-										value="<?= $p->total_price ?>" readonly>
-								</td>
-
-								<!-- Action -->
-								<!-- <td class="border px-2 py-2 text-center">
-										<button type="button"
-											class="remove-row inline-flex items-center justify-center
-                                       bg-red-100 text-red-600
-                                       hover:bg-red-500 hover:text-white
-                                       px-3 py-1 rounded-lg transition">
-											✕
-										</button>
-									</td> -->
-							</tr>
-						<?php endforeach; ?>
-					<?php endif; ?>
-				</tbody>
-
-			</table>
-		</div>
-
-		<!-- <p class="text-xs text-gray-500 mt-3">
-				Markup and discounts are applied per item. Total updates automatically.
-			</p> -->
-
-	</div>
-
-
-	<!-- ============================================= -->
-	<div class="bg-white rounded-2xl shadow-md p-6 mt-8">
-
-		<!-- Header -->
-		<div class="flex items-center justify-between mb-4">
-			<h3 class="text-lg font-semibold text-gray-800">
-				Labour Charges
-			</h3>
-
-
-		</div>
-
-		<!-- Table -->
-		<div class="overflow-x-auto">
-			<table class="w-full border-collapse text-sm" id="serviceTable">
-
-				<thead>
-					<tr class="bg-gray-100 text-gray-700">
-						<th class="border px-3 py-2 w-16 text-center">#</th>
-						<th class="border px-3 py-2">Service</th>
-						<th class="border px-3 py-2 w-24 text-center">Time (Hr)</th>
-						<th class="border px-3 py-2 w-32 text-right">Estimated Cost</th>
-						<th class="border px-3 py-2 w-32 text-right">Total Cost</th>
-						<!-- <th class="border px-3 py-2 w-20 text-center">Action</th> -->
-					</tr>
-				</thead>
-
-				<tbody>
-					<?php if (!empty($parts_used)): ?>
-						<?php foreach ($services_used as $i => $s): ?>
-							<tr class="hover:bg-gray-50 transition">
-								<!-- SL -->
-								<td class="border px-2 py-2 text-center font-medium">
-									<?= $i + 1 ?>
-								</td>
-
-								<!-- Service -->
-								<td class="border px-2 py-2">
-									<select name="service_id[]"
-										class="serviceSelect w-full border rounded-lg px-2 py-1 focus:ring-2 focus:ring-blue-300">
-										<option value="">-- Select Service --</option>
-										<?php foreach ($services_master as $sm): ?>
-											<option value="<?= $sm->master_service_id ?>"
-												<?= $sm->master_service_id == $s->service_id ? 'selected' : '' ?>>
-												<?= $sm->service_name ?>
-											</option>
-										<?php endforeach; ?>
-									</select>
-								</td>
-
-								<!-- Time -->
-								<td class="border px-2 py-2 text-center">
-									<input type="number" step="0.1"
-										name="service_time[]"
-										class="serviceTime w-20 border rounded-lg px-2 py-1 text-center"
-										value="<?= $s->estimated_time ?>">
-								</td>
-
-								<!-- Estimated Cost -->
-								<td class="border px-2 py-2 text-right">
-									<input type="number" step="0.01"
-										name="service_cost[]"
-										class="serviceCost w-full border rounded-lg px-2 py-1 text-right"
-										value="<?= $s->estimated_cost ?>">
-								</td>
-
-								<!-- Total -->
-								<td class="border px-2 py-2 text-right">
-									<input type="number" step="0.01"
-										name="total_cost[]"
-										class="totalCost w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
-										value="<?= $s->total_cost ?>" readonly>
-								</td>
-
-								<!-- Action -->
-								<!-- <td class="border px-2 py-2 text-center">
-										<button type="button"
-											class="remove-row inline-flex items-center justify-center
-                                       bg-red-100 text-red-600
-                                       hover:bg-red-500 hover:text-white
-                                       px-3 py-1 rounded-lg transition">
-											✕
-										</button>
-									</td> -->
-							</tr>
-						<?php endforeach; ?>
-					<?php endif; ?>
-				</tbody>
-
-			</table>
-		</div>
-
-		<!-- <p class="text-xs text-gray-500 mt-3">
-				Labour cost is calculated automatically based on time and rate.
-			</p> -->
-
-	</div>
-
-	<!-- FOOTER DETAILS -->
-
-	<div class="bg-white rounded-2xl shadow-md p-6 mt-8 text-sm">
-
-		<h3 class="text-lg font-semibold text-gray-800 mb-4">
-			Cost Summary
-		</h3>
-
-		<div class="grid grid-cols-5 gap-4 items-end">
-
-			<!-- Subtotal -->
-			<div>
-				<label class="block text-gray-600 font-medium mb-1">Subtotal</label>
-				<input id="subtotal" name="subtotal"
-					value="<?= isset($estimation) && $estimation ? $estimation->subtotal : '0.00' ?>"
-
-					readonly
-					class="w-full border rounded-lg px-3 py-2 bg-gray-100 text-right font-medium">
-			</div>
-
-			<!-- Tax % -->
-			<div>
-				<label class="block text-gray-600 font-medium mb-1">Tax (%)</label>
-				<input id="tax_percent" name="tax_percent"
-					value="5"
-					class="w-full border rounded-lg px-3 py-2 text-right">
-			</div>
-
-			<!-- Tax Amount -->
-			<div>
-				<label class="block text-gray-600 font-medium mb-1">Tax Amount</label>
-				<input id="tax_amount" name="tax_amount"
-
-					value="<?= isset($estimation) && $estimation ? $estimation->tax_amount : '0.00' ?>"
-					readonly
-					class="w-full border rounded-lg px-3 py-2 bg-gray-100 text-right">
-			</div>
-
-			<!-- Discount -->
-			<div>
-				<label class="block text-gray-600 font-medium mb-1">Discount</label>
-				<input id="discount" name="discount"
-
-					value="<?= isset($estimation) && $estimation ? $estimation->discount : '0.00' ?>"
-					class="w-full border rounded-lg px-3 py-2 text-right">
-			</div>
-
-			<!-- Grand Total -->
-			<div>
-				<label class="block text-gray-600 font-semibold mb-1 text-green-700">
-					Grand Total
-				</label>
-				<input id="grand_total" name="grand_total"
-
-					value="<?= isset($estimation) && $estimation ? $estimation->grand_total : '0.00' ?>"
-					readonly
-					class="w-full border-2 border-green-600 rounded-lg px-3 py-2 
-                       bg-green-50 text-right text-lg font-bold text-green-800">
-			</div>
-
-		</div>
-
-	</div>
-
-
-	<!-- SAVE BUTTON -->
-	<!-- SAVE BUTTON -->
-
-
-
-
-
-
-</div>
-<!-- ========================================= script fncs======================== -->
-<style>
-	@media print {
-		.print\:hidden {
-			display: none !important;
-		}
-
-		button,
-		.print\:hidden {
-			display: none !important;
-		}
-
-		.topbar {
-			display: none;
-		}
-
-		html,
-		body {
-			height: auto !important;
-			overflow: visible !important;
-		}
-
-		* {
-			overflow: visible !important;
-		}
-
-		body {
-			background: white;
-		}
-
-		div {
-			box-shadow: none !important;
-		}
-	}
-</style>
+</html>

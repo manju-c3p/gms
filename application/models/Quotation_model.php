@@ -40,10 +40,10 @@ class Quotation_model extends CI_Model
 			'inspection_id'           => $est->inspection_id,
 			'customer_id'             => $est->customer_id,
 			'vehicle_id'              => $est->vehicle_id,
-			'subtotal'                => $est->subtotal,
-			'tax_amount'              => $est->tax_amount,
+			// 'subtotal'                => $est->subtotal,
+			// 'tax_amount'              => $est->tax_amount,
 			'discount'                => $est->discount,
-			'grand_total'             => $est->grand_total,
+			// 'grand_total'             => $est->grand_total,
 			'quotation_time'          => $est->estimation_time,
 			'est_delivery_date'       => $est->est_delivery_date,
 			'est_completion_time'     => $est->est_completion_time,
@@ -64,7 +64,7 @@ class Quotation_model extends CI_Model
 		$this->db->query("
             INSERT INTO quotation_parts
             (quotation_id, part_id, qty, unit_price, selling_price, total_price,
-             markup_percentage, discount, dis_amount, part_type, brand_id, selected, created_at)
+             markup_percentage, discount, dis_amount, part_type, brand_id, selected, created_at,partremarks)
             SELECT
                 {$quotation_id},
                 part_id,
@@ -78,9 +78,10 @@ class Quotation_model extends CI_Model
                 part_type,
                 brand_id,
                 selected,
-                NOW()
+                NOW(),
+				partremarks
             FROM estimation_parts
-            WHERE estimation_id = {$estimation_id}
+            WHERE estimation_id = {$estimation_id} and selected = 1
         ");
 
 		/* ===============================
@@ -114,6 +115,62 @@ class Quotation_model extends CI_Model
 				FROM estimation_job_descriptions
 				WHERE estimation_id = {$estimation_id}
 			");
+
+
+		// ==========================================
+
+		// ===== SUBTOTAL (sum of total_price) =====
+		$row = $this->db
+			->select('SUM(total_price) as subtotal')
+			->where('quotation_id', $quotation_id)
+			->where('selected', 1)
+			->get('quotation_parts')
+			->row();
+
+		$parts_subtotal = (float)($row->subtotal ?? 0);
+		// ===== TOTAL DISCOUNT =====
+		$row = $this->db
+			->select('SUM(dis_amount) as discount')
+			->where('quotation_id', $quotation_id)
+			->where('selected', 1)
+			->get('quotation_parts')
+			->row();
+
+		$total_discount = (float)($row->discount ?? 0);
+		// ===== SERVICES =====
+		$services_total = (float)($this->db
+			->select('SUM(total_cost) as total')
+			->where('quotation_id', $quotation_id)
+			->get('quotation_services')
+			->row()->total ?? 0);
+
+		// ===== SUBLET SERVICES =====
+		$sublet_total = (float)($this->db
+			->select('SUM(amount) as total')
+			->where('quotation_id', $quotation_id)
+			->get('quotation_job_descriptions')
+			->row()->total ?? 0);
+		// ===== FINAL TOTALS =====
+		$subtotal = $parts_subtotal + $services_total + $sublet_total;
+
+		// discount only from parts
+		$discount = $total_discount;
+
+		// taxable amount
+		$taxable_amount = $subtotal - $discount;
+
+		// VAT 5%
+		$tax_amount = round($taxable_amount * 5 / 100, 2);
+
+		// grand total
+		$grand_total = round($taxable_amount + $tax_amount, 2);
+		$this->db->where('quotation_id', $quotation_id)->update('quotations', [
+			'subtotal'    => round($subtotal, 2),
+			'discount'    => round($discount, 2),
+			'tax_amount'  => $tax_amount,
+			'grand_total' => $grand_total
+		]);
+		// ==============================================
 
 
 		return $quotation_id;
@@ -151,6 +208,18 @@ class Quotation_model extends CI_Model
 			->row();
 	}
 
+		public function get_parts_type($quotation_id, $parttype)
+	{
+		return $this->db
+			->select('qp.*, sp.part_name')
+			->from('quotation_parts qp')
+			->join('spare_parts sp', 'sp.part_id = qp.part_id')
+			->where('qp.quotation_id', $quotation_id)
+			->where('qp.part_type', $parttype)
+			->get()
+			->result();
+	}
+
 	public function get_parts($quotation_id)
 	{
 		return $this->db
@@ -180,30 +249,90 @@ class Quotation_model extends CI_Model
        1. UPDATE QUOTATION HEADER
        =============================== */
 
-		$headerFields = [
-			'status',
-			'subtotal',
-			'tax_amount',
-			'discount',
-			'grand_total',
-			'remarks',
-			'est_delivery_date',
-			'est_completion_time',
-			'customer_estimated_price'
-		];
+		// $headerFields = [
+		// 	'status',
+		// 	'subtotal',
+		// 	'tax_amount',
+		// 	'tdiscount',
+		// 	'grand_total',
+		// 	'remarks',
+		// 	'est_delivery_date',
+		// 	'est_completion_time',
+		// 	'customer_estimated_price'
+		// ];
+
+		// $updateData = [];
+
+		// foreach ($headerFields as $field) {
+		// 	if (isset($data[$field])) {
+		// 		$updateData[$field] = $data[$field];
+		// 	}
+		// }
+
+		// if (!empty($updateData)) {
+		// 	$this->db->where('quotation_id', $quotation_id)
+		// 		->update('quotations', $updateData);
+		// }
+
+		/* ===============================
+   1. UPDATE QUOTATION HEADER
+   =============================== */
 
 		$updateData = [];
 
-		foreach ($headerFields as $field) {
-			if (isset($data[$field])) {
-				$updateData[$field] = $data[$field];
-			}
+		// Status
+		if (isset($data['status'])) {
+			$updateData['status'] = $data['status'];
 		}
 
+		// Amounts (force numeric safety)
+		if (isset($data['subtotal'])) {
+			$updateData['subtotal'] = (float) $data['subtotal'];
+		}
+
+		if (isset($data['tax_amount'])) {
+			$updateData['tax_amount'] = (float) $data['tax_amount'];
+		}
+
+		/*
+|--------------------------------------------------------------------------
+| IMPORTANT:
+| Quotation-level discount ONLY
+| Do NOT use item discount array here
+|--------------------------------------------------------------------------
+*/
+		if (isset($data['tdiscount'])) {
+			$updateData['discount'] = (float) $data['tdiscount'];
+		}
+
+		if (isset($data['grand_total'])) {
+			$updateData['grand_total'] = (float) $data['grand_total'];
+		}
+
+		// Remarks
+		if (isset($data['remarks'])) {
+			$updateData['remarks'] = $data['remarks'];
+		}
+
+		// Dates & extra fields
+		if (isset($data['est_delivery_date'])) {
+			$updateData['est_delivery_date'] = $data['est_delivery_date'];
+		}
+
+		if (isset($data['est_completion_time'])) {
+			$updateData['est_completion_time'] = $data['est_completion_time'];
+		}
+
+		if (isset($data['customer_estimated_price'])) {
+			$updateData['customer_estimated_price'] = (float) $data['customer_estimated_price'];
+		}
+
+		// Final update
 		if (!empty($updateData)) {
 			$this->db->where('quotation_id', $quotation_id)
 				->update('quotations', $updateData);
 		}
+
 
 		/* ===============================
        2. UPDATE PARTS (ONLY IF SENT)
@@ -229,8 +358,9 @@ class Quotation_model extends CI_Model
 					'discount'      => $data['discount'][$i]        ?? 0,
 					'dis_amount'    => $data['discountamt'][$i]     ?? 0,
 					'part_type'     => $data['part_type'][$i]       ?? null,
-					'selected'      => isset($data['customer_selected'])
-						&& in_array($pid, $data['customer_selected']) ? 1 : 0
+					'selected'      => isset($data['customer_selected']) && in_array($pid, $data['customer_selected']) ? 1 : 0,
+					'partremarks'     => $data['partremarks'][$i]       ?? null,
+
 				]);
 			}
 		}
@@ -267,19 +397,19 @@ class Quotation_model extends CI_Model
         q.*,
            ");
 		$this->db->from('quotations q');
-		
+
 		$this->db->where('q.appointment_id', $appointment_id);
 
 		return $this->db->get()->row();
 	}
 
-	  /**
-     * Get all quotations with customer, vehicle & jobcard info
-     */
-    public function get_all_quotations_with_jobcard()
-    {
-        return $this->db
-            ->select('
+	/**
+	 * Get all quotations with customer, vehicle & jobcard info
+	 */
+	public function get_all_quotations_with_jobcard()
+	{
+		return $this->db
+			->select('
                 q.*,
 
                 c.name AS customer_name,
@@ -291,52 +421,82 @@ class Quotation_model extends CI_Model
 
                 jc.jobcard_id
             ')
-            ->from('quotations q')
-            ->join('customers c', 'c.customer_id = q.customer_id')
-            ->join('vehicles v', 'v.vehicle_id = q.vehicle_id')
-            ->join('job_cards jc', 'jc.quotation_id = q.quotation_id', 'left')
-            ->order_by('q.quotation_date', 'DESC')
-            ->get()
-            ->result();
-    }
+			->from('quotations q')
+			->join('customers c', 'c.customer_id = q.customer_id')
+			->join('vehicles v', 'v.vehicle_id = q.vehicle_id')
+			->join('job_cards jc', 'jc.quotation_id = q.quotation_id', 'left')
+			->order_by('q.quotation_date', 'DESC')
+			->get()
+			->result();
+	}
 
-    /**
-     * Create jobcard from quotation
-     */
-    public function create_jobcard_from_quotation($quotation_id)
-    {
-        // Prevent duplicate jobcard
-        $exists = $this->db->get_where('job_cards', [
-            'quotation_id' => $quotation_id
-        ])->row();
+	/**
+	 * Create jobcard from quotation
+	 */
+	public function create_jobcard_from_quotation($quotation_id)
+	{
+		// Prevent duplicate jobcard
+		$exists = $this->db->get_where('job_cards', [
+			'quotation_id' => $quotation_id
+		])->row();
 
-        if ($exists) {
-            return $exists->jobcard_id;
-        }
+		if ($exists) {
+			return $exists->jobcard_id;
+		}
 
-        // Get quotation
-        $q = $this->db->get_where('quotations', [
-            'quotation_id' => $quotation_id,
-            'status'       => 'Approved'
-        ])->row();
+		// Get quotation
+		$q = $this->db->get_where('quotations', [
+			'quotation_id' => $quotation_id,
+			'status'       => 'Approved'
+		])->row();
 
-        if (!$q) {
-            return false;
-        }
+		if (!$q) {
+			return false;
+		}
 
-        // Insert jobcard
-        $this->db->insert('job_cards', [
-            'quotation_id'    => $q->quotation_id,
-            'estimation_id'   => $q->estimation_id,
-            'appointment_id' => $q->appointment_id,
-            'customer_id'    => $q->customer_id,
-            'vehicle_id'     => $q->vehicle_id,
-            'jobcard_date'   => date('Y-m-d'),
-            'status'         => 'Pending',
-            'created_by'     => $this->session->userdata('user_id') ?? null,
-            'created_at'     => date('Y-m-d H:i:s')
-        ]);
+		// Insert jobcard
+		$this->db->insert('job_cards', [
+			'quotation_id'    => $q->quotation_id,
+			'estimation_id'   => $q->estimation_id,
+			'appointment_id' => $q->appointment_id,
+			'customer_id'    => $q->customer_id,
+			'vehicle_id'     => $q->vehicle_id,
+			'jobcard_date'   => date('Y-m-d'),
+			'status'         => 'Pending',
+			'created_by'     => $this->session->userdata('user_id') ?? null,
+			'created_at'     => date('Y-m-d H:i:s')
+		]);
 
-        return $this->db->insert_id();
-    }
+		return $this->db->insert_id();
+	}
+
+
+	public function delete_quotation($quotation_id)
+	{
+		$this->db->trans_start();
+
+		// 1. Delete job descriptions
+		$this->db->where('quotation_id', $quotation_id)
+			->delete('quotation_job_descriptions');
+
+		// 2. Delete quotation parts
+		$this->db->where('quotation_id', $quotation_id)
+			->delete('quotation_parts');
+
+		// 3. Delete quotation services
+		$this->db->where('quotation_id', $quotation_id)
+			->delete('quotation_services');
+
+		// 4. Delete child revisions (if any)
+		$this->db->where('parent_quotation_id', $quotation_id)
+			->delete('quotations');
+
+		// 5. Delete MAIN quotation (LAST)
+		$this->db->where('quotation_id', $quotation_id)
+			->delete('quotations');
+
+		$this->db->trans_complete();
+
+		return $this->db->trans_status();
+	}
 }

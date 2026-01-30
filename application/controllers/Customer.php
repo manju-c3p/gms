@@ -16,17 +16,40 @@ class Customer extends CI_Controller
 	/* -------------------------------
        LIST CUSTOMERS
     --------------------------------*/
+	// public function index()
+	// {
+	// 	$search = $this->input->get('search');
+
+	// 	$data['customers'] = $this->Customer_model->get_all_customers($search);
+
+	// 	$data['title'] = "Customers";
+	// 	$data['main_content'] = 'customer/list_customers';
+	// 	$this->load->view('includes/template', $data);
+	// }
+
+
 	public function index()
 	{
-		$search = $this->input->get('search');
-
-		$data['customers'] = $this->Customer_model->get_all_customers($search);
-
+		$data['customers'] = $this->Customer_model->filter_customers();
 		$data['title'] = "Customers";
 		$data['main_content'] = 'customer/list_customers';
 		$this->load->view('includes/template', $data);
 	}
 
+	// 🔴 AJAX FILTER
+	public function filter_ajax()
+	{
+		$filters = [
+			'name'  => $this->input->post('name'),
+			'phone' => $this->input->post('phone'),
+			'plate' => $this->input->post('plate'),
+			'vin'   => $this->input->post('vin')
+		];
+
+		$data['customers'] = $this->Customer_model->filter_customers($filters);
+
+		$this->load->view('customer/_customer_rows', $data);
+	}
 	/* -------------------------------
        SHOW ADD FORM
     --------------------------------*/
@@ -75,6 +98,8 @@ class Customer extends CI_Controller
 			'phone'     => $this->input->post('phone'),
 			'email'     => $this->input->post('email'),
 			'address'   => $this->input->post('address'),
+			'trn' => $this->input->post('trn'),
+			'emirates' => $this->input->post('emirate'),
 		];
 
 		// 2️⃣ Insert Customer
@@ -221,129 +246,131 @@ class Customer extends CI_Controller
 
 	// 	redirect('customer');
 	// }
-public function update()
-{
-    $customer_id = $this->input->post('customer_id');
+	public function update()
+	{
+		$customer_id = $this->input->post('customer_id');
 
-    /* =====================================================
+		/* =====================================================
        1️⃣ UPDATE CUSTOMER
        ===================================================== */
-    $customerData = [
-        'name'    => $this->input->post('name'),
-        'phone'   => $this->input->post('phone'),
-        'email'   => $this->input->post('email'),
-        'address' => $this->input->post('address'),
-    ];
+		$customerData = [
+			'name'    => $this->input->post('name'),
+			'phone'   => $this->input->post('phone'),
+			'email'   => $this->input->post('email'),
+			'address' => $this->input->post('address'),
+			'trn' => $this->input->post('trn'),
+			'emirates' => $this->input->post('emirate'),
+		];
 
-    $this->Customer_model->update_customer($customer_id, $customerData);
+		$this->Customer_model->update_customer($customer_id, $customerData);
 
-    /* =====================================================
+		/* =====================================================
        2️⃣ DELETE VEHICLES (REMOVED FROM UI)
        ===================================================== */
-    $vehiclesToDelete = $this->input->post('vehicles_to_delete');
+		$vehiclesToDelete = $this->input->post('vehicles_to_delete');
 
-    if (!empty($vehiclesToDelete)) {
-        $deleteArray = json_decode($vehiclesToDelete, true);
-        if (is_array($deleteArray)) {
-            foreach ($deleteArray as $vid) {
-                $this->Vehicle_model->delete_vehicle($vid);
-            }
-        }
-    }
+		if (!empty($vehiclesToDelete)) {
+			$deleteArray = json_decode($vehiclesToDelete, true);
+			if (is_array($deleteArray)) {
+				foreach ($deleteArray as $vid) {
+					$this->Vehicle_model->delete_vehicle($vid);
+				}
+			}
+		}
 
-    /* =====================================================
+		/* =====================================================
        3️⃣ UPDATE EXISTING VEHICLES
        ===================================================== */
-    $existing_ids     = $this->input->post('vehicle_id_existing');
-    $existing_reg     = $this->input->post('vehicle_registration_no_existing');
-    $brand_ids_exist  = $this->input->post('brand_id_existing');
-    $model_ids_exist  = $this->input->post('model_id_existing');
-    $existing_variant = $this->input->post('vehicle_variant_existing');
-    $existing_year    = $this->input->post('vehicle_year_existing');
-    $existing_color   = $this->input->post('vehicle_color_existing');
-    $existing_chassis = $this->input->post('vehicle_chassis_no_existing');
-    $existing_engine  = $this->input->post('vehicle_engine_no_existing');
+		$existing_ids     = $this->input->post('vehicle_id_existing');
+		$existing_reg     = $this->input->post('vehicle_registration_no_existing');
+		$brand_ids_exist  = $this->input->post('brand_id_existing');
+		$model_ids_exist  = $this->input->post('model_id_existing');
+		$existing_variant = $this->input->post('vehicle_variant_existing');
+		$existing_year    = $this->input->post('vehicle_year_existing');
+		$existing_color   = $this->input->post('vehicle_color_existing');
+		$existing_chassis = $this->input->post('vehicle_chassis_no_existing');
+		$existing_engine  = $this->input->post('vehicle_engine_no_existing');
 
-    if (!empty($existing_ids)) {
-        for ($i = 0; $i < count($existing_ids); $i++) {
+		if (!empty($existing_ids)) {
+			for ($i = 0; $i < count($existing_ids); $i++) {
 
-            // Fetch names securely from DB
-            $brand = $this->Vehicle_model->get_brand_by_id($brand_ids_exist[$i]);
-            $model = $this->Vehicle_model->get_model_by_id($model_ids_exist[$i]);
+				// Fetch names securely from DB
+				$brand = $this->Vehicle_model->get_brand_by_id($brand_ids_exist[$i]);
+				$model = $this->Vehicle_model->get_model_by_id($model_ids_exist[$i]);
 
-            $vehicleData = [
-                'registration_no' => $existing_reg[$i],
+				$vehicleData = [
+					'registration_no' => $existing_reg[$i],
 
-                // Brand
-                'brand_id'   => $brand_ids_exist[$i],
-                'brand' => $brand ? $brand->brand_name : null,
+					// Brand
+					'brand_id'   => $brand_ids_exist[$i],
+					'brand' => $brand ? $brand->brand_name : null,
 
-                // Model
-                'model_id'   => $model_ids_exist[$i],
-                'model' => $model ? $model->model_name : null,
+					// Model
+					'model_id'   => $model_ids_exist[$i],
+					'model' => $model ? $model->model_name : null,
 
-                'variant'    => $existing_variant[$i],
-                'year'       => $existing_year[$i],
-                'color'      => $existing_color[$i],
-                'chassis_no' => $existing_chassis[$i],
-                'engine_no'  => $existing_engine[$i],
-            ];
+					'variant'    => $existing_variant[$i],
+					'year'       => $existing_year[$i],
+					'color'      => $existing_color[$i],
+					'chassis_no' => $existing_chassis[$i],
+					'engine_no'  => $existing_engine[$i],
+				];
 
-            $this->Vehicle_model->update_vehicle($existing_ids[$i], $vehicleData);
-        }
-    }
+				$this->Vehicle_model->update_vehicle($existing_ids[$i], $vehicleData);
+			}
+		}
 
-    /* =====================================================
+		/* =====================================================
        4️⃣ INSERT NEW VEHICLES
        ===================================================== */
-    $new_reg     = $this->input->post('vehicle_registration_no_new');
-    $brand_ids  = $this->input->post('brand_id_new');
-    $model_ids  = $this->input->post('model_id_new');
-    $new_variant = $this->input->post('vehicle_variant_new');
-    $new_year    = $this->input->post('vehicle_year_new');
-    $new_color   = $this->input->post('vehicle_color_new');
-    $new_chassis = $this->input->post('vehicle_chassis_no_new');
-    $new_engine  = $this->input->post('vehicle_engine_no_new');
+		$new_reg     = $this->input->post('vehicle_registration_no_new');
+		$brand_ids  = $this->input->post('brand_id_new');
+		$model_ids  = $this->input->post('model_id_new');
+		$new_variant = $this->input->post('vehicle_variant_new');
+		$new_year    = $this->input->post('vehicle_year_new');
+		$new_color   = $this->input->post('vehicle_color_new');
+		$new_chassis = $this->input->post('vehicle_chassis_no_new');
+		$new_engine  = $this->input->post('vehicle_engine_no_new');
 
-    if (!empty($new_reg)) {
-        for ($i = 0; $i < count($new_reg); $i++) {
+		if (!empty($new_reg)) {
+			for ($i = 0; $i < count($new_reg); $i++) {
 
-            if (empty($new_reg[$i]) && empty($brand_ids[$i])) {
-                continue;
-            }
+				if (empty($new_reg[$i]) && empty($brand_ids[$i])) {
+					continue;
+				}
 
-            $brand = $this->Vehicle_model->get_brand_by_id($brand_ids[$i]);
-            $model = $this->Vehicle_model->get_model_by_id($model_ids[$i]);
+				$brand = $this->Vehicle_model->get_brand_by_id($brand_ids[$i]);
+				$model = $this->Vehicle_model->get_model_by_id($model_ids[$i]);
 
-            $vehicleData = [
-                'customer_id'     => $customer_id,
-                'registration_no' => $new_reg[$i],
+				$vehicleData = [
+					'customer_id'     => $customer_id,
+					'registration_no' => $new_reg[$i],
 
-                // Brand
-                'brand_id'   => $brand_ids[$i],
-                'brand' => $brand ? $brand->brand_name : null,
+					// Brand
+					'brand_id'   => $brand_ids[$i],
+					'brand' => $brand ? $brand->brand_name : null,
 
-                // Model
-                'model_id'   => $model_ids[$i],
-                'model' => $model ? $model->model_name : null,
+					// Model
+					'model_id'   => $model_ids[$i],
+					'model' => $model ? $model->model_name : null,
 
-                'variant'    => $new_variant[$i],
-                'year'       => $new_year[$i],
-                'color'      => $new_color[$i],
-                'chassis_no' => $new_chassis[$i],
-                'engine_no'  => $new_engine[$i],
-            ];
+					'variant'    => $new_variant[$i],
+					'year'       => $new_year[$i],
+					'color'      => $new_color[$i],
+					'chassis_no' => $new_chassis[$i],
+					'engine_no'  => $new_engine[$i],
+				];
 
-            $this->Vehicle_model->insert_vehicle($vehicleData);
-        }
-    }
+				$this->Vehicle_model->insert_vehicle($vehicleData);
+			}
+		}
 
-    /* =====================================================
+		/* =====================================================
        5️⃣ SUCCESS MESSAGE
        ===================================================== */
-    $this->session->set_flashdata('success', 'Customer and vehicles updated successfully!');
-    redirect('customer');
-}
+		$this->session->set_flashdata('success', 'Customer and vehicles updated successfully!');
+		redirect('customer');
+	}
 
 
 	/* -------------------------------
@@ -393,7 +420,8 @@ public function update()
 			'name'    => $this->input->post('name'),
 			'phone'   => $this->input->post('phone'),
 			'email'   => $this->input->post('email'),
-			'address' => $this->input->post('address')
+			'address' => $this->input->post('address'),
+			'emirates' => $this->input->post('emirate'),
 		];
 		$this->db->insert('customers', $customer);
 		$customer_id = $this->db->insert_id();
@@ -419,8 +447,7 @@ public function update()
 			'brand'      => $brand ? $brand->brand_name : null,
 			'model_id'        => $this->input->post('model_id'),
 			'model'      => $model ? $model->model_name : null,
-			'chassis_no'      => $this->input->post('chassis_no'),
-			'engine_no'       => $this->input->post('engine_no')
+
 		];
 
 		$this->db->insert('vehicles', $vehicle);
@@ -461,10 +488,28 @@ public function update()
 				'model_name' => $this->db
 					->get_where('vehicle_models', ['model_id' => $this->input->post('model_id')])
 					->row()->model_name,
-				'chassis_no' => $vehicle['chassis_no'],
-				'engine_no' => $vehicle['engine_no']
+
 			]
 		]);
 		exit;
+	}
+
+	// ======================== two functions for direct ledger creation page display and cretaion process =====================
+	public function customers_to_ledger()
+	{
+		$data['title'] = "customers_to_ledger";
+		$data['main_content'] = 'customer/customer_list_gl_create';
+		$this->load->view('includes/template', $data);
+	}
+
+
+	public function sync_customers_to_ledger()
+	{
+		$result = $this->Customer_model->sync_customers_to_ledger();
+
+		echo json_encode([
+			'status'  => 'success',
+			'message' => $result . ' customers added to General Ledger'
+		]);
 	}
 }

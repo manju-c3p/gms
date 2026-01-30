@@ -26,6 +26,63 @@ class Dashboard_model extends CI_Model
 			->get()
 			->result();
 	}
+	public function get_pending_job_cards()
+	{
+		return $this->db
+			->select('
+                jc.jobcard_id,
+                jc.jobcard_no,
+                jc.status,
+                jc.expected_delivery_date,
+                c.name AS customer_name,
+                v.registration_no,
+                e.employee_name AS technician_name
+            ')
+			->from('job_cards jc')
+			->join('customers c', 'c.customer_id = jc.customer_id')
+			->join('vehicles v', 'v.vehicle_id = jc.vehicle_id')
+			->join('employees e', 'e.employee_id = jc.technician_id', 'left')
+			->where_in('jc.status', ['Pending', 'In Progress'])
+			->order_by('jc.created_at', 'DESC')
+			->limit(10) // dashboard-friendly
+			->get()
+			->result();
+	}
+
+	public function get_pending_job_cards_count()
+	{
+		return $this->db
+			->from('job_cards')
+			->where_in('status', ['Pending'])
+			->count_all_results();
+	}
+
+	public function get_active_job_cards_count()
+	{
+		return $this->db
+			->from('job_cards')
+			->where_in('status', ['Pending', 'In Progress'])
+			->count_all_results();
+	}
+	public function get_customers_count()
+	{
+		return $this->db
+			->from('customers')
+			->count_all_results();
+	}
+	public function get_total_revenue()
+	{
+		return (float) $this->db
+			->select('COALESCE(SUM(grand_total), 0) AS total_revenue')
+			->from('invoices')
+			->where('status', 'Paid')
+			->get()
+			->row()
+			->total_revenue;
+	}
+
+
+
 
 	public function get_recent_estimations()
 	{
@@ -175,21 +232,21 @@ class Dashboard_model extends CI_Model
 	}
 
 	private function get_completed_jobs($jobcard_id)
-{
-	return $this->db
-		->select('COUNT(DISTINCT jobcard_description_id) AS completed')
-		->where('jobcard_id', $jobcard_id)
-		->where('status', 'STOP')
-		->get('jobcard_work_logs')
-		->row()
-		->completed ?? 0;
-}
+	{
+		return $this->db
+			->select('COUNT(DISTINCT jobcard_description_id) AS completed')
+			->where('jobcard_id', $jobcard_id)
+			->where('status', 'STOP')
+			->get('jobcard_work_logs')
+			->row()
+			->completed ?? 0;
+	}
 
 
-public function get_jobcard_job_completion()
-{
-    return $this->db
-        ->select('
+	public function get_jobcard_job_completion123()
+	{
+		return $this->db
+			->select('
             jc.jobcard_id,
             jc.jobcard_no,
 
@@ -200,28 +257,60 @@ public function get_jobcard_job_completion()
                 THEN wl.jobcard_description_id 
             END) AS completed_jobs
         ')
-        ->from('job_cards jc')
-        ->join(
-            'jobcard_descriptions jd',
-            'jd.jobcard_id = jc.jobcard_id',
-            'left'
-        )
-        ->join(
-            'jobcard_work_logs wl',
-            'wl.jobcard_description_id = jd.jobcard_description_id',
-            'left'
-        )
-        ->group_by('jc.jobcard_id')
-        ->order_by('jc.created_at', 'DESC')
-        ->get()
-        ->result();
-}
+			->from('job_cards jc')
+			->join(
+				'jobcard_descriptions jd',
+				'jd.jobcard_id = jc.jobcard_id',
+				'left'
+			)
+			->join(
+				'jobcard_work_logs wl',
+				'wl.jobcard_description_id = jd.jobcard_description_id',
+				'left'
+			)
+			->group_by('jc.jobcard_id')
+			->order_by('jc.created_at', 'DESC')
+			->get()
+			->result();
+	}
 
-public function get_jobcard_job_progress()
-{
-    $standardMinutes = 60; // 1 hour per job (configurable)
+	public function get_jobcard_job_completion()
+	{
+		return $this->db
+			->select('
+            jc.jobcard_id,
+            jc.jobcard_no,
 
-    $sql = "
+            COUNT(DISTINCT js.jobcard_service_id) AS total_jobs,
+
+            COUNT(DISTINCT CASE
+                WHEN wl.status = "STOP"
+                THEN wl.jobcard_service_id
+            END) AS completed_jobs
+        ')
+			->from('job_cards jc')
+			->join(
+				'jobcard_services js',
+				'js.jobcard_id = jc.jobcard_id',
+				'left'
+			)
+			->join(
+				'jobcard_work_logs wl',
+				'wl.jobcard_service_id = js.jobcard_service_id',
+				'left'
+			)
+			->group_by('jc.jobcard_id')
+			->order_by('jc.created_at', 'DESC')
+			->get()
+			->result();
+	}
+
+
+	public function get_jobcard_job_progress()
+	{
+		$standardMinutes = 60; // 1 hour per job (configurable)
+
+		$sql = "
     SELECT
         jc.jobcard_id,
         jc.jobcard_no,
@@ -290,8 +379,6 @@ public function get_jobcard_job_progress()
     ORDER BY jc.created_at DESC
     ";
 
-    return $this->db->query($sql)->result();
-}
-
-
+		return $this->db->query($sql)->result();
+	}
 }

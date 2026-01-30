@@ -9,7 +9,8 @@
 		<!-- CUSTOMER DETAILS -->
 		<h3 class="text-xl font-semibold mb-3">Customer Details</h3>
 
-		<div class="grid grid-cols-3 gap-4">
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
 			<div>
 				<label class="font-medium">Customer Name</label>
 				<input type="text" name="name" value="<?= $customer->name ?>"
@@ -33,6 +34,53 @@
 				<textarea name="address"
 					class="w-full border p-2 rounded"><?= $customer->address ?></textarea>
 			</div>
+
+			<div>
+				<label class="font-medium">Emirate</label>
+				<select name="emirate" class="w-full border p-2 rounded">
+					<option value="">-- Select Emirate --</option>
+
+					<option value="Abu Dhabi"
+						<?= ($customer->emirates == 'Abu Dhabi') ? 'selected' : '' ?>>
+						Abu Dhabi
+					</option>
+
+					<option value="Dubai"
+						<?= ($customer->emirates == 'Dubai') ? 'selected' : '' ?>>
+						Dubai
+					</option>
+
+					<option value="Sharjah"
+						<?= ($customer->emirates == 'Sharjah') ? 'selected' : '' ?>>
+						Sharjah
+					</option>
+
+					<option value="Ajman"
+						<?= ($customer->emirates == 'Ajman') ? 'selected' : '' ?>>
+						Ajman
+					</option>
+
+					<option value="Umm Al Quwain"
+						<?= ($customer->emirates == 'Umm Al Quwain') ? 'selected' : '' ?>>
+						Umm Al Quwain
+					</option>
+
+					<option value="Ras Al Khaimah"
+						<?= ($customer->emirates == 'Ras Al Khaimah') ? 'selected' : '' ?>>
+						Ras Al Khaimah
+					</option>
+
+					<option value="Fujairah"
+						<?= ($customer->emirates == 'Fujairah') ? 'selected' : '' ?>>
+						Fujairah
+					</option>
+				</select>
+
+			</div>
+			<div>
+				<label class="font-medium">TRN</label>
+				<input type="text" name="trn" class="w-full border p-2 rounded"  value="<?= $customer->trn ?>">
+			</div>
 		</div>
 
 		<hr class="my-6">
@@ -43,7 +91,8 @@
 		<div id="vehicleRows">
 
 			<?php foreach ($vehicles as $v): ?>
-				<div class="vehicleRow grid grid-cols-4 gap-3 mb-4 p-4 border rounded-lg bg-gray-50 relative">
+				<!-- <div class="vehicleRow grid grid-cols-4 gap-3 mb-4 p-4 border rounded-lg bg-gray-50 relative"> -->
+			<div class="vehicleRow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 p-4 border rounded-lg bg-gray-50 relative">
 
 					<button type="button"
 						onclick="removeVehicleRow(this, <?= $v->vehicle_id ?>)"
@@ -82,7 +131,9 @@
 							class="modelSelect border p-2 rounded w-full"
 							required>
 
-							<?php echo "m" .$v->model_id; echo "name" .$v->model;if (!empty($v->model_id) && !empty($v->model)): ?>
+							<?php echo "m" . $v->model_id;
+							echo "name" . $v->model;
+							if (!empty($v->model_id) && !empty($v->model)): ?>
 								<option value="<?= $v->model_id ?>" selected>
 									<?= $v->model ?>
 								</option>
@@ -141,6 +192,10 @@
 			class="px-6 py-2 bg-blue-600 text-white rounded">
 			Update Customer & Vehicles
 		</button>
+		<a href="<?= base_url('index.php/Customer') ?>"
+		class="px-6 py-2 bg-gray-500 text-white rounded inline-flex items-center">
+		Cancel
+	</a>
 
 	</form>
 </div>
@@ -158,7 +213,8 @@
 	// ADD NEW VEHICLE ROW
 	function addVehicleRow() {
 		let html = `
-    <div class="vehicleRow grid grid-cols-4 gap-3 mb-4 p-4 border rounded-lg bg-gray-50 relative">
+    
+			<div class="vehicleRow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 p-4 border rounded-lg bg-gray-50 relative">
 
         <button type="button"
                 onclick="this.closest('.vehicleRow').remove()"

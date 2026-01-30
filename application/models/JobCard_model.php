@@ -23,7 +23,7 @@ class Jobcard_model extends CI_Model
 			->row();
 	}
 
-	public function save_job_descriptions($jobcard_id, $descriptions, $employee_ids)
+	public function save_job_descriptionsold($jobcard_id, $descriptions, $employee_ids)
 	{
 		$this->db->where('jobcard_id', $jobcard_id)
 			->delete('jobcard_descriptions');
@@ -37,29 +37,54 @@ class Jobcard_model extends CI_Model
 				continue;
 			}
 
-			   // 🔹 Get service name from master
-        $service = $this->db
-            ->select('service_name')
-            ->from('services_master')
-            ->where('master_service_id', $desc)
-            ->get()
-            ->row();
+			// 🔹 Get service name from master
+			$service = $this->db
+				->select('service_name')
+				->from('services_master')
+				->where('master_service_id', $desc)
+				->get()
+				->row();
 
-        if (!$service) {
-            continue;
-        }
+			if (!$service) {
+				continue;
+			}
 
 			$this->db->insert('jobcard_descriptions', [
 				'jobcard_id' => $jobcard_id,
 				'description'   => $service->service_name,
 				'employee_id'   => $employee_ids[$i] ?? null,
-				'service_id'=> $desc,
+				'service_id' => $desc,
 			]);
 		}
 	}
 
-	public function save_parts($jobcard_id, $part_ids, $qtys)
+	public function save_job_descriptions($jobcard_id, $descriptions, $amounts)
 	{
+		// Delete existing rows
+		$this->db->where('jobcard_id', $jobcard_id)
+			->delete('jobcard_descriptions');
+
+		foreach ($descriptions as $i => $desc) {
+
+			// Skip empty rows
+			if (trim($desc) === '') {
+				continue;
+			}
+
+			$this->db->insert('jobcard_descriptions', [
+				'jobcard_id'  => $jobcard_id,
+				'description' => $desc,
+				'amount'      => isset($amounts[$i]) && $amounts[$i] !== ''
+					? $amounts[$i]
+					: null
+			]);
+		}
+	}
+
+
+	public function save_parts($jobcard_id, $part_ids, $part_type, $qtys, $unitprice, $sellprice, $totalprice, $disamt)
+	{
+
 		$this->db->where('jobcard_id', $jobcard_id)
 			->delete('jobcard_parts');
 
@@ -70,12 +95,17 @@ class Jobcard_model extends CI_Model
 				'jobcard_id' => $jobcard_id,
 				'part_id'       => $part_id,
 				'qty'           => $qtys[$i],
+				'part_type'           => $part_type[$i],
+				'unit_price'           => $unitprice[$i],
+				'selling_price'           => $sellprice[$i],
+				'total_price'           => $totalprice[$i],
+				'disamount'           => $disamt[$i],
 
 			]);
 		}
 	}
 
-	public function save_services($jobcard_id, $service_names)
+	public function save_services($jobcard_id, $service_names, $technician_id, $totalamt)
 	{
 		log_message('error', '--- save_services called ---');
 		log_message('error', 'jobcard_id ID: ' . $jobcard_id);
@@ -91,13 +121,42 @@ class Jobcard_model extends CI_Model
 			$this->db->insert('jobcard_services', [
 				'jobcard_id' => $jobcard_id,
 				'service_id'    => $service_name, // optional: map later
-
+				'employee_id'    => $technician_id,
+				'total_cost'    => $totalamt,
 			]);
 
 			log_message('error', $this->db->last_query());
 			log_message('error', json_encode($this->db->error()));
 		}
 	}
+
+	public function update_services($jobcard_id, $service_ids, $technician_ids)
+	{
+		// log_message('error', '--- update_services called ---');
+		// log_message('error', 'Jobcard ID: ' . $jobcard_id);
+		// log_message('error', 'Service IDs: ' . print_r($service_ids, true));
+		// log_message('error', 'Technician IDs: ' . print_r($technician_ids, true));
+
+		foreach ($service_ids as $i => $service_id) {
+
+			if (!$service_id) {
+				continue;
+			}
+
+			$employee_id = $technician_ids[$i] ?? null;
+
+			// Update only technician
+			$this->db->where('jobcard_id', $jobcard_id)
+				->where('service_id', $service_id)
+				->update('jobcard_services', [
+					'employee_id' => $employee_id
+				]);
+
+			// log_message('debug', $this->db->last_query());
+			// log_message('debug', json_encode($this->db->error()));
+		}
+	}
+
 
 	public function get_jobcard_with_basic_details($jobcard_id)
 	{
@@ -162,16 +221,17 @@ class Jobcard_model extends CI_Model
 			->order_by('ejd.jobcard_description_id ', 'ASC')
 			->get()
 			->result();
-			echo $this->db->last_query();exit;
+		echo $this->db->last_query();
+		exit;
 	}
 
 	// public function get_job_descriptions($jobcard_id)
 	// {
 	// 	return $this->db
 	// 		->select('
-    //         ejd.*,
-    //         e.employee_name
-    //     ')
+	//         ejd.*,
+	//         e.employee_name
+	//     ')
 	// 		->from('jobcard_services ejd')
 	// 		->join(
 	// 			'employees e',
@@ -187,10 +247,19 @@ class Jobcard_model extends CI_Model
 
 	public function get_parts($jobcard_id)
 	{
-		$this->db->select('jobcard_parts.*, spare_parts.part_name');
+		$this->db->select('jobcard_parts.*, spare_parts.*');
 		$this->db->from('jobcard_parts');
 		$this->db->join('spare_parts', 'spare_parts.part_id = jobcard_parts.part_id');
 		$this->db->where('jobcard_id', $jobcard_id);
+
+		// ✅ Custom sorting
+		$this->db->order_by("
+        CASE spare_parts.part_type
+            WHEN 'New Parts' THEN 1
+            WHEN 'Aftermarket Parts' THEN 2
+            WHEN 'Used Parts' THEN 3
+            ELSE 4
+        END", 'ASC');
 		return $this->db->get()->result();
 	}
 	public function get_services($jobcard_id)
@@ -209,11 +278,12 @@ class Jobcard_model extends CI_Model
         customers.name AS customer_name,
         customers.phone,
         customers.email,
+		customers.address,customers.trn,
         vehicles.registration_no,
         vehicles.brand,
         vehicles.model,
         vehicles.variant,
-        vehicles.year,
+        vehicles.year,vehicles.chassis_no,vehicles.color,
         appointments.appointment_date
     ");
 
@@ -232,11 +302,46 @@ class Jobcard_model extends CI_Model
 			->result();
 	}
 
+	public function get_jobcard_servicesnew($jobcard_id)
+	{
+		return $this->db
+			->select('
+            js.*,
+            sm.service_name,
+            sm.service_type,
+            sm.estimated_cost,
+            sm.estimated_time,
+            e.employee_name
+        ')
+			->from('jobcard_services js')
+			->join(
+				'services_master sm',
+				'sm.master_service_id = js.service_id',
+				'left'
+			)
+			->join(
+				'employees e',
+				'e.employee_id = js.employee_id',
+				'left'
+			)
+			->where('js.jobcard_id', $jobcard_id)
+			->get()
+			->result();
+	}
+
+
 	public function get_jobcard_parts($jobcard_id)
 	{
 		$this->db->select("
         jobcard_parts.*,
-        spare_parts.part_name
+        spare_parts.part_name,
+        spare_parts.part_type,
+        CASE spare_parts.part_type
+            WHEN 'New Parts' THEN 'Original'
+            WHEN 'Aftermarket Parts' THEN 'Aftermarket'
+            WHEN 'Used Parts' THEN 'Used'
+            ELSE spare_parts.part_type
+        END AS part_type_label
     ");
 		$this->db->from("jobcard_parts");
 		$this->db->join("spare_parts", "spare_parts.part_id = jobcard_parts.part_id");
@@ -244,6 +349,7 @@ class Jobcard_model extends CI_Model
 
 		return $this->db->get()->result();
 	}
+
 
 
 	public function get_jobcard_with_details($jobcard_id)
@@ -287,10 +393,44 @@ class Jobcard_model extends CI_Model
 		return $jobcard;
 	}
 
+	// public function get_all_jobcards()
+	// {
+	// 	return $this->db
+	// 		->select('
+	//         jc.jobcard_id,
+	//         jc.jobcard_no,
+	//         jc.jobcard_date,
+	//         jc.expected_delivery_date,
+	//         jc.status,
+
+	//         c.name AS customer_name,
+	//         v.registration_no,
+	//         v.brand,
+	//         v.model,
+
+	//         e.employee_name AS technician_name,
+
+	//         COUNT(mi.issue_id) AS issue_count
+	//     ')
+	// 		->from('job_cards jc')
+	// 		->join('customers c', 'c.customer_id = jc.customer_id')
+	// 		->join('vehicles v', 'v.vehicle_id = jc.vehicle_id')
+	// 		->join('employees e', 'e.employee_id = jc.technician_id', 'left')
+	// 		->join(
+	// 			'material_issues mi',
+	// 			'mi.jobcard_id = jc.jobcard_id',
+	// 			'left'
+	// 		)
+	// 		->group_by('jc.jobcard_id')
+	// 		->order_by('jc.created_at', 'DESC')
+	// 		->get()
+	// 		->result();
+	// }
+
 	public function get_all_jobcards()
 	{
 		return $this->db
-			->select('
+			->select("
             jc.jobcard_id,
             jc.jobcard_no,
             jc.jobcard_date,
@@ -304,23 +444,42 @@ class Jobcard_model extends CI_Model
 
             e.employee_name AS technician_name,
 
-            COUNT(mi.issue_id) AS issue_count
-        ')
+            COUNT(DISTINCT jp.part_id) AS total_parts,
+
+            COUNT(
+                DISTINCT CASE 
+                    WHEN IFNULL(issued.total_issued_qty, 0) >= jp.qty 
+                    THEN jp.part_id 
+                END
+            ) AS fully_issued_parts
+        ")
 			->from('job_cards jc')
 			->join('customers c', 'c.customer_id = jc.customer_id')
 			->join('vehicles v', 'v.vehicle_id = jc.vehicle_id')
 			->join('employees e', 'e.employee_id = jc.technician_id', 'left')
-			->join(
-				'material_issues mi',
-				'mi.jobcard_id = jc.jobcard_id',
-				'left'
-			)
+
+			// Planned parts
+			->join('jobcard_parts jp', 'jp.jobcard_id = jc.jobcard_id', 'left')
+
+			// Issued qty per part
+			->join("
+            (
+                SELECT 
+                    jobcard_id,
+                    part_id,
+                    SUM(issued_qty) AS total_issued_qty
+                FROM material_issue_items
+                GROUP BY jobcard_id, part_id
+            ) AS issued
+        ", 'issued.jobcard_id = jc.jobcard_id AND issued.part_id = jp.part_id', 'left')
+
 			->group_by('jc.jobcard_id')
 			->order_by('jc.created_at', 'DESC')
 			->get()
 			->result();
 	}
-	public function get_all_jobcards_completed()
+
+	public function get_all_jobcards_completed_oldfn()
 	{
 		return $this->db
 			->select('
@@ -359,12 +518,83 @@ class Jobcard_model extends CI_Model
 			->result();
 	}
 
+	public function get_all_jobcards_completed()
+	{
+		return $this->db
+			->select('
+            jc.jobcard_id,
+            jc.jobcard_no,
+            jc.jobcard_date,
+            jc.expected_delivery_date,
+            jc.status,
+
+            q.quotation_id,
+            q.quotation_no,
+
+            c.name AS customer_name,
+            v.registration_no,
+            v.brand,
+            v.model,
+
+            e.employee_name AS technician_name,
+
+            COUNT(mi.issue_id) AS issue_count
+        ')
+			->from('job_cards jc')
+
+			// quotation
+			->join('quotations q', 'q.quotation_id = jc.quotation_id', 'left')
+
+			// invoice join (IMPORTANT)
+			->join('invoices i', 'i.jobcard_id = jc.jobcard_id', 'left')
+
+			// masters
+			->join('customers c', 'c.customer_id = jc.customer_id')
+			->join('vehicles v', 'v.vehicle_id = jc.vehicle_id')
+			->join('employees e', 'e.employee_id = jc.technician_id', 'left')
+
+			// material issues
+			->join('material_issues mi', 'mi.jobcard_id = jc.jobcard_id', 'left')
+
+			// conditions
+			// ->where('jc.status', 'Scheduled')
+			// ->where('i.jobcard_id IS NULL', null, false) // ✅ invoice not created
+
+			->group_by('jc.jobcard_id')
+			->order_by('jc.created_at', 'DESC')
+			->get()
+			->result();
+	}
+
+
 
 	public function delete_jobcard($jobcard_id)
 	{
-		return $this->db
-			->where('jobcard_id', $jobcard_id)
+		$this->db->trans_start();
+
+		// 1. Work logs (depends on jobcard_services)
+		$this->db->where('jobcard_id', $jobcard_id)
+			->delete('jobcard_work_logs');
+
+		// 2. Jobcard services
+		$this->db->where('jobcard_id', $jobcard_id)
+			->delete('jobcard_services');
+
+		// 3. Jobcard parts
+		$this->db->where('jobcard_id', $jobcard_id)
+			->delete('jobcard_parts');
+
+		// 4. Jobcard descriptions
+		$this->db->where('jobcard_id', $jobcard_id)
+			->delete('jobcard_descriptions');
+
+		// 5. MAIN job card (LAST)
+		$this->db->where('jobcard_id', $jobcard_id)
 			->delete('job_cards');
+
+		$this->db->trans_complete();
+
+		return $this->db->trans_status();
 	}
 
 	public function get_jobcard_full_details_estimation($jobcard_id)
@@ -458,7 +688,7 @@ class Jobcard_model extends CI_Model
 		$jobcard = $this->db
 			->select('
             jc.*,
-
+ 			q.quotation_id,
             q.quotation_no,
             q.quotation_date,
             q.subtotal AS quotation_subtotal,
@@ -470,6 +700,9 @@ class Jobcard_model extends CI_Model
             c.name  AS customer_name,
             c.phone AS customer_phone,
             c.email AS customer_email,
+			c.trn as customer_trn,
+			c.address as cistomer_address,
+			c.emirates as customer_emirates,
 
             v.registration_no,
             v.brand,
@@ -523,6 +756,7 @@ class Jobcard_model extends CI_Model
             qp.qty,
             qp.unit_price,
             qp.selling_price,
+			qp.dis_amount,
             qp.total_price,
 
             p.part_name,
@@ -539,6 +773,57 @@ class Jobcard_model extends CI_Model
 			->get()
 			->result();
 
+		/* =====================================================
+			4. Jobcard Services / Labour (FOR INVOICE)
+			===================================================== */
+
+		$jobcard->descriptions = $this->db
+			->select('
+        qjd.id AS quotation_job_description_id,
+        qjd.description,
+        qjd.amount,
+
+        e.employee_id,
+        e.employee_name    ')
+			->from('quotation_job_descriptions qjd')
+			->join(
+				'employees e',
+				'e.employee_id = qjd.employee_id',
+				'left'
+			)
+			->where('qjd.quotation_id', $jobcard->quotation_id)
+			->get()
+			->result();
+
+		// 	$jobcard->descriptions = $this->db
+		// 		->select('
+		//     jd.jobcard_description_id,
+		//     jd.service_id,
+		//     jd.description,
+		//     jd.amount,
+
+		//     s.service_name,
+		//     s.service_type,
+
+		//     e.employee_id,
+		//     e.employee_name
+		// ')
+		// 		->from('jobcard_descriptions jd')
+		// 		->join(
+		// 			'services_master s',
+		// 			's.master_service_id  = jd.service_id',
+		// 			'left'
+		// 		)
+		// 		->join(
+		// 			'employees e',
+		// 			'e.employee_id = jd.employee_id',
+		// 			'left'
+		// 		)
+		// 		->where('jd.jobcard_id', $jobcard->jobcard_id)
+		// 		->get()
+		// 		->result();
+
+
 		return $jobcard;
 	}
 
@@ -547,7 +832,7 @@ class Jobcard_model extends CI_Model
 	public function get_jobcard_basic($jobcard_id)
 	{
 		return $this->db
-			->select('j.jobcard_no,j.jobcard_id, c.name, v.registration_no')
+			->select('j.jobcard_no,j.jobcard_id,j.status, c.name, v.registration_no')
 			->from('job_cards j')
 			->join('customers c', 'c.customer_id = j.customer_id')
 			->join('vehicles v', 'v.vehicle_id = j.vehicle_id')
@@ -555,44 +840,76 @@ class Jobcard_model extends CI_Model
 			->get()->row();
 	}
 
+	// public function get_jobcard_descriptions_with_employee($jobcard_id)
+	// {
+	// 	return $this->db
+	// 		->select('jd.*, e.employee_name')
+	// 		->from('jobcard_services jd')
+	// 		->join('employees e', 'e.employee_id = jd.employee_id')
+	// 		->where('jd.jobcard_id', $jobcard_id)
+	// 		->get()->result();
+
+	// 	// return $this->db
+	// 	// 	->select('jd.*')
+	// 	// 	->from('jobcard_descriptions jd')
+
+	// 	// 	->where('jd.jobcard_id', $jobcard_id)
+	// 	// 	->get()->result();
+	// }
+
 	public function get_jobcard_descriptions_with_employee($jobcard_id)
 	{
-		// return $this->db
-		// 	->select('jd.*, e.employee_name')
-		// 	->from('jobcard_descriptions jd')
-		// 	->join('employees e', 'e.employee_id = jd.employee_id')
-		// 	->where('jd.jobcard_id', $jobcard_id)
-		// 	->get()->result();
-
 		return $this->db
-			->select('jd.*')
-			->from('jobcard_descriptions jd')
-
-			->where('jd.jobcard_id', $jobcard_id)
-			->get()->result();
-	}
-
-	public function get_latest_work_status($jobcard_id)
-	{
-		$subQuery = $this->db
-			->select('jobcard_description_id, MAX(log_time) as last_time')
-			->from('jobcard_work_logs')
-			->where('jobcard_id', $jobcard_id)
-			->group_by('jobcard_description_id')
-			->get_compiled_select();
-
-		return $this->db
-			->select('w.jobcard_description_id, w.status')
-			->from('jobcard_work_logs w')
-			->join("($subQuery) t", 'w.jobcard_description_id = t.jobcard_description_id AND w.log_time = t.last_time')
+			->select('
+            js.*,
+            e.employee_name,
+            sm.service_name,
+            sm.service_type,
+            sm.estimated_cost,
+            sm.estimated_time
+        ')
+			->from('jobcard_services js')
+			->join(
+				'employees e',
+				'e.employee_id = js.employee_id',
+				'left'
+			)
+			->join(
+				'services_master sm',
+				'sm.master_service_id = js.service_id',
+				'left'
+			)
+			->where('js.jobcard_id', $jobcard_id)
 			->get()
 			->result();
 	}
 
+
+	public function get_latest_work_status($jobcard_id)
+	{
+		$subQuery = $this->db
+			->select('jobcard_service_id, MAX(log_time) as last_time')
+			->from('jobcard_work_logs')
+			->where('jobcard_id', $jobcard_id)
+			->group_by('jobcard_service_id')
+			->get_compiled_select();
+
+		return $this->db
+			->select('w.jobcard_service_id, w.status')
+			->from('jobcard_work_logs w')
+			->join(
+				"($subQuery) t",
+				'w.jobcard_service_id = t.jobcard_service_id AND w.log_time = t.last_time'
+			)
+			->get()
+			->result();
+	}
+
+
 	public function get_jobcard_work_times($jobcard_id)
 	{
 		$rows = $this->db
-			->select('jobcard_description_id, status, log_time')
+			->select('jobcard_service_id, status, log_time')
 			->from('jobcard_work_logs')
 			->where('jobcard_id', $jobcard_id)
 			->order_by('log_time', 'ASC')
@@ -602,8 +919,8 @@ class Jobcard_model extends CI_Model
 		$times = [];
 
 		foreach ($rows as $r) {
-			if (!isset($times[$r->jobcard_description_id])) {
-				$times[$r->jobcard_description_id] = [
+			if (!isset($times[$r->jobcard_service_id])) {
+				$times[$r->jobcard_service_id] = [
 					'START' => null,
 					'PAUSE' => null,
 					'STOP'  => null,
@@ -611,7 +928,7 @@ class Jobcard_model extends CI_Model
 			}
 
 			// overwrite → latest time wins
-			$times[$r->jobcard_description_id][$r->status] = $r->log_time;
+			$times[$r->jobcard_service_id][$r->status] = $r->log_time;
 		}
 
 		return $times;
@@ -619,7 +936,7 @@ class Jobcard_model extends CI_Model
 
 	public function create_from_quotation($quotation_id)
 	{
-		
+
 		$q = $this->db->get_where('quotations', [
 			'quotation_id' => $quotation_id
 		])->row();
@@ -660,28 +977,30 @@ class Jobcard_model extends CI_Model
 			$jobcard_id,
 			['jobcard_no' => $jobcard_no]
 		);
-		
+
 		// Copy jobs
-		// $jobs = $this->db->get_where('quotation_job_descriptions', [
+		$jobs = $this->db->get_where('quotation_job_descriptions', [
+			'quotation_id' => $quotation_id,
+		])->result();
+
+		// $jobs = $this->db->get_where('quotation_services', [
 		// 	'quotation_id' => $quotation_id
 		// ])->result();
-		$jobs = $this->db->get_where('quotation_services', [
-			'quotation_id' => $quotation_id
-		])->result();
 
 		foreach ($jobs as $j) {
 			$this->db->insert('jobcard_descriptions', [
 				'jobcard_id' => $jobcard_id,
-				// 'description' => $j->description,
-				'service_id' => $j->service_id,
-				
+				'description' => $j->description,
+				'amount' => $j->amount,
+				// 'service_id' => $j->service_id,
+
 			]);
 		}
 
 		// Copy parts
 		$parts = $this->db->get_where('quotation_parts', [
 			'quotation_id' => $quotation_id,
-			
+
 		])->result();
 
 		foreach ($parts as $p) {
@@ -691,7 +1010,8 @@ class Jobcard_model extends CI_Model
 				'qty'          => $p->qty,
 				'unit_price'   => $p->unit_price,
 				'selling_price' => $p->selling_price,
-				'total_price'  => $p->total_price
+				'total_price'  => $p->total_price,
+				'disamount'  => $p->dis_amount
 			]);
 		}
 
@@ -719,5 +1039,39 @@ class Jobcard_model extends CI_Model
 			->where('quotation_id', $quotation_id)
 			->get('job_cards')
 			->row();   // return single jobcard or NULL
+	}
+
+
+	public function get_jobcards_by_status($status)
+	{
+		return $this->db
+			->select('
+            jc.jobcard_id,
+            jc.jobcard_no,
+            jc.jobcard_date,
+            jc.expected_delivery_date,
+            jc.status,
+            jc.grand_total,
+
+            c.name AS customer_name,
+            v.registration_no,
+            e.employee_name AS technician_name
+        ')
+			->from('job_cards jc')
+			->join('customers c', 'c.customer_id = jc.customer_id')
+			->join('vehicles v', 'v.vehicle_id = jc.vehicle_id')
+			->join('employees e', 'e.employee_id = jc.technician_id', 'left')
+			->where('jc.status', $status)
+			->order_by('jc.created_at', 'DESC')
+			->get()
+			->result();
+	}
+
+	public function get_by_quotation_id($quotation_id)
+	{
+		return $this->db
+			->where('quotation_id', $quotation_id)
+			->get('job_cards')
+			->row();
 	}
 }

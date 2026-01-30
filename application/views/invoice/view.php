@@ -10,33 +10,7 @@
 			</p>
 		</div>
 
-		<!-- <div class="flex items-center gap-2">
-		
-			<span class="px-3 py-1 rounded text-white text-sm
-                <?= $invoice->status == 'Paid' ? 'bg-green-600' : ($invoice->status == 'Partially Paid' ? 'bg-yellow-500' : 'bg-red-600') ?>">
-				<?= $invoice->status ?>
-			</span>
 
-			
-			<a href="<?= base_url('index.php/invoice/print_invoice/' . $invoice->invoice_id) ?>"
-				target="_blank"
-				class="p-2 rounded bg-gray-200 hover:bg-gray-300"
-				title="Print Invoice">
-				🖨
-			</a>
-			<a href="<?= base_url('index.php/invoice/download_invoice/' . $invoice->invoice_id) ?>"
-				target="_blank"
-				class="p-2 rounded bg-gray-200 hover:bg-gray-300"
-				title="Download Invoice PDF">
-				📄
-			</a>
-			
-			<a href="<?= base_url('index.php/invoice/download_invoice/' . $invoice->invoice_id) ?>"
-				class="p-2 rounded bg-green-200 hover:bg-green-300"
-				title="Export Excel">
-				📊
-			</a>
-		</div> -->
 
 		<div class="flex items-center gap-2">
 
@@ -47,7 +21,7 @@
 			</span>
 
 			<!-- PRINT -->
-			<a href="<?= base_url('index.php/invoice/print_invoice/' . $invoice->invoice_id) ?>"
+			<a href="<?= base_url('index.php/Invoice/print_invoice/' . $invoice->invoice_id) ?>"
 				target="_blank"
 				class="p-3 rounded-lg bg-slate-100 hover:bg-slate-200 transition"
 				title="Print Invoice">
@@ -59,7 +33,7 @@
 			</a>
 
 			<!-- PDF -->
-			<a href="<?= base_url('index.php/invoice/download_invoice/' . $invoice->invoice_id) ?>"
+			<a href="<?= base_url('index.php/Invoice/download_invoice/' . $invoice->invoice_id) ?>"
 				class="p-3 rounded-lg bg-red-100 hover:bg-red-200 transition"
 				title="Download PDF">
 				<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-700"
@@ -70,7 +44,7 @@
 			</a>
 
 			<!-- EXCEL -->
-			<a href="<?= base_url('index.php/invoice/export_excel/' . $invoice->invoice_id) ?>"
+			<a href="<?= base_url('index.php/Invoice/export_excel/' . $invoice->invoice_id) ?>"
 				class="p-3 rounded-lg bg-green-100 hover:bg-green-200 transition"
 				title="Export Excel">
 				<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-green-700"
@@ -91,10 +65,14 @@
 		<div>
 			<p><b>Customer Name:</b> <?= $invoice->customer_name ?></p>
 			<p><b>Phone:</b> <?= $invoice->phone ?></p>
+			<p><b>Address:</b> <?= $invoice->address ?></p>
+			<p><b>TRN:</b> <?= $invoice->trn ?></p>
+			<p><b>Emirate:</b> <?= $invoice->emirates ?></p>
 		</div>
 		<div>
 			<p><b>Vehicle No:</b> <?= $invoice->registration_no ?></p>
 			<p><b>Vehicle:</b> <?= $invoice->brand ?> <?= $invoice->model ?></p>
+
 		</div>
 	</div>
 
@@ -141,6 +119,29 @@
 			<?php endif; ?>
 		</tbody>
 	</table>
+	<h3 class="font-semibold mb-2">Remarks</h3>
+
+	<textarea name="remarks" class="remark-input" readonly><?= $invoice->remarks ?> </textarea>
+
+	<style>
+		.remark-input {
+			width: 100%;
+			height: 80px;
+			border: 1px solid #000;
+			padding: 6px;
+			font-family: Arial, sans-serif;
+			font-size: 12px;
+		}
+
+		/* On print, remove textarea look */
+		@media print {
+			.remark-input {
+				border: none;
+				resize: none;
+				outline: none;
+			}
+		}
+	</style>
 
 	<!-- TOTALS -->
 	<div class="grid grid-cols-2 gap-4 text-sm mb-6">
@@ -172,41 +173,43 @@
 			</div>
 		</div>
 	</div>
+	<div style="display:none">
+		<!-- PAYMENT HISTORY -->
+		<h3 class="font-semibold mb-2">Payment History</h3>
 
-	<!-- PAYMENT HISTORY -->
-	<h3 class="font-semibold mb-2">Payment History</h3>
-
-	<table class="w-full border text-sm">
-		<thead class="bg-gray-100">
-			<tr>
-				<th class="border p-2">Date</th>
-				<th class="border p-2">Mode</th>
-				<th class="border p-2 text-right">Amount</th>
-				<th class="border p-2">Reference</th>
-				<th class="border p-2">Notes</th>
-			</tr>
-		</thead>
-		<tbody>
-			<?php if (!empty($payments)): ?>
-				<?php foreach ($payments as $p): ?>
-					<tr>
-						<td class="border p-2"><?= date('d-m-Y', strtotime($p->payment_date)) ?></td>
-						<td class="border p-2"><?= $p->payment_mode ?></td>
-						<td class="border p-2 text-right">
-							<?= number_format($p->amount, 2) ?>
-						</td>
-						<td class="border p-2"><?= $p->reference_no ?></td>
-						<td class="border p-2"><?= $p->notes ?></td>
-					</tr>
-				<?php endforeach; ?>
-			<?php else: ?>
+		<table class="w-full border text-sm">
+			<thead class="bg-gray-100">
 				<tr>
-					<td colspan="5" class="border p-3 text-center text-gray-500">
-						No payments recorded
-					</td>
+					<th class="border p-2">Date</th>
+					<th class="border p-2">Mode</th>
+					<th class="border p-2 text-right">Amount</th>
+					<th class="border p-2">Reference</th>
+					<th class="border p-2">Notes</th>
 				</tr>
-			<?php endif; ?>
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				<?php if (!empty($payments)): ?>
+					<?php foreach ($payments as $p): ?>
+						<tr>
+							<td class="border p-2"><?= date('d-m-Y', strtotime($p->payment_date)) ?></td>
+							<td class="border p-2"><?= $p->payment_mode ?></td>
+							<td class="border p-2 text-right">
+								<?= number_format($p->amount, 2) ?>
+							</td>
+							<td class="border p-2"><?= $p->reference_no ?></td>
+							<td class="border p-2"><?= $p->notes ?></td>
+						</tr>
+					<?php endforeach; ?>
+				<?php else: ?>
+					<tr>
+						<td colspan="5" class="border p-3 text-center text-gray-500">
+							No payments recorded
+						</td>
+					</tr>
+				<?php endif; ?>
+			</tbody>
+		</table>
+
+	</div>
 
 </div>

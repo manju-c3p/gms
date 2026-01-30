@@ -10,10 +10,14 @@
 			background-color: white;
 		}
 
-		.header {
+		/* .header {
 			text-align: center;
 			margin-bottom: 20px;
-		}
+		} */
+
+
+
+
 
 		.title {
 			font-size: 22px;
@@ -47,6 +51,32 @@
 			color: rgba(200, 0, 0, 0.15);
 			transform: rotate(-30deg);
 		}
+
+		.invoice-header {
+			border: 1px solid #000;
+			border-collapse: collapse;
+		}
+
+		.invoice-header td {
+			vertical-align: middle;
+			/* 🔥 THIS FIXES YOUR ISSUE */
+			padding: 10px;
+		}
+
+		.logo-cell {
+			text-align: center;
+		}
+
+		.logo-cell img {
+			max-height: 70px;
+			width: auto;
+		}
+
+		.company-cell {
+			font-size: 14px;
+			line-height: 1.6;
+			text-align: right;
+		}
 	</style>
 </head>
 
@@ -56,101 +86,148 @@
 		<div class="status">PAID</div>
 	<?php endif; ?>
 	<div class="container">
-	<div class="header">
+		<!-- <div class="header">
 		<div class="title">TAX INVOICE</div>
 		<p>Garage Management System<br>Dubai, UAE<br>TRN: 123456789</p>
-	</div>
-
-	<table>
-		<tr>
-			<td><b>Invoice No:</b> <?= $invoice->invoice_no ?></td>
-			<td><b>Date:</b> <?= $invoice->invoice_date ?></td>
-		</tr>
-		<tr>
-			<td>
-				<b>Customer:</b> <?= $invoice->customer_name ?><br>
-				<b>Phone:</b> <?= $invoice->phone ?>
-			</td>
-			<td>
-				<b>Vehicle:</b> <?= $invoice->registration_no ?><br>
-				<?= $invoice->brand ?> <?= $invoice->model ?>
-			</td>
-		</tr>
-	</table>
-
-	<br>
-
-	<table>
-		<thead>
+	</div> -->
+		<!-- HEADER -->
+		<table width="100%" class="invoice-header" cellpadding="0" cellspacing="0">
 			<tr>
-				<th>#</th>
-				<th>Description</th>
-				<th>Qty</th>
-				<th class="right">Unit</th>
-				<th class="right">Total</th>
+				<td width="20%" class="logo-cell">
+					<img src="<?= base_url('public/images/logocooling.png') ?>" alt="Logo">
+				</td>
+
+				<td width="80%" class="company-cell">
+					<strong>Cool Runnings Garage Co LLC</strong><br>
+					7 St, Al Quoz 3, Dubai, UAE<br>
+					www.coolrunningsgarage.com<br>
+					info@coolrunningsgarage.com<br>
+					Tel: +971 4 265 4887<br>
+					TRN: 104026094300003
+				</td>
 			</tr>
-		</thead>
-		<tbody>
-			<?php $i = 1;
-			foreach ($items as $it): ?>
+		</table>
+
+
+
+		<table>
+			<tr>
+				<td><b>Invoice No:</b> <?= $invoice->invoice_no ?></td>
+				<td><b>Date:</b> <?= $invoice->invoice_date ?></td>
+			</tr>
+			<tr>
+				<td>
+					<b>Customer:</b> <?= $invoice->customer_name ?><br>
+					<b>Phone:</b> <?= $invoice->phone ?><br>
+					<b>Address:</b> <?= $invoice->address ?><br>
+					<b>TRN:</b> <?= $invoice->trn ?><br>
+					<b>Emirates:</b> <?= $invoice->emirates ?><br>
+				</td>
+				<td>
+					<b>Vehicle:</b> <?= $invoice->registration_no ?><br>
+					<b>Model:</b><?= $invoice->brand ?> <?= $invoice->model ?><br>
+					<b>Vin No:</b><?= $invoice->chassis_no ?>
+				</td>
+			</tr>
+		</table>
+
+		<br>
+
+		<table>
+			<thead>
 				<tr>
-					<td><?= $i++ ?></td>
-					<td><?= $it->item_name ?> (<?= $it->item_type ?>)</td>
-					<td><?= $it->quantity ?></td>
-					<td class="right"><?= number_format($it->unit_price, 2) ?></td>
-					<td class="right"><?= number_format($it->total_price, 2) ?></td>
+					<th>#</th>
+					<th>Description</th>
+					<th>Qty</th>
+					<th class="right">Unit</th>
+					<th class="right">Total</th>
 				</tr>
-			<?php endforeach; ?>
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				<?php $i = 1;
+				foreach ($items as $it): ?>
+					<tr>
+						<td><?= $i++ ?></td>
+						<td><?= $it->item_name ?> (<?= $it->item_type ?>)</td>
+						<td><?= $it->quantity ?></td>
+						<td class="right"><?= number_format($it->unit_price, 2) ?></td>
+						<td class="right"><?= number_format($it->total_price, 2) ?></td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
 
-	<br>
+		
+		<h3 class="font-semibold mb-2">Remarks</h3>
 
-	<table>
-		<tr>
-			<td class="right">Subtotal</td>
-			<td class="right"><?= number_format($invoice->subtotal, 2) ?></td>
-		</tr>
-		<tr>
-			<td class="right">VAT (5%)</td>
-			<td class="right"><?= number_format($invoice->tax_amount, 2) ?></td>
-		</tr>
-		<tr>
-			<td class="right">Discount</td>
-			<td class="right"><?= number_format($invoice->discount_amount, 2) ?></td>
-		</tr>
-		<tr>
-			<th class="right">Grand Total</th>
-			<th class="right"><?= number_format($invoice->grand_total, 2) ?></th>
-		</tr>
-		<tr>
-			<td class="right">Paid</td>
-			<td class="right"><?= number_format($paid, 2) ?></td>
-		</tr>
-		<tr>
-			<th class="right">Balance</th>
-			<th class="right"><?= number_format($balance, 2) ?></th>
-		</tr>
-	</table>
+		<textarea name="remarks" class="remark-input" readonly><?= $invoice->remarks ?> </textarea>
 
-	<br>
+		<style>
+			.remark-input {
+				width: 100%;
+				height: 80px;
+				border: 1px solid #000;
+				padding: 6px;
+				font-family: Arial, sans-serif;
+				font-size: 12px;
+			}
 
-	<b>Payment History</b>
-	<table>
-		<tr>
-			<th>Date</th>
-			<th>Mode</th>
-			<th class="right">Amount</th>
-		</tr>
-		<?php foreach ($payments as $p): ?>
+			/* On print, remove textarea look */
+			@media print {
+				.remark-input {
+					border: none;
+					resize: none;
+					outline: none;
+				}
+			}
+		</style>
+<br>
+		<table>
 			<tr>
-				<td><?= $p->payment_date ?></td>
-				<td><?= $p->payment_mode ?></td>
-				<td class="right"><?= number_format($p->amount, 2) ?></td>
+				<td class="right">Subtotal</td>
+				<td class="right"><?= number_format($invoice->subtotal, 2) ?></td>
 			</tr>
-		<?php endforeach; ?>
-	</table>
-</div>
+			<tr>
+				<td class="right">VAT (5%)</td>
+				<td class="right"><?= number_format($invoice->tax_amount, 2) ?></td>
+			</tr>
+			<tr>
+				<td class="right">Discount</td>
+				<td class="right"><?= number_format($invoice->discount_amount, 2) ?></td>
+			</tr>
+			<tr>
+				<th class="right">Grand Total</th>
+				<th class="right"><?= number_format($invoice->grand_total, 2) ?></th>
+			</tr>
+			<tr>
+				<td class="right">Paid</td>
+				<td class="right"><?= number_format($paid, 2) ?></td>
+			</tr>
+			<tr>
+				<th class="right">Balance</th>
+				<th class="right"><?= number_format($balance, 2) ?></th>
+			</tr>
+		</table>
+
+		<br>
+		<div style="display:none">
+			<b>Payment History</b>
+			<table>
+				<tr>
+					<th>Date</th>
+					<th>Mode</th>
+					<th class="right">Amount</th>
+				</tr>
+				<?php foreach ($payments as $p): ?>
+					<tr>
+						<td><?= $p->payment_date ?></td>
+						<td><?= $p->payment_mode ?></td>
+						<td class="right"><?= number_format($p->amount, 2) ?></td>
+					</tr>
+				<?php endforeach; ?>
+			</table>
+		</div>
+	</div>
 </body>
 
 </html>

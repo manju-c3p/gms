@@ -11,13 +11,18 @@ class Inspection extends CI_Controller
 			'Inspection_view_model',
 			'Works_requested_model',
 			'Inventory_status_model',
-			'Service_model'
+			'Service_model',
+			'Customer_model',
+			'Vehicle_model'
 		]);
 	}
 
 	// Create inspection from appointment
 	public function create($appointment_id)
 	{
+
+		$data['username'] = $this->session->userdata('username');
+		$data['userid'] = $this->session->userdata('user_id');
 		// Prevent duplicate inspection
 		$existing = $this->Inspection_view_model->get_by_appointment($appointment_id);
 		if ($existing) {
@@ -48,7 +53,7 @@ class Inspection extends CI_Controller
 		$data['items']         = $this->Inspection_model->get_all_items();
 		$data['works']         = $this->Works_requested_model->get_all();
 		$data['inventory']     = $this->Inventory_status_model->get_all();
-
+		$data['packages']     = $this->Inspection_model->get_all_packageitems();
 		$data['title'] = "Inspection Report";
 		$data['main_content'] = 'inspection/create';
 		$this->load->view('includes/template', $data);
@@ -73,6 +78,75 @@ class Inspection extends CI_Controller
 			'drivername'     => $this->input->post('driver_name'),
 			'driverphno' => $this->input->post('driver_mobile'),
 			'deliverytime' => $this->input->post('delivery_time'),
+			'deliverydate'       => $this->input->post('delivery_date'),
+			'techremarks'       => $this->input->post('tecremarks'),
+			'inspackage'       => $this->input->post('inspackage'),
+		];
+
+		$this->Inspection_model->update_inspection($inspection_id, $inspectionData);
+
+		// 2️⃣ Save Inspection Items (A / C / S)
+		if ($this->input->post('item_status')) {
+			foreach ($this->input->post('item_status') as $item_id => $status) {
+				$this->Inspection_model->save_item_result(
+					$inspection_id,
+					$item_id,
+					$status
+				);
+			}
+		}
+
+		// 3️⃣ Save Services / Description table
+		$service_ids     = $this->input->post('service_id') ?? [];
+		$custom_services = $this->input->post('custom_service') ?? [];
+
+		$this->Inspection_model->save_inspection_services(
+			$inspection_id,
+			$service_ids,
+			$custom_services
+		);
+
+		// 4️⃣ Save Works Requested
+		$works = $this->input->post('works_requested') ?? [];
+		$this->Inspection_model->save_works_requested($inspection_id, $works);
+
+		// 5️⃣ Save Inventory Status
+		$inventory = $this->input->post('inventory_status') ?? [];
+		$this->Inspection_model->save_inventory_status($inspection_id, $inventory);
+
+		// inspection photos
+
+		$this->Inspection_model->save_inspection_photos(
+			$inspection_id,
+			$_FILES['inspection_photos']
+		);
+
+
+		// 6️⃣ Redirect to inspection view / preview
+		redirect('inspection/edit/' . $inspection_id);
+		// redirect('estimation/create/' . $inspection_id);
+	}
+
+	public function update()
+	{
+		$inspection_id = $this->input->post('inspection_id');
+
+		if (!$inspection_id) {
+			show_error('Invalid Inspection');
+		}
+
+		// 1️⃣ Update main inspection table
+		$inspectionData = [
+			'km_reading'    => $this->input->post('km_reading'),
+			'fuel_level'    => $this->input->post('fuel_level'),
+			'remarks'       => $this->input->post('remarks'),
+			'status'        => 'Completed',
+			'drivername'     => $this->input->post('driver_name'),
+			'driverphno' => $this->input->post('driver_mobile'),
+			'deliverytime' => $this->input->post('delivery_time'),
+			'deliverydate'       => $this->input->post('delivery_date'),
+			'techremarks'       => $this->input->post('tecremarks'),
+			'inspackage'       => $this->input->post('inspackage'),
 		];
 
 		$this->Inspection_model->update_inspection($inspection_id, $inspectionData);
@@ -120,6 +194,7 @@ class Inspection extends CI_Controller
 	}
 
 
+
 	public function saveDamageMark()
 	{
 		$data = json_decode(file_get_contents("php://input"), true);
@@ -148,13 +223,64 @@ class Inspection extends CI_Controller
 
 	public function edit($inspection_id)
 	{
+
+		$data['username'] = $this->session->userdata('username');
+		$data['userid'] = $this->session->userdata('user_id');
 		// Get inspection
 		$inspection = $this->Inspection_model->get_by_id($inspection_id);
-		if (!$inspection) show_404();
+		// 🔐 Safety check
+		if (!$inspection) {
+			show_error('Inspection not found', 404);
+		}
 
-		// Get appointment details
-		$appointment = $this->Inspection_view_model
-			->get_appointment_details($inspection->appointment_id);
+		// Appointment based inspection
+		if (!empty($inspection->appointment_id)) {
+
+			// log_message('error', 'FLOW: Appointment based inspection');
+			// log_message('error', 'Appointment ID: ' . $inspection->appointment_id);
+
+			$appointment = $this->Inspection_view_model
+				->get_appointment_details($inspection->appointment_id);
+			// log_message('error', 'APPOINTMENT DATA: ' . print_r($appointment, true));
+			// Extra safety (appointment deleted case)
+			if ($appointment) {
+				$customer = $this->Customer_model
+					->get_customer($appointment->customer_id);
+				// log_message('error', 'CUSTOMER DATA: ' . print_r($customer, true));
+				$vehicle = $this->Vehicle_model
+					->get_vehicle($appointment->vehicle_id);
+				// log_message('error', 'VEHICLE DATA: ' . print_r($vehicle, true));
+			} else {
+
+				// log_message('error', 'Appointment NOT FOUND for appointment_id: ' . $inspection->appointment_id);
+				$customer = null;
+				$vehicle  = null;
+				$appointment = null;
+			}
+		} else {
+			// log_message('error', 'FLOW: Direct inspection (NO appointment)');
+
+			if (!empty($inspection->customer_id)) {
+				// log_message('error', 'Fetching CUSTOMER from inspection: ' . $inspection->customer_id);
+				$customer = $this->Customer_model->get_customer($inspection->customer_id);
+				// log_message('error', 'CUSTOMER DATA: ' . print_r($customer, true));
+			} else {
+				// log_message('error', 'Inspection customer_id is EMPTY');
+				$customer = null;
+			}
+
+			if (!empty($inspection->vehicle_id)) {
+				// log_message('error', 'Fetching VEHICLE from inspection: ' . $inspection->vehicle_id);
+				$vehicle = $this->Vehicle_model->get_vehicle($inspection->vehicle_id);
+				// log_message('error', 'VEHICLE DATA: ' . print_r($vehicle, true));
+			} else {
+				// log_message('error', 'Inspection vehicle_id is EMPTY');
+				$vehicle = null;
+			}
+
+			$appointment = null;
+		}
+
 
 		$data['inspection_photos'] = $this->db
 			->get_where('inspection_photos', [
@@ -162,6 +288,8 @@ class Inspection extends CI_Controller
 			])->result();
 
 		// Load saved data
+		$data['customer']      = $customer;
+		$data['vehicle']      = $vehicle;
 		$data['inspection']      = $inspection;
 		$data['inspection_id']   = $inspection_id;
 		$data['appointment']     = $appointment;
@@ -171,6 +299,7 @@ class Inspection extends CI_Controller
 		$data['works']     = $this->Works_requested_model->get_all();
 		$data['inventory'] = $this->Inventory_status_model->get_all();
 		$data['services']  = $this->Service_model->get_active_services();
+		$data['packages']     = $this->Inspection_model->get_all_packageitems();
 
 		$service_map = [];
 		foreach ($data['services'] as $s) {
@@ -202,15 +331,44 @@ class Inspection extends CI_Controller
 
 	public function view($inspection_id)
 	{
+
+		$data['username'] = $this->session->userdata('username');
+		$data['userid'] = $this->session->userdata('user_id');
 		// Get inspection
 		$inspection = $this->Inspection_model->get_by_id($inspection_id);
 		if (!$inspection) show_404();
 
-		// Get appointment details
-		$appointment = $this->Inspection_view_model
-			->get_appointment_details($inspection->appointment_id);
+
+		if ($inspection->appointment_id <> "") {
+			// Get appointment details
+			$appointment = $this->Inspection_view_model
+				->get_appointment_details($inspection->appointment_id);
+
+			// Customer & Vehicle from appointment
+			$customer = $this->Customer_model
+				->get_customer($appointment->customer_id);
+
+			$vehicle = $this->Vehicle_model
+				->get_vehicle($appointment->vehicle_id);
+		} else {
+
+			// ✅ Direct inspection (NO appointment)
+
+			// Customer from inspection
+			$customer = $this->Customer_model
+				->get_customer($inspection->customer_id);
+
+			// Vehicle from inspection
+			$vehicle = $this->Vehicle_model
+				->get_vehicle($inspection->vehicle_id);
+
+			// Appointment is NULL
+			$appointment = null;
+		}
 
 		// Load saved data
+		$data['customer']      = $customer;
+		$data['vehicle']      = $vehicle;
 		$data['inspection']      = $inspection;
 		$data['inspection_id']   = $inspection_id;
 		$data['appointment']     = $appointment;
@@ -220,6 +378,7 @@ class Inspection extends CI_Controller
 		$data['works']     = $this->Works_requested_model->get_all();
 		$data['inventory'] = $this->Inventory_status_model->get_all();
 		$data['services']  = $this->Service_model->get_active_services();
+		$data['packages']     = $this->Inspection_model->get_all_packageitems();
 
 		$service_map = [];
 		foreach ($data['services'] as $s) {
@@ -244,7 +403,7 @@ class Inspection extends CI_Controller
 		$data['damage_marks'] = $this->Inspection_model
 			->get_damage_marks($inspection_id);
 
-			$data['inspection_photos'] = $this->db
+		$data['inspection_photos'] = $this->db
 			->get_where('inspection_photos', [
 				'inspection_id' => $inspection_id
 			])->result();
@@ -260,6 +419,9 @@ class Inspection extends CI_Controller
 	public function index()
 	{
 		$data['title'] = 'Inspection List';
+		$data['customers'] = $this->Customer_model->get_all();
+		$data['vehicles']    = $this->Vehicle_model->get_all_vehicles();
+
 		$data['inspections'] = $this->Inspection_model->get_all_inspections();
 
 		$data['main_content'] = 'inspection/list';
@@ -299,5 +461,186 @@ class Inspection extends CI_Controller
 		}
 
 		echo json_encode(['success' => false]);
+	}
+	// =========================== not needed fns =================
+	public function chkindex()
+	{
+		$data['title'] = 'Inspection List';
+
+
+		$data['main_content'] = 'inspection/chk';
+		$this->load->view('includes/template', $data);
+	}
+
+	public function check_mobile()
+	{
+		$mobile = $this->input->post('mobile');
+
+		// Validate mobile
+		// if (!preg_match('/^[6-9]\d{9}$/', $mobile)) {
+		// 	$this->session->set_flashdata('error', 'Invalid mobile number');
+		// 	redirect('inspection');
+		// }
+
+		// Check customer
+		$customer = $this->Customer_model->getCustomerByMobile($mobile);
+
+		// 🔵 CASE 1: CUSTOMER NOT FOUND
+		if (!$customer) {
+
+			$this->session->set_flashdata('walkin_mobile', $mobile);
+			$this->session->set_flashdata('show_quick_form', true);
+			$this->session->set_flashdata(
+				'info',
+				'Customer not found. Please add customer details to continue inspection.'
+			);
+
+			redirect('inspection'); // listing / dashboard page
+		}
+
+		// 🟢 CASE 2: CUSTOMER FOUND
+		$vehicles = $this->Vehicle_model->getVehiclesByCustomer($customer->customer_id);
+
+		$this->session->set_flashdata('customer_popup', [
+			'customer' => $customer,
+			'vehicles' => $vehicles
+		]);
+
+		redirect('inspection');
+	}
+
+	public function save_walkin_customer()
+	{
+		$customer_id = $this->Customer_model->create([
+			'customer_name' => $this->input->post('name'),
+			'mobile'        => $this->input->post('phone')
+		]);
+
+		$vehicle_id = $this->Vehicle_model->create([
+			'customer_id' => $customer_id,
+			'vehicle_no'  => $this->input->post('registration_no'),
+			'model'       => $this->input->post('model')
+		]);
+
+		redirect('inspection/create?customer_id=' . $customer_id . '&vehicle_id=' . $vehicle_id . '&source=WALKIN');
+	}
+	// =========================== not needed fns =================
+	// ===========================================direct inspection ==================
+	public function create_direct()
+	{
+		$this->load->model('Inspection_model');
+		$this->load->model('Customer_model');
+		$this->load->model('Vehicle_model');
+
+		$customer_id = $this->input->post('customer_id');
+		$vehicle_id  = $this->input->post('vehicle_id');
+
+		/* ===============================
+       1️⃣ CREATE CUSTOMER (IF NEW)
+       =============================== */
+		if ($customer_id === 'new') {
+
+			$cust_name  = $this->input->post('cust_name');
+			$cust_phone = $this->input->post('cust_phone');
+
+			if (!$cust_name || !$cust_phone) {
+				echo json_encode([
+					'status' => 'error',
+					'message' => 'Customer name and phone are required'
+				]);
+				return;
+			}
+
+			$customer_id = $this->Customer_model->create([
+				'name' => $cust_name,
+				'phone' => $cust_phone,
+				'email' => $this->input->post('cust_email'),
+				'address' => $this->input->post('cust_address')
+			]);
+		}
+
+		if (!$customer_id) {
+			echo json_encode([
+				'status' => 'error',
+				'message' => 'Customer required'
+			]);
+			return;
+		}
+
+		/* ===============================
+       2️⃣ CREATE VEHICLE (IF NEEDED)
+       =============================== */
+		if (!$vehicle_id) {
+
+			$plate_no = $this->input->post('plate_no');
+			$brand    = $this->input->post('brand');
+			$model    = $this->input->post('model');
+
+			if (!$plate_no || !$brand || !$model) {
+				echo json_encode([
+					'status' => 'error',
+					'message' => 'Vehicle details are required'
+				]);
+				return;
+			}
+
+			$vehicle_id = $this->Vehicle_model->create([
+				'customer_id' => $customer_id,
+				'registration_no'    => $plate_no,
+				'brand'       => $brand,
+				'model'       => $model,
+				'chassis_no'      => $this->input->post('vin_no')
+			]);
+		}
+
+		/* ===============================
+       3️⃣ CREATE INSPECTION
+       =============================== */
+		$inspection_id = $this->Inspection_model->create([
+			'customer_id'     => $customer_id,
+			'vehicle_id'      => $vehicle_id,
+			'appointment_id'  => NULL, // direct inspection
+			'inspection_date' => date('Y-m-d'),
+			'status'          => 'IN_PROGRESS'
+		]);
+
+		echo json_encode([
+			'status' => 'success',
+			'inspection_id' => $inspection_id
+		]);
+	}
+
+	public function get_customer_vehicles()
+	{
+		$customer_id = $this->input->post('customer_id');
+
+		if (!$customer_id) {
+			echo json_encode([]);
+			return;
+		}
+
+		$vehicles = $this->db
+			->select('vehicle_id, registration_no, brand, model')
+			->where('customer_id', $customer_id)
+			->order_by('vehicle_id', 'DESC')
+			->get('vehicles')
+			->result();
+
+		echo json_encode($vehicles);
+	}
+
+	public function get_by_chassis()
+	{
+		$chassis = $this->input->post('chassis_no');
+
+		$data = $this->db
+			->select('v.*, c.customer_id')
+			->from('vehicles v')
+			->join('customers c', 'c.customer_id = v.customer_id')
+			->where('v.chassis_no', $chassis)
+			->get()
+			->row();
+
+		echo json_encode($data);
 	}
 }

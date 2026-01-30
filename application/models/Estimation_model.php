@@ -10,6 +10,13 @@ class Estimation_model extends CI_Model
 			->get('estimations')
 			->row();
 	}
+	public function get_by_estimation($estimation_id)
+	{
+		return $this->db
+			->where('estimation_id', $estimation_id)
+			->get('estimations')
+			->row();
+	}
 
 
 	public function create_estimation($data)
@@ -42,30 +49,50 @@ class Estimation_model extends CI_Model
 			->where('estimation_id', $estimation_id)
 			->update('estimations', $data);
 	}
-public function save_job_descriptions($estimation_id, $descriptions, $jamt)
-{
-    // Remove existing records for this estimation
-    $this->db->where('estimation_id', $estimation_id)
-             ->delete('estimation_job_descriptions');
-
-    foreach ($descriptions as $i => $desc) {
-
-        // Skip empty rows
-        if (trim($desc) === '') {
-            continue;
-        }
-
-        $this->db->insert('estimation_job_descriptions', [
-            'estimation_id' => $estimation_id,
-            'description'   => $desc,
-            'amount'        => isset($jamt[$i]) ? $jamt[$i] : 0
-        ]);
-    }
-}
-
-
-	public function save_parts($estimation_id, $part_ids, $qtys, $unit_prices, $sell_prices, $totals, $markup, $discount, $discountamt, $parttype, $brandid, $selected)
+	public function save_job_descriptions($estimation_id, $descriptions, $jamt)
 	{
+		// Remove existing records for this estimation
+		$this->db->where('estimation_id', $estimation_id)
+			->delete('estimation_job_descriptions');
+
+		foreach ($descriptions as $i => $desc) {
+
+			// Skip empty rows
+			if (trim($desc) === '') {
+				continue;
+			}
+
+			$this->db->insert('estimation_job_descriptions', [
+				'estimation_id' => $estimation_id,
+				'description'   => $desc,
+				'amount'        => isset($jamt[$i]) ? $jamt[$i] : 0
+			]);
+		}
+	}
+
+
+	public function save_parts($estimation_id, $part_ids, $qtys, $unit_prices, $sell_prices, $totals, $markup, $discount, $discountamt, $parttype, $brandid, $selected,$remarks)
+	{
+
+		// 🔹 LOG START
+		// log_message('error', 'save_parts() called');
+
+		// log_message('error', 'Estimation ID: ' . $estimation_id);
+
+		// log_message('error', 'Parts Data: ' . print_r([
+		//     'part_ids'     => $part_ids,
+		//     'qtys'         => $qtys,
+		//     'unit_prices'  => $unit_prices,
+		//     'sell_prices'  => $sell_prices,
+		//     'totals'       => $totals,
+		//     'markup'       => $markup,
+		//     'discount'     => $discount,
+		//     'discountamt'  => $discountamt,
+		//     'parttype'     => $parttype,
+		//     'brandid'      => $brandid,
+		//     'selected'     => $selected
+		// ], true));
+		// 🔹 LOG END
 		$this->db->where('estimation_id', $estimation_id)
 			->delete('estimation_parts');
 
@@ -88,6 +115,7 @@ public function save_job_descriptions($estimation_id, $descriptions, $jamt)
 				'part_type' => $parttype[$i],
 				'brand_id' => $brandid[$i],
 				'selected' => $is_selected,
+				'partremarks'=>$remarks[$i]
 			]);
 		}
 	}
@@ -173,6 +201,19 @@ public function save_job_descriptions($estimation_id, $descriptions, $jamt)
 			->result();
 	}
 
+	public function get_parts_type_forquote($estimation_id, $parttype)
+	{
+		return $this->db
+			->select('ep.*, sp.*')
+			->from('estimation_parts ep')
+			->join('spare_parts sp', 'sp.part_id = ep.part_id')
+			->where('ep.estimation_id', $estimation_id)
+			->where('ep.part_type', $parttype)
+			->where('ep.selected', "1")
+			->get()
+			->result();
+	}
+
 	public function get_services($estimation_id)
 	{
 		return $this->db->where('estimation_id', $estimation_id)
@@ -217,15 +258,47 @@ public function save_job_descriptions($estimation_id, $descriptions, $jamt)
 			->from('estimations e')
 			->join('customers c', 'c.customer_id = e.customer_id')
 			->join('vehicles v', 'v.vehicle_id = e.vehicle_id')
-			->order_by('e.created_at', 'DESC')
+			// ->order_by('e.created_at', 'DESC')
+			->order_by('e.estimation_id', 'DESC')
 			->get()
 			->result();
 	}
 
 	public function delete_estimation($estimation_id)
 	{
-		return $this->db
+		$this->db->trans_start();
+
+		// Delete job descriptions
+		$this->db
+			->where('estimation_id', $estimation_id)
+			->delete('estimation_job_descriptions');
+
+		// Delete parts
+		$this->db
+			->where('estimation_id', $estimation_id)
+			->delete('estimation_parts');
+
+		// Delete services
+		$this->db
+			->where('estimation_id', $estimation_id)
+			->delete('estimation_services');
+
+		// Finally delete estimation master
+		$this->db
 			->where('estimation_id', $estimation_id)
 			->delete('estimations');
+
+		$this->db->trans_complete();
+
+		return $this->db->trans_status();
+	}
+
+
+	public function get_by_inspection($inspection_id)
+	{
+		return $this->db
+			->where('inspection_id', $inspection_id)
+			->get('estimations')
+			->row();
 	}
 }

@@ -20,7 +20,7 @@
 					<th class="border px-3 py-2">Vehicle</th>
 					<th class="border px-3 py-2">Technician</th>
 					<th class="border px-3 py-2 text-center">Status</th>
-					<th class="border px-3 py-2 text-center">Material</th>
+					<th class="border px-3 py-2 text-center">Spare Parts</th>
 					<th class="border px-3 py-2 text-center">Actions</th>
 				</tr>
 			</thead>
@@ -64,9 +64,9 @@
 
 							<!-- Status -->
 							<td class="border px-3 py-2 text-center">
-								<?php if ($jc->status == 'Pending'): ?>
+								<?php if ($jc->status == 'Scheduled'): ?>
 									<span class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700">
-										Pending
+										Scheduled
 									</span>
 								<?php elseif ($jc->status == 'In Progress'): ?>
 									<span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">
@@ -74,15 +74,69 @@
 									</span>
 								<?php else: ?>
 									<span class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">
-										Completed
+										Finished
 									</span>
 								<?php endif; ?>
 							</td>
 
 							<!-- Material Issue -->
-							<td class="border px-3 py-2 text-center">
+<td class="border px-3 py-2 text-center">
 
-								<?php if ($jc->issue_count == 0): ?>
+    <?php if ((int)$jc->total_parts === 0): ?>
+
+        <span class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700">
+            No Spare Parts
+        </span>
+
+    <?php elseif ((int)$jc->fully_issued_parts === 0): ?>
+
+        <span class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700">
+            Not Issued
+        </span>
+        <br>
+        <a href="<?= base_url('index.php/MaterialIssue/create/' . $jc->jobcard_id); ?>"
+           class="mt-1 inline-block px-3 py-1 text-xs bg-indigo-600 text-white rounded">
+            Issue Spareparts
+        </a>
+
+    <?php elseif ((int)$jc->fully_issued_parts < (int)$jc->total_parts): ?>
+
+        <span class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700">
+            Partially Issued (<?= $jc->fully_issued_parts ?>)
+        </span>
+        <br>
+        <a href="<?= base_url('index.php/MaterialIssue/create/' . $jc->jobcard_id); ?>"
+           class="mt-1 inline-block px-3 py-1 text-xs bg-indigo-600 text-white rounded">
+            Issue More
+        </a>
+
+    <?php else: ?>
+
+        <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">
+            Fully Issued
+        </span>
+        <br>
+        <a href="<?= base_url('index.php/MaterialIssue/create/' . $jc->jobcard_id); ?>"
+           class="mt-1 inline-block px-3 py-1 text-xs bg-blue-600 text-white rounded">
+            View Issues
+        </a>
+
+    <?php endif; ?>
+
+    <br>
+
+    <a href="<?= base_url('index.php/Jobcard/timesheet/' . $jc->jobcard_id); ?>"
+       class="mt-1 inline-block px-3 py-1 text-xs bg-blue-300 text-white rounded">
+        Time Sheet
+    </a>
+
+</td>
+
+
+
+							<!-- <td class="border px-3 py-2 text-center">
+
+								<?php echo $jc->issue_count; if ($jc->issue_count == 0): ?>
 
 									<span class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700">
 										Not Issued
@@ -90,10 +144,10 @@
 									<br>
 									<a href="<?= base_url('index.php/MaterialIssue/create/' . $jc->jobcard_id); ?>"
 										class="mt-1 inline-block px-3 py-1 text-xs bg-indigo-600 text-white rounded">
-										Issue Material
+										Issue Spareparts
 									</a>
 
-								<?php elseif ($jc->status != 'Completed'): ?>
+								<?php elseif ($jc->status != 'Finished'): ?>
 
 									<span class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700">
 										Partially Issued (<?= $jc->issue_count ?>)
@@ -115,14 +169,16 @@
 										View Issues
 									</a>
 
-								<?php endif; ?><br>
+								<?php endif; ?>
+								
+								<br>
 
 								<a href="<?= base_url('index.php/Jobcard/timesheet/' . $jc->jobcard_id); ?>"
 									class="mt-1 inline-block px-3 py-1 text-xs bg-blue-300 text-white rounded">
 									Time Sheet
 								</a>
 
-							</td>
+							</td> -->
 
 
 							<!-- Actions -->
@@ -148,12 +204,12 @@
 						</tr>
 					<?php endforeach; ?>
 				<?php else: ?>
-					<tr>
+					<!-- <tr>
 						<td colspan="8"
 							class="border px-3 py-6 text-center text-gray-500">
 							No job cards found
 						</td>
-					</tr>
+					</tr> -->
 				<?php endif; ?>
 			</tbody>
 		</table>
@@ -164,6 +220,9 @@
 	$(document).ready(function() {
 		$('#jobcardTable').DataTable({
 			pageLength: 10,
+				language: {
+				emptyTable: "No Jobcard found"
+			},
 			order: [
 				[1, 'desc']
 			],

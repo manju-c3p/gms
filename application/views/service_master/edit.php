@@ -2,7 +2,7 @@
 
 	<h2 class="text-2xl font-bold mb-4">Edit Service</h2>
 
-	<form method="post" action="<?= base_url('index.php/servicemaster/update/' . $service->master_service_id) ?>">
+	<form method="post" action="<?= base_url('index.php/ServiceMaster/update/' . $service->master_service_id) ?>">
 
 		<input type="text" name="service_name"
 			value="<?= $service->service_name ?>"

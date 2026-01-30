@@ -23,6 +23,19 @@
             <label class="font-medium">Address</label>
             <input type="text" name="address" class="w-full border p-2 rounded">
         </div>
+		 <div>
+           <label class="font-medium">Emirate</label>
+				<select name="emirate" class="w-full border p-2 rounded">
+					<option value="">-- Select Emirate --</option>
+					<option value="Abu Dhabi">Abu Dhabi</option>
+					<option value="Dubai">Dubai</option>
+					<option value="Sharjah">Sharjah</option>
+					<option value="Ajman">Ajman</option>
+					<option value="Umm Al Quwain">Umm Al Quwain</option>
+					<option value="Ras Al Khaimah">Ras Al Khaimah</option>
+					<option value="Fujairah">Fujairah</option>
+				</select>
+        </div>
     </div>
 
     <hr class="my-4">
@@ -62,17 +75,7 @@
             </select>
         </div>
 
-        <div>
-            <label class="font-medium">Vin No</label>
-            <input type="text" name="chassis_no"
-                   class="w-full border p-2 rounded">
-        </div>
-
-        <div>
-            <label class="font-medium">Engine No</label>
-            <input type="text" name="engine_no"
-                   class="w-full border p-2 rounded">
-        </div>
+     
     </div>
 
     <div class="mt-5 flex justify-end gap-3">
@@ -116,54 +119,7 @@ $('#brandSelect').on('change', function () {
         });
 });
 
-	// $(document).on('submit', '#spotCustomerForm', function(e) {
-	// 	e.preventDefault();
-	// 	alert("ha");
-
-	// 	$.ajax({
-	// 		url: "<?= base_url('index.php/customer/save_spot_ajax'); ?>",
-	// 		type: "POST",
-	// 		data: $(this).serialize(),
-	// 		dataType: "json",
-	// 		success: function(res) {
-
-	// 			if (res.status === 'success') {
-
-	// 				/* ADD CUSTOMER */
-	// 				let custOption = new Option(
-	// 					res.customer.name + " (" + res.customer.phone + ")",
-	// 					res.customer.customer_id,
-	// 					true,
-	// 					true
-	// 				);
-
-	// 				$('#customerSelect')
-	// 					.append(custOption)
-	// 					.trigger('change');
-
-	// 				/* ADD VEHICLE */
-	// 				let vehicleText =
-	// 					`${res.vehicle.registration_no}
-    //                 (${res.vehicle.brand}, ${res.vehicle.model},
-    //                  ${res.vehicle.chassis_no}, ${res.vehicle.engine_no})`;
-
-	// 				let vehOption = new Option(
-	// 					vehicleText,
-	// 					res.vehicle.vehicle_id,
-	// 					true,
-	// 					true
-	// 				);
-
-	// 				$('#vehicleSelect')
-	// 					.html('')
-	// 					.append(vehOption)
-	// 					.trigger('change');
-
-	// 				$('#customerModal').addClass('hidden');
-	// 			}
-	// 		}
-	// 	});
-	// });
+	
 
 	$(document).on('submit', '#spotCustomerForm', function (e) {
     e.preventDefault();

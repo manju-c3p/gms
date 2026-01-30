@@ -1,5 +1,5 @@
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
-    <div class="flex items-center justify-between mb-4">
+  <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-4">
         <h2 class="text-2xl font-bold">Upcoming Appointments (Next <?= isset($days) ? intval($days) : 3 ?> days)</h2>
 
         <div>
@@ -10,6 +10,7 @@
     <?php if (empty($appointments)): ?>
         <div class="p-4 bg-gray-50 rounded text-gray-500">No upcoming appointments.</div>
     <?php else: ?>
+		<div class="overflow-x-auto w-full">
         <table class="w-full table-auto border">
             <thead class="bg-gray-100">
                 <tr>
@@ -41,6 +42,7 @@
                 <?php endforeach; ?>
             </tbody>
         </table>
+		</div>
     <?php endif; ?>
 </div>
 

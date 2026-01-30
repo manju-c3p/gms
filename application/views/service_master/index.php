@@ -43,12 +43,12 @@
 							</span>
 						</td>
 						<td>
-							<a href="<?= base_url('index.php/servicemaster/edit/' . $s->master_service_id) ?>"
+							<a href="<?= base_url('index.php/ServiceMaster/edit/' . $s->master_service_id) ?>"
 								class="px-2 py-1 bg-blue-600 text-white rounded text-sm">
 								Edit
 							</a>
 
-							<a href="<?= base_url('index.php/servicemaster/toggle_status/' . $s->master_service_id) ?>"
+							<a href="<?= base_url('index.php/ServiceMaster/toggle_status/' . $s->master_service_id) ?>"
 								class="px-2 py-1 bg-orange-500 text-white rounded text-sm">
 								Toggle
 							</a>
@@ -68,7 +68,7 @@
 		<h3 class="text-xl font-bold mb-4">Add Service</h3>
 
 		<form method="post" action="<?= base_url('index.php/
-		servicemaster/store') ?>">
+		ServiceMaster/store') ?>">
 
 			<input type="text" name="service_name"
 				class="w-full border p-2 mb-3"

@@ -22,11 +22,17 @@ class Dashboard extends CI_Controller
 
 		// Active Job Cards
 		$data['active_job_cards'] = $this->Dashboard_model->get_active_job_cards();
+		$data['pending_job_cards_count'] = $this->Dashboard_model->get_pending_job_cards_count();
+		$data['active_job_cards_count'] = $this->Dashboard_model->get_active_job_cards_count();
+		$data['customer_count'] = $this->Dashboard_model->get_customers_count();
+		$data['total_revenue'] = $this->Dashboard_model->get_total_revenue();
 		$data['recent_estimations'] = $this->Dashboard_model->get_recent_estimations();
 		$data['low_stock_items'] =  $this->Dashboard_model->get_low_stock_items();
 		$data['recent_inspections'] =  $this->Dashboard_model->get_recent_inspections();
 		$data['jobcardProgress'] = $this->Dashboard_model->get_jobcard_job_completion();
-		$data['jobcardProgress1'] = $this->Dashboard_model->get_jobcard_job_progress();
+
+		
+		// $data['jobcardProgress1'] = $this->Dashboard_model->get_jobcard_job_progress();
 		// $data['jobcardReport'] =  $this->Dashboard_model->get_jobcard_time_report();
 // log_message(
 // 	'error',

@@ -3,7 +3,7 @@
 class Inspection_model extends CI_Model
 {
 	private $table = 'inspection_items';
-
+	private $table1 = 'inspection_packages';
 	// Get all inspection items
 	public function get_all_items()
 	{
@@ -71,8 +71,8 @@ class Inspection_model extends CI_Model
 	public function save_inspection_services($inspection_id, $service_ids, $custom_services)
 	{
 		// Clear old services
-		$this->db->where('inspection_id', $inspection_id)
-			->delete('inspection_services');
+		// $this->db->where('inspection_id', $inspection_id)
+		// 	->delete('inspection_services');
 
 		foreach ($service_ids as $index => $service_id) {
 
@@ -217,16 +217,47 @@ class Inspection_model extends CI_Model
 	 */
 	public function delete_inspection($inspection_id)
 	{
-		return $this->db
-			->where('inspection_id', $inspection_id)
+		$this->db->trans_start();
+
+		// 1. Damage marks
+		$this->db->where('inspection_id', $inspection_id)
+			->delete('inspection_damage_marks');
+
+		// 2. Inventory status
+		$this->db->where('inspection_id', $inspection_id)
+			->delete('inspection_inventory_status');
+
+		// 3. Item results
+		$this->db->where('inspection_id', $inspection_id)
+			->delete('inspection_item_results');
+
+		// 4. Photos
+		$this->db->where('inspection_id', $inspection_id)
+			->delete('inspection_photos');
+
+		// 5. Services
+		$this->db->where('inspection_id', $inspection_id)
+			->delete('inspection_services');
+
+		// 6. Works requested
+		$this->db->where('inspection_id', $inspection_id)
+			->delete('inspection_works_requested');
+
+		// 7. MAIN inspection record (LAST)
+		$this->db->where('inspection_id', $inspection_id)
 			->delete('inspections');
+
+		$this->db->trans_complete();
+
+		return $this->db->trans_status();
 	}
+
 
 	public function save_inspection_photos($inspection_id, $files)
 	{
 		// 1. Delete existing DB records (files already handled separately if needed)
-		$this->db->where('inspection_id', $inspection_id)
-			->delete('inspection_photos');
+		// $this->db->where('inspection_id', $inspection_id)
+		// 	->delete('inspection_photos');
 
 		// 2. No new files → stop here
 		if (empty($files['name'][0])) {
@@ -261,5 +292,49 @@ class Inspection_model extends CI_Model
 				]);
 			}
 		}
+	}
+
+
+	// ================================================
+
+	public function get_all_packageitems()
+	{
+		return $this->db
+
+			->order_by('id', 'ASC')
+			->get($this->table1)
+			->result();
+	}
+
+	public function insert_packageitem($data)
+	{
+		return $this->db->insert($this->table1, $data);
+	}
+
+	public function update_packageitem($id, $data)
+	{
+		return $this->db
+			->where('id', $id)
+			->update($this->table1, $data);
+	}
+	public function delete_packageitem($id)
+	{
+		return $this->db
+			->where('id', $id)
+			->delete('inspection_packages');
+	}
+
+	public function get_packageitem($id)
+	{
+		return $this->db
+			->where('id', $id)
+			->get($this->table1)
+			->row();
+	}
+
+	public function create($data)
+	{
+		$this->db->insert('inspections', $data);
+		return $this->db->insert_id();
 	}
 }

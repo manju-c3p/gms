@@ -86,11 +86,11 @@ class MaterialIssue extends CI_Controller
 		}
 
 		/* ===============================
-       1️⃣ JOB CARD VALIDATION
-    ================================ */
+      	 1️⃣ JOB CARD VALIDATION
+   		 ================================ */
 		$jobcard = $this->Jobcard_model->get_jobcard_by_id($jobcard_id);
 
-		if (!$jobcard || $jobcard->status === 'Completed') {
+		if (!$jobcard || $jobcard->status === 'Finished') {
 			$this->session->set_flashdata(
 				'error',
 				'Material issue not allowed for this job card'
@@ -99,8 +99,8 @@ class MaterialIssue extends CI_Controller
 		}
 
 		/* ===============================
-       2️⃣ COLLECT & FILTER ISSUE ITEMS
-    ================================ */
+      	 2️⃣ COLLECT & FILTER ISSUE ITEMS
+   		 ================================ */
 		$issue_items = [];
 
 		foreach ($part_ids as $i => $part_id) {
@@ -123,8 +123,8 @@ class MaterialIssue extends CI_Controller
 		}
 
 		/* ===============================
-       3️⃣ PHASE 1: VALIDATION ONLY
-    ================================ */
+      	 3️⃣ PHASE 1: VALIDATION ONLY
+    		================================ */
 		foreach ($issue_items as $item) {
 
 			$part_id = $item['part_id'];
@@ -156,8 +156,8 @@ class MaterialIssue extends CI_Controller
 		}
 
 		/* ===============================
-       4️⃣ PHASE 2: SAVE (TRANSACTION)
-    ================================ */
+      	 4️⃣ PHASE 2: SAVE (TRANSACTION)
+   		 ================================ */
 		$this->db->trans_begin();
 
 		try {
@@ -196,7 +196,7 @@ class MaterialIssue extends CI_Controller
 			if ($jobcard->status === 'In Progress') {
 				$this->Jobcard_model->update_jobcard(
 					$jobcard_id,
-					['status' => 'Completed']
+					['status' => 'Finished']
 				);
 			}
 
@@ -207,7 +207,8 @@ class MaterialIssue extends CI_Controller
 				'Material issue saved successfully'
 			);
 
-			redirect('jobcard/view/' . $jobcard_id);
+			// redirect('jobcard/view/' . $jobcard_id);
+			redirect('Jobcard/index');
 		} catch (Exception $e) {
 
 			$this->db->trans_rollback();

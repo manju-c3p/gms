@@ -170,15 +170,15 @@ class Vehicle_model extends CI_Model
 	}
 
 	public function get_models_by_brand_edit($brand_id)
-{
-    return $this->db
-        ->select('model_id, model_name')
-        ->from('models')
-        ->where('brand_id', $brand_id)
-        ->order_by('model_name', 'ASC')
-        ->get()
-        ->result();
-}
+	{
+		return $this->db
+			->select('model_id, model_name')
+			->from('models')
+			->where('brand_id', $brand_id)
+			->order_by('model_name', 'ASC')
+			->get()
+			->result();
+	}
 
 	public function get_model_by_id($model_id)
 	{
@@ -206,4 +206,32 @@ class Vehicle_model extends CI_Model
 			->where('model_id', $model_id)
 			->delete('vehicle_models');
 	}
+
+	// ==============================
+
+	public function getVehiclesByCustomer($customer_id)
+	{
+		return $this->db
+			->select('
+            v.vehicle_id,
+            v.registration_no,
+            v.model,
+            v.variant,
+            
+        ')
+			->from('vehicles v')
+			->where('v.customer_id', $customer_id)
+
+			->get()
+			->result();
+	}
+
+	public function create_vehicle($data)
+	{
+		$this->db->insert('vehicles', $data);
+		return $this->db->insert_id();
+	}
+
+
+
 }

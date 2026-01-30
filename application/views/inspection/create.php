@@ -6,206 +6,266 @@ $leftItems  = array_slice($items, 0, $half);
 $rightItems = array_slice($items, $half);
 ?>
 
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
+<style>
+	.modal-overlay {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.6);
+		display: none;
+		align-items: center;
+		justify-content: center;
+		z-index: 9999;
+	}
+
+	.modal-overlay.show {
+		display: flex;
+	}
+
+	.modal-box {
+		background: white;
+		border-radius: 12px;
+		padding: 16px;
+		position: relative;
+	}
+</style>
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
 	<form method="post" enctype="multipart/form-data" action="<?= base_url('index.php/inspection/save'); ?>" class="p-6 bg-white">
 		<input type="hidden" name="inspection_id" value="<?= $inspection_id ?>">
-		<div class="page-header flex items-center justify-between mb-4">
+		<div class="page-header flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+
 
 			<h2 class="text-xl font-bold">
 				VEHICLE HEALTH CHECK (Inventory)
 			</h2>
-			<div class="">
-				<!-- SAVE BUTTON -->
+			<div class="flex flex-col sm:flex-row gap-2">
 				<button type="submit"
-					class="ml-3 px-6 py-2 bg-blue-600 text-white rounded">
+					class="w-full sm:w-auto px-6 py-2 bg-blue-600 text-white rounded">
 					Save Inspection
 				</button>
 				<a href="<?= base_url('index.php/appointment'); ?>"
-					class="ml-3 px-6 py-2 bg-gray-300 rounded">Cancel</a>
+					class="w-full sm:w-auto px-6 py-2 bg-gray-300 rounded text-center">
+					Cancel
+				</a>
 			</div>
 		</div>
 		<hr class="border-gray-300 mb-6">
 
 
 		<!-- CUSTOMER / VEHICLE INFO -->
-		<table class="w-full border mb-4 text-sm">
-			<tr>
-				<td class="border p-1 font-bold w-1/6">Doc. No</td>
-				<td class="border p-1 w-2/6">
-					<?= $appointment->doc_no ?? ('VIN-' . str_pad($inspection_id, 6, '0', STR_PAD_LEFT)) ?>
-				</td>
+		<div class="overflow-x-auto">
+			<table class="w-full border mb-4 text-sm min-w-[600px]">
+				<tr>
+					<td class="border p-1 font-bold w-1/6">Doc. No</td>
+					<td class="border p-1 w-2/6">
+						<?= $appointment->doc_no ?? ('VIN-' . str_pad($inspection_id, 6, '0', STR_PAD_LEFT)) ?>
+					</td>
 
-				<td class="border p-1 font-bold w-1/6">Doc. Date</td>
-				<td class="border p-1 w-2/6">
-					<?= date('d/M/Y') ?>
-				</td>
-			</tr>
+					<td class="border p-1 font-bold w-1/6">Doc. Date</td>
+					<td class="border p-1 w-2/6">
+						<?= date('d/M/Y') ?>
+					</td>
+				</tr>
 
-			<tr>
-				<td class="border p-1 font-bold">Customer Name</td>
-				<td class="border p-1">
-					<?= $appointment->customer_name ?>
-				</td>
+				<tr>
+					<td class="border p-1 font-bold">Customer Name</td>
+					<td class="border p-1">
+						<?= $appointment->customer_name ?>
+					</td>
 
-				<td class="border p-1 font-bold">Reg. No.</td>
-				<td class="border p-1">
-					<?= $appointment->registration_no ?>
-				</td>
-			</tr>
+					<td class="border p-1 font-bold">Reg. No.</td>
+					<td class="border p-1">
+						<?= $appointment->registration_no ?>
+					</td>
+				</tr>
 
-			<tr>
-				<td class="border p-1 font-bold">Contact No.</td>
-				<td class="border p-1">
-					<?= $appointment->phone ?? '-' ?>
-				</td>
+				<tr>
+					<td class="border p-1 font-bold">Contact No.</td>
+					<td class="border p-1">
+						<?= $appointment->phone ?? '-' ?>
+					</td>
 
-				<td class="border p-1 font-bold">Make</td>
-				<td class="border p-1">
-					<?= $appointment->model ?>
-				</td>
-			</tr>
+					<td class="border p-1 font-bold">Make</td>
+					<td class="border p-1">
+						<?= $appointment->model ?>
+					</td>
+				</tr>
 
-			<tr>
-				<td class="border p-1 font-bold">Driver Name</td>
-				<td class="border p-1">
-					<input type="text" name="driver_name"
-						class="w-full border px-2 py-1">
-				</td>
+				<tr>
+					<td class="border p-1 font-bold">Driver Name</td>
+					<td class="border p-1">
+						<input type="text" name="driver_name"
+							class="w-full border px-2 py-1">
+					</td>
 
-				<td class="border p-1 font-bold">Veh. Type</td>
-				<td class="border p-1">
-					<?= $appointment->variant ?? '-' ?>
-				</td>
-			</tr>
+					<td class="border p-1 font-bold">Veh. Type</td>
+					<td class="border p-1">
+						<?= $appointment->variant ?? '-' ?>
+					</td>
+				</tr>
 
-			<tr>
-				<td class="border p-1 font-bold">Driver Mobile</td>
-				<td class="border p-1">
-					<input type="text" name="driver_mobile"
-						class="w-full border px-2 py-1">
-				</td>
+				<tr>
+					<td class="border p-1 font-bold">Driver Mobile</td>
+					<td class="border p-1">
+						<input type="number" name="driver_mobile"
+							class="w-full border px-2 py-1">
+					</td>
 
-				<td class="border p-1 font-bold">Model</td>
-				<td class="border p-1">
-					<?= $appointment->year ?>
-				</td>
-			</tr>
+					<td class="border p-1 font-bold">Model</td>
+					<td class="border p-1">
+						<?= $appointment->year ?>
+					</td>
+				</tr>
 
-			<tr>
-				<td class="border p-1 font-bold">Service Advisor</td>
-				<td class="border p-1">
-					<?= $this->session->userdata('username') ?>
-				</td>
+				<tr>
+					<td class="border p-1 font-bold">Service Advisor</td>
+					<td class="border p-1">
+						<?= $this->session->userdata('username') ?>
+					</td>
 
-				<td class="border p-1 font-bold">KM</td>
-				<td class="border p-1">
-					<input type="number" name="km_reading"
-						value=""
-						class="w-full border px-2 py-1">
-				</td>
-			</tr>
-		</table>
+					<td class="border p-1 font-bold">KM</td>
+					<td class="border p-1">
+						<input type="number" name="km_reading"
+							value=""
+							class="w-full border px-2 py-1">
+					</td>
+				</tr>
+			</table>
+		</div>
 
 
 		<!-- INSPECTION ITEMS -->
 		<!-- INSPECTION ITEMS (TWO COLUMN LAYOUT) -->
-		<div class="grid grid-cols-2 gap-6 mb-4 text-sm">
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4 text-sm">
 
 			<!-- LEFT TABLE -->
-			<table class="w-full border">
-				<thead class="bg-gray-100">
-					<tr>
-						<th class="border p-1">Inspection Items</th>
-						<th class="border p-1 w-8">A</th>
-						<th class="border p-1 w-8">C</th>
-						<th class="border p-1 w-8">S</th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ($leftItems as $index => $i): ?>
+			<div class="overflow-x-auto">
+				<table class="w-full border min-w-[400px]">
+					<thead class="bg-gray-100">
 						<tr>
-							<td class="border p-1">
-								<?= ($index + 1) ?>. <?= $i->item_name ?>
-							</td>
-							<td class="border text-center">
-								<input type="radio"
-									name="item_status[<?= $i->item_id ?>]"
-									value="A">
-							</td>
-							<td class="border text-center">
-								<input type="radio"
-									name="item_status[<?= $i->item_id ?>]"
-									value="C">
-							</td>
-							<td class="border text-center">
-								<input type="radio"
-									name="item_status[<?= $i->item_id ?>]"
-									value="S">
-							</td>
+							<th class="border p-1">Inspection Items</th>
+							<th class="border p-1 w-8">A</th>
+							<th class="border p-1 w-8">C</th>
+							<th class="border p-1 w-8">S</th>
 						</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						<?php foreach ($leftItems as $index => $i): ?>
+							<tr>
+								<td class="border p-1">
+									<?= ($index + 1) ?>. <?= $i->item_name ?>
+								</td>
+								<td class="border text-center">
+									<input type="radio"
+										name="item_status[<?= $i->item_id ?>]"
+										value="A">
+								</td>
+								<td class="border text-center">
+									<input type="radio"
+										name="item_status[<?= $i->item_id ?>]"
+										value="C">
+								</td>
+								<td class="border text-center">
+									<input type="radio"
+										name="item_status[<?= $i->item_id ?>]"
+										value="S">
+								</td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			</div>
 
 			<!-- RIGHT TABLE -->
-			<table class="w-full border">
-				<thead class="bg-gray-100">
-					<tr>
-						<th class="border p-1">Inspection Items</th>
-						<th class="border p-1 w-8">A</th>
-						<th class="border p-1 w-8">C</th>
-						<th class="border p-1 w-8">S</th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ($rightItems as $index => $i): ?>
-						<tr>
-							<td class="border p-1">
-								<?= ($half + $index + 1) ?>. <?= $i->item_name ?>
-							</td>
-							<td class="border text-center">
-								<input type="radio"
-									name="item_status[<?= $i->item_id ?>]"
-									value="A">
-							</td>
-							<td class="border text-center">
-								<input type="radio"
-									name="item_status[<?= $i->item_id ?>]"
-									value="C">
-							</td>
-							<td class="border text-center">
-								<input type="radio"
-									name="item_status[<?= $i->item_id ?>]"
-									value="S">
-							</td>
-						</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
 
+			<div class="overflow-x-auto">
+				<table class="w-full border min-w-[400px]">
+					<thead class="bg-gray-100">
+						<tr>
+							<th class="border p-1">Inspection Items</th>
+							<th class="border p-1 w-8">A</th>
+							<th class="border p-1 w-8">C</th>
+							<th class="border p-1 w-8">S</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ($rightItems as $index => $i): ?>
+							<tr>
+								<td class="border p-1">
+									<?= ($half + $index + 1) ?>. <?= $i->item_name ?>
+								</td>
+								<td class="border text-center">
+									<input type="radio"
+										name="item_status[<?= $i->item_id ?>]"
+										value="A">
+								</td>
+								<td class="border text-center">
+									<input type="radio"
+										name="item_status[<?= $i->item_id ?>]"
+										value="C">
+								</td>
+								<td class="border text-center">
+									<input type="radio"
+										name="item_status[<?= $i->item_id ?>]"
+										value="S">
+								</td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			</div>
+
+
+
+		</div>
+
+		<div class="mt-3 text-sm flex flex-col sm:items-end sm:text-right">
+
+			<p class="font-semibold mb-2">Legend:</p>
+
+			<div class="flex flex-wrap justify-end gap-6">
+				<div class="flex items-center gap-2">
+					<span class="inline-block w-3 h-3 rounded-full bg-green-500"></span>
+					<span><strong>A</strong> – Acceptable</span>
+				</div>
+
+				<div class="flex items-center gap-2">
+					<span class="inline-block w-3 h-3 rounded-full bg-yellow-500"></span>
+					<span><strong>C</strong> – Conditionally Acceptable</span>
+				</div>
+
+				<div class="flex items-center gap-2">
+					<span class="inline-block w-3 h-3 rounded-full bg-red-500"></span>
+					<span><strong>S</strong> – Service Needed</span>
+				</div>
+			</div>
 		</div>
 
 		<div class="bg-white rounded-xl shadow p-4">
 
 			<h3 class="text-lg font-semibold mb-3">Service List</h3>
 
-			<table class="w-full border text-sm" id="serviceTable">
-				<thead class="bg-blue-500 text-white">
-					<tr>
-						<th class="border px-2 py-2 w-20 text-center">Sl. No.</th>
-						<th class="border px-2 py-2">Description / Service</th>
-						<th class="border px-2 py-2 w-16 text-center">Action</th>
-					</tr>
-				</thead>
+			<div class="overflow-x-auto">
+				<table class="w-full border text-sm min-w-[500px]" id="serviceTable">
+					<thead class="bg-blue-500 text-white">
+						<tr>
+							<th class="border px-2 py-2 w-20 text-center">Sl. No.</th>
+							<th class="border px-2 py-2">Description / Service</th>
+							<th class="border px-2 py-2 w-16 text-center">Action</th>
+						</tr>
+					</thead>
 
-				<tbody>
-					<!-- dynamic rows -->
-				</tbody>
-			</table>
+					<tbody>
+						<!-- dynamic rows -->
+					</tbody>
+				</table>
+			</div>
 
 			<button type="button"
 				onclick="addServiceRow()"
-				class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg">
+				class="w-full sm:w-auto mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg">
 				+ Add Service
 			</button>
 		</div>
@@ -214,16 +274,17 @@ $rightItems = array_slice($items, $half);
 
 
 		<!-- WORKS REQUESTED -->
-		<h4 class="font-bold mb-1">WORKS REQUESTED</h4>
+		<!-- <h4 class="font-bold mb-1">WORKS REQUESTED</h4>
 		<div class="grid grid-cols-5 gap-2 mb-4">
 			<?php foreach ($works as $w): ?>
 				<label><input type="checkbox" name="works_requested[]" value="<?= $w->work_id ?>"> <?= $w->work_name ?></label>
 			<?php endforeach; ?>
-		</div>
+		</div> -->
 
 		<!-- INVENTORY STATUS -->
 		<h4 class="font-bold mb-1">INVENTORY STATUS</h4>
-		<div class="grid grid-cols-5 gap-2 mb-4">
+		<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+
 			<?php foreach ($inventory as $inv): ?>
 				<label><input type="checkbox" name="inventory_status[]" value="<?= $inv->inventory_status_id ?>"> <?= $inv->status_name ?></label>
 			<?php endforeach; ?>
@@ -232,7 +293,8 @@ $rightItems = array_slice($items, $half);
 		<!-- FOOTER DETAILS -->
 		<div class="border mt-6 p-3 text-sm">
 
-			<div class="grid grid-cols-6 gap-3 mb-3">
+			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 mb-3">
+
 				<div class="col-span-1">
 					<label class="font-bold block">Fuel</label>
 					<input name="fuel_level"
@@ -240,17 +302,39 @@ $rightItems = array_slice($items, $half);
 						class="border px-2 py-1 w-full">
 				</div>
 
-				<div class="col-span-2">
-					<label class="font-bold block">Del. Time</label>
-					<input name="delivery_time"
-						placeholder="3.8.22, 14:17" value="<?= date('d.m.y, H:i') ?>"
+				<div class="col-span-1">
+					<label class="font-bold block">Estimated Del. Date</label>
+					<input name="delivery_date" type="date"
+						placeholder="3.8.22, 14:17" value="<?= date('d.m.y') ?>"
+						class="border px-2 py-1 w-full">
+				</div>
+				<div class="col-span-1">
+					<label class="font-bold block">Estimated Del. Time</label>
+					<input name="delivery_time" type="time"
+						placeholder="3.8.22, 14:17" value=""
 						class="border px-2 py-1 w-full">
 				</div>
 
-				<div class="col-span-3">
+
+				<div class="col-span-4">
 					<label class="font-bold block">Remarks</label>
 					<input name="remarks"
 						class="border px-2 py-1 w-full">
+				</div>
+				<div class="col-span-5">
+					<label class="font-bold block">Inspection Package</label>
+					<select class="w-full border rounded px-2 py-1" name="inspackage">
+						<option value="">-- Select Package --</option>
+
+						<?php if (!empty($packages)) : ?>
+							<?php foreach ($packages as $pkg) : ?>
+								<option value="<?= $pkg->id ?>">
+									<?= $pkg->package_name ?>
+								</option>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					</select>
+
 				</div>
 
 				<!-- VEHICLE PHOTOS UPLOAD -->
@@ -262,11 +346,16 @@ $rightItems = array_slice($items, $half);
 						id="photoInput"
 						accept="image/*"
 						multiple
+						capture="environment"
 						class="border p-2 rounded w-full">
+
+
+
 
 					<!-- Preview Grid -->
 					<div id="photoPreview"
-						class="grid grid-cols-6 gap-3 mt-3">
+						class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 mt-3">
+
 					</div>
 				</div>
 
@@ -282,7 +371,7 @@ $rightItems = array_slice($items, $half);
 
 					<img src="<?= base_url('public/images/vehicle-diagram.jpg'); ?>"
 						id="vehicleImage"
-						class="w-64"
+						class="w-full max-w-xs sm:max-w-sm"
 						draggable="false">
 
 					<!-- Existing marks (edit/view) -->
@@ -301,6 +390,13 @@ $rightItems = array_slice($items, $half);
 				<p class="text-xs text-gray-500 mt-1">
 					Click on vehicle to mark damage. Click ❌ again to remove.
 				</p>
+
+
+				<div class="col-span-3">
+					<label class="font-bold block">Technician Remarks</label>
+					<input name="tecremarks"
+						class="border px-2 py-1 w-full">
+				</div>
 			</div>
 
 		</div>
@@ -315,7 +411,7 @@ $rightItems = array_slice($items, $half);
 <!-- ================================================================================== -->
 <!-- IMAGE PREVIEW MODAL -->
 <div id="imageModal"
-	class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-50">
+	class="bg-white rounded-xl w-full max-w-md p-4">
 
 	<button onclick="closeImageModal()"
 		class="absolute top-4 right-4 text-white text-3xl font-bold">
@@ -326,20 +422,77 @@ $rightItems = array_slice($items, $half);
 		src=""
 		class="max-h-[90vh] max-w-[90vw] rounded shadow-lg">
 </div>
+<!-- SERVICE MODAL -->
+<div id="serviceModal"
+	class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
+
+	<div class="bg-white rounded-xl w-full max-w-md p-4 relative">
+		<h3 class="text-lg font-semibold mb-3">Add New Service</h3>
+
+		<div class="mb-3">
+			<label class="text-sm font-medium">Service Name</label>
+			<input type="text" id="new_service_name"
+				class="w-full border rounded px-2 py-1">
+		</div>
+
+		<div class="mb-3">
+			<label class="text-sm font-medium">Service Type</label>
+			<select id="new_service_type"
+				class="w-full border rounded px-2 py-1">
+				<option value="SERVICE">Service</option>
+				<option value="LABOUR">Labour</option>
+				<option value="OTHER">Other</option>
+			</select>
+		</div>
+
+		<div class="mb-3">
+			<label class="text-sm font-medium">Estimated Cost</label>
+			<input type="number" step="0.01" id="new_service_cost"
+				class="w-full border rounded px-2 py-1">
+		</div>
+
+		<div class="mb-3">
+			<label class="text-sm font-medium">Estimated Time (mins)</label>
+			<input type="number" id="new_service_time"
+				class="w-full border rounded px-2 py-1">
+		</div>
+
+		<div class="flex justify-end gap-2">
+			<button onclick="closeServiceModal()"
+				class="px-3 py-1 border rounded">
+				Cancel
+			</button>
+			<button onclick="saveNewService()"
+				class="px-4 py-1 bg-blue-600 text-white rounded">
+				Save
+			</button>
+		</div>
+	</div>
+</div>
+
 
 
 <!-- =================================================================== -->
+
+
 <script>
+	$(document).ready(function() {
+		$('.service-select').select2({
+			width: '100%'
+		});
+	});
+
 	let serviceCount = 0;
 
 	// services list from PHP
 	const services = <?= json_encode($services); ?>;
 
+
 	function addServiceRow() {
 		serviceCount++;
 
 		let options = `<option value="">-- Select Service --</option>
-                   <option value="custom">-- Custom Service --</option>`;
+                   <option value="add_new">-- New Service --</option>`;
 
 		services.forEach(s => {
 			options += `<option value="${s.master_service_id}">
@@ -348,36 +501,43 @@ $rightItems = array_slice($items, $half);
 		});
 
 		const row = `
-        <tr id="srv_${serviceCount}">
-            <td class="border px-2 py-2 text-center">
-                ${serviceCount}
-            </td>
+    		<tr id="srv_${serviceCount}">
+        <td class="border px-2 py-2 text-center">${serviceCount}</td>
 
-            <td class="border px-2 py-2">
-                <select name="service_id[]"
-                        onchange="serviceChanged(this)"
-                        class="w-full border px-2 py-1 rounded">
-                    ${options}
-                </select>
+        <td class="border px-2 py-2">
+            <select name="service_id[]"
+                    class="service-select w-full">
+                ${options}
+            </select>
+        </td>
 
-                <input type="text"
-                       name="custom_service[]"
-                       placeholder="Enter custom service description"
-                       class="w-full border px-2 py-1 rounded mt-1 hidden">
-            </td>
+        <td class="border px-2 py-2 text-center">
+            <button type="button"
+                    onclick="removeService(${serviceCount})"
+                    class="bg-red-500 text-white px-3 py-1 rounded">
+                X
+            </button>
+        </td>
+    	</tr>`;
 
-            <td class="border px-2 py-2 text-center">
-                <button type="button"
-                        onclick="removeService(${serviceCount})"
-                        class="bg-red-500 text-white px-3 py-1 rounded">
-                    X
-                </button>
-            </td>
-        </tr>
-    `;
+		// ✅ Append row first
+		$('#serviceTable tbody').append(row);
 
-		document.querySelector('#serviceTable tbody')
-			.insertAdjacentHTML('beforeend', row);
+		// ✅ NOW define $select (this was missing / misplaced earlier)
+		const $select = $('#srv_' + serviceCount + ' .service-select');
+
+		// ✅ Initialize Select2
+		$select.select2({
+			width: '100%'
+		});
+
+		// ✅ Handle "Add New Service"
+		$select.on('select2:select', function(e) {
+			if (e.params.data.id === 'add_new') {
+				$(this).val('').trigger('change');
+				openServiceModal(this);
+			}
+		});
 	}
 
 	function removeService(id) {
@@ -392,16 +552,99 @@ $rightItems = array_slice($items, $half);
 		});
 	}
 
-	function serviceChanged(select) {
-		const customInput = select.closest('td')
-			.querySelector('input[name="custom_service[]"]');
 
-		if (select.value === 'custom') {
-			customInput.classList.remove('hidden');
-		} else {
-			customInput.classList.add('hidden');
-			customInput.value = '';
+	// function serviceChanged(select) {
+	// 	const customInput = select.closest('td')
+	// 		.querySelector('input[name="custom_service[]"]');
+
+	// 	if (select.value === 'add_new') {
+	// 		customInput.classList.remove('hidden');
+	// 	} else {
+	// 		customInput.classList.add('hidden');
+	// 		customInput.value = '';
+	// 	}
+	// }
+
+
+
+	let activeServiceSelect = null;
+
+	/* Called when "-- New Service --" is selected */
+	function openServiceModal(selectEl) {
+		activeServiceSelect = selectEl;
+		$('#serviceModal').removeClass('hidden').addClass('flex');
+	}
+
+	function closeServiceModal() {
+		$('#serviceModal').addClass('hidden').removeClass('flex');
+
+		$('#new_service_name').val('');
+		$('#new_service_type').val('SERVICE');
+		$('#new_service_cost').val('');
+		$('#new_service_time').val('');
+	}
+
+
+	/* SAVE NEW SERVICE */
+	function saveNewService() {
+
+		const serviceName = $('#new_service_name').val().trim();
+		const serviceType = $('#new_service_type').val();
+		const cost = $('#new_service_cost').val();
+		const time = $('#new_service_time').val();
+
+		if (serviceName === '') {
+			alert('Service name is required');
+			return;
 		}
+
+		$.ajax({
+			url: "<?= base_url('index.php/ServiceMaster/save_ajax') ?>",
+			type: "POST",
+			dataType: "json",
+			data: {
+				service_name: serviceName,
+				service_type: serviceType,
+				estimated_cost: cost,
+				estimated_time: time
+			},
+			success: function(res) {
+
+				if (res.status === 'success') {
+
+					const service = res.service;
+
+					// ✅ Add to global services array
+					services.push(service);
+
+					// ✅ Add new option to ALL Select2 dropdowns
+					$('.service-select').each(function() {
+
+						const option = new Option(
+							service.service_name,
+							service.master_service_id,
+							false,
+							false
+						);
+
+						this.append(option);
+					});
+
+					// ✅ Auto-select in the active dropdown
+					$(activeServiceSelect)
+						.val(service.master_service_id)
+						.trigger('change');
+
+					closeServiceModal();
+
+				} else {
+					alert(res.message);
+				}
+			},
+			error: function() {
+				alert('Something went wrong while saving service');
+			}
+		});
 	}
 </script>
 
@@ -474,6 +717,8 @@ $rightItems = array_slice($items, $half);
 			});
 	});
 </script>
+
+
 <script>
 	const photoInput = document.getElementById('photoInput');
 	const previewContainer = document.getElementById('photoPreview');
@@ -482,12 +727,12 @@ $rightItems = array_slice($items, $half);
 
 	let selectedFiles = []; // 🔹 STORE ALL FILES
 
-	photoInput.addEventListener('change', function () {
+	photoInput.addEventListener('change', function() {
 
 		const newFiles = Array.from(this.files);
 
 		// 🔒 Max limit check (optional)
-		if (selectedFiles.length + newFiles.length > 12) {
+		if (selectedFiles.length + newFiles.length > 50) {
 			alert('You can upload a maximum of 12 photos.');
 			this.value = '';
 			return;
@@ -507,7 +752,7 @@ $rightItems = array_slice($items, $half);
 		selectedFiles.forEach((file, index) => {
 			const reader = new FileReader();
 
-			reader.onload = function (e) {
+			reader.onload = function(e) {
 				const wrapper = document.createElement('div');
 				wrapper.className = "relative group";
 
@@ -549,7 +794,32 @@ $rightItems = array_slice($items, $half);
 	}
 </script>
 <script>
-	document.querySelector('form').addEventListener('submit', function () {
+	/* DELETE SAVED PHOTO (DB IMAGE) */
+	function deletePhoto(photoId) {
+
+		if (!confirm('Are you sure you want to delete this photo?')) {
+			return;
+		}
+
+		fetch("<?= base_url('index.php/inspection/deletePhoto'); ?>", {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					photo_id: photoId
+				})
+			})
+			.then(res => res.json())
+			.then(resp => {
+				if (resp.success) {
+					document.getElementById('photo_' + photoId)?.remove();
+				} else {
+					alert('Failed to delete photo');
+				}
+			});
+	}
+	document.querySelector('form').addEventListener('submit', function() {
 		const dataTransfer = new DataTransfer();
 
 		selectedFiles.forEach(file => dataTransfer.items.add(file));
@@ -557,3 +827,11 @@ $rightItems = array_slice($items, $half);
 		photoInput.files = dataTransfer.files;
 	});
 </script>
+<style>
+	input,
+	select,
+	textarea,
+	table {
+		max-width: 100%;
+	}
+</style>

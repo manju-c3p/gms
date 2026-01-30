@@ -25,7 +25,8 @@ public function get_part($part_id)
     return $this->db
         ->select('
             p.*,
-            m.model_name
+            m.model_name,
+			m.model_id
         ')
         ->from('spare_parts p')
         ->join('vehicle_models m', 'm.model_id = p.vehicle_model_id', 'left')
@@ -88,8 +89,41 @@ public function get_brands_by_part_type($part_type)
         ->result();
 }
 
+public function get_parts_by_part_type($part_type)
+{
+    return $this->db
+        ->distinct()
+        ->select('sp.part_id , sp.part_name,sp.unit_price')
+        ->from('spare_parts sp')
+        ->where('sp.part_type', $part_type)
+        ->get()
+        ->result();
+}
 
 
+
+ public function insert_part($data, $opening_qty = 0)
+{
+    $this->db->trans_start(); // ✅ start transaction
+
+    // 1️⃣ Insert spare part
+    $this->db->insert('spare_parts', $data);
+    $part_id = $this->db->insert_id();
+
+    // 2️⃣ Insert opening stock (only if qty > 0)
+    if ($opening_qty > 0) {
+        $this->db->insert('stock_in', [
+            'part_id'   => $part_id,
+            'qty'       => $opening_qty,
+            'date_in'   => date('Y-m-d'),
+            'created_at'=> date('Y-m-d H:i:s')
+        ]);
+    }
+
+    $this->db->trans_complete(); // ✅ commit / rollback
+
+    return $part_id;
+}
 
 
 

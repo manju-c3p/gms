@@ -21,6 +21,12 @@ class Inspection_view_model extends CI_Model
             ->where('appointment_id', $appointment_id)
             ->get('inspections')->row();
     }
+	 public function get_by_inspection($inspection_id )
+    {
+        return $this->db
+            ->where('inspection_id', $inspection_id )
+            ->get('inspections')->row();
+    }
 
     public function create_inspection($data)
     {

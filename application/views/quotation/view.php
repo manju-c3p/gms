@@ -3,86 +3,136 @@
 
 <head>
 	<meta charset="UTF-8">
-	<title>Estimation Print</title>
+	<!-- <title>Estimation Print</title> -->
+
+
 	<style>
+		/* ================= PAGE ================= */
+
 		@page {
 			size: A4;
-			margin: 10mm;
-		}
-
-		html,
-		body {
-			background: #ffffff !important;
+			margin: 12mm;
+			/* equal margin on all sides */
 		}
 
 		body {
-			font-family: Arial, Helvetica, sans-serif;
+			margin: 0;
+			padding: 0;
+		}
+
+		.print-wrapper {
+			width: 100%;
+			/* max-width: 190mm; */
+			/* A4 width minus margins */
+			margin: 0 auto;
+			/* 🔥 centers content */
+			box-sizing: border-box;
+			font-family: Arial, sans-serif;
 			font-size: 12px;
-			color: #000;
+			background: #fff;
+			padding: 0 2mm;
 		}
 
+
+		/* ================= LAYOUT ================= */
 		.container {
 			width: 100%;
+			background: #fff;
 		}
 
+		/* ================= HEADER ================= */
 		.header {
-			display: flex;
-			justify-content: space-between;
 			border-bottom: 2px solid #000;
 			padding-bottom: 8px;
 			margin-bottom: 10px;
+			display: table;
+			width: 100%;
+		}
+
+		.logo,
+		.company-info {
+			display: table-cell;
+			vertical-align: middle;
 		}
 
 		.logo {
-			font-weight: bold;
-			font-size: 16px;
+			width: 40%;
 		}
 
 		.company-info {
+			width: 60%;
 			text-align: right;
 			font-size: 11px;
 		}
 
-		.title {
-			text-align: center;
-			font-size: 18px;
+		.print-logo {
+			height: 100px;
+			width: auto;
+		}
+
+		/* ================= TITLE ================= */
+		.est-title-line {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			/* 🔥 left & right */
 			font-weight: bold;
-			margin: 8px 0;
+			border-top: 2px solid #000;
+			border-bottom: 2px solid #000;
+			padding: 6px 10px;
+			margin: 10px 0;
 		}
 
-		.info-table {
+		.est-title-line .center {
+			flex: 1;
+			text-align: center;
+			/* ESTIMATION in center */
+		}
+
+		.est-title-line .left,
+		.est-title-line .right {
+			white-space: nowrap;
+		}
+
+
+		/* ================= TABLES ================= */
+		table {
 			width: 100%;
+			max-width: 100%;
+			box-sizing: border-box;
+			/* 🔥 MOST IMPORTANT */
 			border-collapse: collapse;
-			margin-bottom: 10px;
 		}
 
-		.info-table td {
-			padding: 4px;
-			vertical-align: top;
+		table.data th,
+		table.data td,
+		table.totals td {
+			border: 1px solid #000;
+			padding: 3px 4px;
+			/* not more than this */
+			box-sizing: border-box;
+		}
+
+
+		.est-info td {
+			padding: 2px 4px;
 		}
 
 		.section-title {
 			font-weight: bold;
 			border-bottom: 1px solid #000;
-			margin-top: 10px;
-			margin-bottom: 5px;
-		}
-
-		table.data {
-			width: 100%;
-			border-collapse: collapse;
-			margin-bottom: 8px;
+			margin: 12px 0 6px;
 		}
 
 		table.data th,
-		table.data td {
+		table.data td,
+		table.totals td {
 			border: 1px solid #000;
 			padding: 4px;
-			font-size: 11px;
 		}
 
 		table.data th {
-			background: #f0f0f0;
+			background: #f5f5f5;
 		}
 
 		.text-right {
@@ -93,39 +143,86 @@
 			text-align: center;
 		}
 
-		.totals {
-			width: 40%;
-			float: right;
-			border-collapse: collapse;
-		}
-
-		.totals td {
-			border: 1px solid #000;
-			padding: 5px;
-			font-size: 12px;
-		}
-
-		.remarks {
-			margin-top: 10px;
-			font-size: 11px;
-		}
-
+		/* ================= FOOTER ================= */
 		.footer {
-			margin-top: 20px;
 			font-size: 10px;
+			page-break-inside: avoid;
+		}
+
+		.terms-list {
+			font-size: 11px;
+			padding-left: 18px;
+		}
+
+		.terms-list li {
+			margin-bottom: 4px;
+			line-height: 1.4;
+		}
+
+		/* ================= PAGE BREAK ================= */
+		.page-break {
+			page-break-before: always;
+			break-before: page;
+		}
+
+		/* ================= PRINT (🔥 CRITICAL FIX) ================= */
+		@media print {
+
+			/* Hide UI */
+			button,
+			.topbar,
+			.sidebar,
+			.navbar,
+			.hide-on-print {
+				display: none !important;
+			}
+
+			/* 🔥 THIS FIXES SINGLE-PAGE ISSUE */
+			html,
+			body,
+			* {
+				height: auto !important;
+				overflow: visible !important;
+				max-height: none !important;
+			}
+
+			body {
+				background: #fff !important;
+			}
+
+			div {
+				box-shadow: none !important;
+			}
+
+			table {
+				page-break-inside: auto;
+			}
+
+			tr {
+				page-break-inside: avoid;
+			}
+
+			thead {
+				display: table-header-group;
+			}
 		}
 	</style>
 </head>
 
 <body onload="window.print()">
 
-	<div class="container">
+	<div class="print-wrapper">
+		<!-- ACTIONS -->
+		<div class="hide-on-print" style="margin-bottom:10px;">
+			<button onclick="window.print()" class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded">🖨 Print</button>
+			<a href="<?= base_url('index.php/Quotation/edit/' . $quotation->quotation_id) ?>" class="w-full sm:w-auto  ml-3 px-6 py-2 bg-gray-300 rounded print:hidden">Cancel</a>
+		</div>
 
 		<!-- HEADER -->
 		<div class="header">
 			<div class="logo">
 				<div class="brand flex items-center gap-3 px-4 py-3">
-					<img src="<?= base_url('public/images/logoauto1.png') ?>"
+					<img src="<?= base_url('public/images/logocooling.png') ?>"
 						alt="GMS Logo"
 						class="h-10 w-auto">
 
@@ -158,27 +255,27 @@
 						<tr>
 							<td>Name</td>
 							<td>:</td>
-							<td><?= $appointment->name ?></td>
+							<td><?= $appointment->name ?? $customer->name  ?></td>
 						</tr>
 						<tr>
 							<td>Contact</td>
 							<td>:</td>
-							<td><?= $appointment->phone ?></td>
+							<td><?= $appointment->phone ?? $customer->phone ?></td>
 						</tr>
 						<tr>
 							<td>Address</td>
 							<td>:</td>
-							<td><?= $appointment->address ?></td>
+							<td><?= $appointment->address ?? $customer->address ?></td>
 						</tr>
 						<tr>
 							<td>TRN No</td>
 							<td>:</td>
-							<td><?= $appointment->trn_no ?? '' ?></td>
+							<td><?= $appointment->trn_no ?? $customer->trn ?></td>
 						</tr>
 						<tr>
 							<td>Email</td>
 							<td>:</td>
-							<td><?= $appointment->email ?? '' ?></td>
+							<td><?= $appointment->email ?? $customer->email ?></td>
 						</tr>
 					</table>
 				</td>
@@ -189,27 +286,27 @@
 						<tr>
 							<td>Brand</td>
 							<td>:</td>
-							<td><?= $appointment->brand ?></td>
+							<td><?= $appointment->brand ?? $vehicle->brand ?></td>
 						</tr>
 						<tr>
 							<td>Model</td>
 							<td>:</td>
-							<td><?= $appointment->model ?></td>
+							<td><?= $appointment->model ?? $vehicle->model ?></td>
 						</tr>
 						<tr>
 							<td>Vin No</td>
 							<td>:</td>
-							<td><?= $appointment->chassis_no ?></td>
+							<td><?= $appointment->chassis_no ?? $vehicle->chassis_no ?></td>
 						</tr>
 						<tr>
 							<td>Plate No</td>
 							<td>:</td>
-							<td><?= $appointment->registration_no ?></td>
+							<td><?= $appointment->registration_no ?? $vehicle->registration_no  ?></td>
 						</tr>
 						<tr>
 							<td>Colour</td>
 							<td>:</td>
-							<td><?= $appointment->color ?? '' ?></td>
+							<td><?= $appointment->color  ?? $vehicle->color ?></td>
 						</tr>
 						<tr>
 							<td>Mileage</td>
@@ -219,12 +316,18 @@
 						<tr>
 							<td>Year</td>
 							<td>:</td>
-							<td><?= $appointment->year ?></td>
+							<td><?= $appointment->year ?? $vehicle->year  ?></td>
 						</tr>
 					</table>
 				</td>
 			</tr>
 		</table>
+		<?php
+		$service_total       = 0;
+		$parts_total         = 0;
+		$parts_discount_total = 0;
+		$sublet_total        = 0;
+		?>
 
 		<!-- SERVICES -->
 		<div class="section-title">Services</div>
@@ -250,85 +353,181 @@
 		</table>
 
 		<!-- SPARE PARTS -->
-		<div class="section-title">Spare Parts</div>
+		<?php if ($total_parts_count > 0) { ?>
+			<div class="section-title">Spare Parts</div>
+			<table class="data">
+				<tr>
+					<th>#</th>
+					<th>Parts Description</th>
+					<th>Unit Price</th>
+					<th>Qty</th>
+					<th>Dis Amt</th>
+					<th width="20%" class="text-right">Amount</th>
+				</tr>
+				<?php $i = 1;
+				$parts_total = 0;
+
+				// $nonUsedParts = [
+				// 	'Consumables',
+				// 	'Brake oil',
+				// 	'Steering oil',
+				// 	'Gear oil',
+				// 	'Engine oil',
+				// 	'Engine oil filter',
+				// 	'Gear oil filter',
+				// 	'Coolant',
+				// 	'AC gas',
+				// 	'AC gas top up'
+				// ];
+
+				foreach ($parts_used_new as $p):
+					$parts_total += $p->total_price;
+					$parts_discount_total += $p->dis_amount; ?>
+					<tr>
+						<td class="text-center"><?= $i++ ?></td>
+						<td>
+
+							<?php
+							if (!empty($p->labeling) && $p->labeling == 1) {
+								echo $p->part_name . ' - Original';
+							} else {
+								echo $p->part_name;
+							}
+
+							echo "<br>" . $p->partremarks;
+
+							?>
+
+						</td>
+						<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
+						<td class="text-center"><?= $p->qty ?></td>
+						<td class="text-center"><?= $p->dis_amount ?></td>
+						<td class="text-right"><?= number_format($p->total_price, 2) ?></td>
+					</tr>
+				<?php endforeach; ?>
+				<?php $i = 1;
+
+				foreach ($parts_used_after as $p):
+					$parts_total += $p->total_price;
+					$parts_discount_total += $p->dis_amount; ?>
+					<tr>
+						<td class="text-center"><?= $i++ ?></td>
+						<td>
+
+							<?php
+							if (!empty($p->labeling) && $p->labeling == 1) {
+								echo $p->part_name . ' - Aftermarket';
+							} else {
+								echo $p->part_name;
+							}
+							echo "<br>" . $p->partremarks;
+							?>
+
+
+						</td>
+						<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
+						<td class="text-center"><?= $p->qty ?></td>
+						<td class="text-center"><?= $p->dis_amount ?></td>
+						<td class="text-right"><?= number_format($p->total_price, 2) ?></td>
+					</tr>
+				<?php endforeach; ?>
+				<?php $i = 1;
+
+				foreach ($parts_used_used as $p):
+					$parts_total += $p->total_price;
+					$parts_discount_total += $p->dis_amount; ?>
+					<tr>
+						<td class="text-center"><?= $i++ ?></td>
+						<td>
+							<?php
+							if (!empty($p->labeling) && $p->labeling == 1) {
+								echo $p->part_name . ' - Used';
+							} else {
+								echo $p->part_name;
+							}
+							echo "<br>" . $p->partremarks;
+							?>
+
+						</td>
+						<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
+						<td class="text-center"><?= $p->qty ?></td>
+						<td class="text-center"><?= $p->dis_amount ?></td>
+						<td class="text-right"><?= number_format($p->total_price, 2) ?></td>
+					</tr>
+				<?php endforeach; ?>
+				<tr>
+					<td colspan="5" class="text-right"><strong>Total Spare Parts</strong></td>
+					<td class="text-right"><strong><?= number_format($parts_total, 2) ?></strong></td>
+				</tr>
+			</table>
+		<?php } ?>
+		<div class="section-title">Sublet Services</div>
 		<table class="data">
 			<tr>
-				<th>#</th>
-				<th>Parts Description</th>
-				<th>Unit Price</th>
-				<th>Qty</th>
-				<th>Dis Amt</th>
-				<th class="text-right">Amount</th>
+				<th width="5%">#</th>
+				<th>Work Description</th>
+				<th width="20%" class="text-right">Amount</th>
 			</tr>
 			<?php $i = 1;
-			$parts_total = 0;
-			foreach ($parts_used_new as $p): $parts_total += $p->total_price; ?>
+			$jd_total = 0;
+			foreach ($job_descriptions as $s): $jd_total += $s->amount; ?>
 				<tr>
 					<td class="text-center"><?= $i++ ?></td>
-					<td><?= $p->part_name ?> - New parts</td>
-					<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
-					<td class="text-center"><?= $p->qty ?></td>
-					<td class="text-center"><?= $p->dis_amount ?></td>
-					<td class="text-right"><?= number_format($p->total_price, 2) ?></td>
-				</tr>
-			<?php endforeach; ?>
-			<?php $i = 1;
-			$parts_total = 0;
-			foreach ($parts_used_after as $p): $parts_total += $p->total_price; ?>
-				<tr>
-					<td class="text-center"><?= $i++ ?></td>
-					<td><?= $p->part_name ?> - Aftermarket parts</td>
-					<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
-					<td class="text-center"><?= $p->qty ?></td>
-					<td class="text-center"><?= $p->dis_amount ?></td>
-					<td class="text-right"><?= number_format($p->total_price, 2) ?></td>
-				</tr>
-			<?php endforeach; ?>
-			<?php $i = 1;
-			$parts_total = 0;
-			foreach ($parts_used_used as $p): $parts_total += $p->total_price; ?>
-				<tr>
-					<td class="text-center"><?= $i++ ?></td>
-					<td><?= $p->part_name ?> - Used parts</td>
-					<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
-					<td class="text-center"><?= $p->qty ?></td>
-					<td class="text-center"><?= $p->dis_amount ?></td>
-					<td class="text-right"><?= number_format($p->total_price, 2) ?></td>
+					<td><?= $s->description ?></td>
+					<td class="text-right"><?= number_format($s->amount, 2) ?></td>
 				</tr>
 			<?php endforeach; ?>
 			<tr>
-				<td colspan="5" class="text-right"><strong>Total Spare Parts</strong></td>
-				<td class="text-right"><strong><?= number_format($parts_total, 2) ?></strong></td>
+				<td colspan="2" class="text-right"><strong>Total Services</strong></td>
+				<td class="text-right"><strong><?= number_format($jd_total, 2) ?></strong></td>
 			</tr>
 		</table>
+		<?php
+		$subtotal = $service_total + $parts_total + $jd_total;
 
+		$taxable_amount = $subtotal - $parts_discount_total;
+
+		$vat_amount = round($taxable_amount * 0.05, 2);
+
+		$grand_total = round($taxable_amount + $vat_amount, 2);
+
+		// ✅ convert calculated amount to words
+		$amount_in_words = number_to_words_aed($grand_total);
+		?>
+		<br>
 		<!-- TOTALS -->
 		<table class="totals">
 			<tr>
-				<td>Amount AED</td>
-				<td class="text-right"><?= number_format($estimation->subtotal, 2) ?></td>
+				<td>Subtotal AED</td>
+				<td width="20%" class="text-right"><?= number_format($subtotal, 2) ?></td>
 			</tr>
+
 			<tr>
 				<td>Discount AED</td>
-				<td class="text-right"><?= number_format($estimation->discount, 2) ?></td>
+				<td width="20%" class="text-right"><?= number_format($parts_discount_total, 2) ?></td>
 			</tr>
+
 			<tr>
 				<td>VAT 5%</td>
-				<td class="text-right"><?= number_format($estimation->tax_amount, 2) ?></td>
+				<td width="20%" class="text-right"><?= number_format($vat_amount, 2) ?></td>
 			</tr>
+
 			<tr>
 				<td><strong>Net Total AED</strong></td>
-				<td class="text-right"><strong><?= number_format($estimation->grand_total, 2) ?></strong></td>
+				<td width="20%" class="text-right">
+					<strong><?= number_format($grand_total, 2) ?></strong>
+				</td>
 			</tr>
 		</table>
 
-		<div style="clear:both"></div>
 
+		<!-- <div style="clear:both"></div> -->
+		<br><br><br>
 		<!-- REMARKS -->
 		<div class="remarks">
 			<strong>Remarks:</strong><br>
 			<?= nl2br($estimation->remarks) ?>
-		</div>
+		</div><br>
 
 		<!-- FOOTER -->
 		<div class="footer">
@@ -391,7 +590,7 @@
 	.est-info {
 		width: 100%;
 		border-collapse: collapse;
-		margin-bottom: 10px;
+		margin-bottom: 5px;
 	}
 
 	.est-info table {

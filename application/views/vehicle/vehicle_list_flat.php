@@ -11,6 +11,7 @@
 	</div>
 <hr><br>
 	<!-- Datatable -->
+	 <div class="overflow-x-auto w-full">
 	<table id="vehicleTable" class="display stripe hover row-border cell-border compact" style="width:100%;">
 		<thead>
 			<tr>
@@ -65,6 +66,7 @@
 			<?php endforeach; ?>
 		</tbody>
 	</table>
+	 </div>
 
 </div>
 

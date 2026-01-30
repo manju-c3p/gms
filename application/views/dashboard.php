@@ -22,7 +22,7 @@
 				<div class="flex justify-between items-center">
 					<div>
 						<p class="text-sm text-gray-500">Total Revenue</p>
-						<h2 class="text-2xl font-bold text-gray-800">AED 1,245,600</h2>
+						<h2 class="text-2xl font-bold text-gray-800">AED <?= $total_revenue; ?></h2>
 					</div>
 					<div class="p-3 bg-blue-100 rounded-xl text-blue-600 text-xl">
 						💰
@@ -32,28 +32,34 @@
 
 			<!-- Job Cards -->
 			<div class="bg-white rounded-2xl shadow p-5 border-l-4 border-green-600">
-				<div class="flex justify-between items-center">
-					<div>
-						<p class="text-sm text-gray-500">Job Cards</p>
-						<h2 class="text-2xl font-bold text-gray-800">4</h2>
+				<a href="<?= base_url('index.php/Jobcard/list_by_status/' . urlencode('in-progress')) ?>">
+					<div class="flex justify-between items-center">
+
+						<div>
+							<p class="text-sm text-gray-500">Job Cards</p>
+							<h2 class="text-2xl font-bold text-gray-800"><?= $active_job_cards_count ?></h2>
+						</div>
+						<div class="p-3 bg-green-100 rounded-xl text-green-600 text-xl">
+							🛠
+						</div>
+
 					</div>
-					<div class="p-3 bg-green-100 rounded-xl text-green-600 text-xl">
-						🛠
-					</div>
-				</div>
+				</a>
 			</div>
 
 			<!-- Pending -->
 			<div class="bg-white rounded-2xl shadow p-5 border-l-4 border-yellow-500">
-				<div class="flex justify-between items-center">
-					<div>
-						<p class="text-sm text-gray-500">Pending Jobs</p>
-						<h2 class="text-2xl font-bold text-gray-800">1</h2>
+				<a href="<?= base_url('index.php/Jobcard/list_by_status/' . urlencode('Pending')) ?>">
+					<div class="flex justify-between items-center">
+						<div>
+							<p class="text-sm text-gray-500">Pending Jobs</p>
+							<h2 class="text-2xl font-bold text-gray-800"><?= $pending_job_cards_count; ?></h2>
+						</div>
+						<div class="p-3 bg-yellow-100 rounded-xl text-yellow-600 text-xl">
+							⏳
+						</div>
 					</div>
-					<div class="p-3 bg-yellow-100 rounded-xl text-yellow-600 text-xl">
-						⏳
-					</div>
-				</div>
+				</a>
 			</div>
 
 			<!-- Customers -->
@@ -61,7 +67,7 @@
 				<div class="flex justify-between items-center">
 					<div>
 						<p class="text-sm text-gray-500">Customers</p>
-						<h2 class="text-2xl font-bold text-gray-800">10</h2>
+						<h2 class="text-2xl font-bold text-gray-800"><?= $customer_count ?></h2>
 					</div>
 					<div class="p-3 bg-purple-100 rounded-xl text-purple-600 text-xl">
 						👥
@@ -477,8 +483,10 @@
 			<div class="bg-white p-4 rounded shadow p-6 mt-6 mb-4">
 				<div class="flex justify-between items-center mb-1">
 					<div>
-						<div class="font-semibold text-gray-800">
-							<?= $row->jobcard_no ?>
+						<div class="font-semibold text-blue-800">
+							<a href="<?= base_url('index.php/Jobcard/timesheet/' . $row->jobcard_id) ?>">
+								<?= $row->jobcard_no ?>
+							</a>
 						</div>
 						<div class="text-sm text-gray-500">
 							<?= $row->completed_jobs ?> / <?= $row->total_jobs ?> jobs completed

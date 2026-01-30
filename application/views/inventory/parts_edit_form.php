@@ -2,178 +2,234 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
 
 <style>
-    option[data-special="true"] {
-        font-weight: 600;
-        color: #16a34a;
-    }
+	option[data-special="true"] {
+		font-weight: 600;
+		color: #16a34a;
+	}
+
+	.opacity-disabled {
+		opacity: 0.45;
+		pointer-events: none;
+	}
 </style>
 
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
 
-    <h2 class="text-2xl font-bold mb-4">Edit Spare Part</h2>
+	<h2 class="text-2xl font-bold mb-6">Edit Spare Part</h2>
 
-    <form method="POST"
-          action="<?= base_url('index.php/SpareParts/update'); ?>">
+	<form method="POST" action="<?= base_url('index.php/SpareParts/update'); ?>">
 
-        <input type="hidden" name="part_id" value="<?= $part->part_id ?>">
+		<input type="hidden" name="part_id" value="<?= $part->part_id ?>">
 
-        <div class="grid grid-cols-2 gap-4">
+		<div class="grid grid-cols-2 gap-4">
 
-            <!-- Brand -->
-            <div>
-                <label class="font-medium">Brand <span class="text-red-500">*</span></label>
-                <select name="brand_id"
-                        id="brandSelect"
-                        class="w-full border p-2 rounded"
-                        required>
+			<!-- PART TYPE (FIRST) -->
+			<div class="col-span-2">
+				<label class="font-medium">Part Type <span class="text-red-500">*</span></label>
+				<select name="parttype"
+					id="partTypeSelect"
+					class="w-full border p-2 rounded"
+					required>
+					<option value="">-- Select Part Type --</option>
+					<option value="New Parts" <?= $part->part_type == 'New Parts' ? 'selected' : '' ?>>
+						New Parts
+					</option>
+					<option value="Aftermarket Parts" <?= $part->part_type == 'Aftermarket Parts' ? 'selected' : '' ?>>
+						Aftermarket Parts
+					</option>
+					<option value="Used Parts" <?= $part->part_type == 'Used Parts' ? 'selected' : '' ?>>
+						Used Parts
+					</option>
+				</select>
+			</div>
 
-                    <option value="">-- Select Brand --</option>
+			<!-- BRAND -->
+			<div id="brandWrapper">
+				<label class="font-medium">Brand</label>
+				<select name="brand_id"
+					id="brandSelect"
+					class="w-full border p-2 rounded">
+					<option value="">-- Select Brand --</option>
+					<?php foreach ($brands as $b): ?>
+						<option value="<?= $b->brand_id ?>"
+							<?= ($b->brand_id == $part->brand_id) ? 'selected' : '' ?>>
+							<?= $b->brand_name ?>
+						</option>
+					<?php endforeach; ?>
+					<option value="add_brand" data-special="true">➕ Add New Brand</option>
+				</select>
+			</div>
 
-                    <?php foreach ($brands as $b): ?>
-                        <option value="<?= $b->brand_id ?>"
-                            <?= ($b->brand_id == $part->brand_id) ? 'selected' : '' ?>>
-                            <?= $b->brand_name ?>
-                        </option>
-                    <?php endforeach; ?>
+			<!-- VEHICLE MODEL -->
+			<div id="modelWrapper">
+				<label class="font-medium">Vehicle Model</label>
+				<select name="vehicle_model_id"
+					id="modelSelect"
+					class="w-full border p-2 rounded">
+					<?php if ($part->model_id): ?>
+						<option value="<?= $part->model_id ?>" selected>
+							<?= $part->model_name ?>
+						</option>
+					<?php else: ?>
+						<option value="">-- Select Model --</option>
+					<?php endif; ?>
+					<option value="add_model">+ Add Model</option>
+				</select>
+			</div>
 
-                    <option value="add_brand" data-special="true">
-                        ➕ Add New Brand
-                    </option>
-                </select>
-            </div>
+			<!-- PART NAME -->
+			<div class="col-span-2">
+				<label class="font-medium">Part Name <span class="text-red-500">*</span></label>
+				<input type="text"
+					name="part_name"
+					value="<?= $part->part_name ?>"
+					class="w-full border p-2 rounded"
+					required>
+			</div>
 
-            <!-- Vehicle Model -->
-            <div>
-                <label class="font-medium">Vehicle Model <span class="text-red-500">*</span></label>
-                <select name="vehicle_model_id"
-                        id="modelSelect"
-                        class="w-full border p-2 rounded"
-                        required>
+			<!-- PART CODE -->
+			<div>
+				<label class="font-medium">Part Code</label>
+				<input type="text"
+					name="part_code"
+					value="<?= $part->part_code ?>"
+					class="w-full border p-2 rounded">
+			</div>
 
-                    <?php if (!empty($part->model_id) && !empty($part->model_name)): ?>
-                        <option value="<?= $part->model_id ?>" selected>
-                            <?= $part->model_name ?>
-                        </option>
-                    <?php else: ?>
-                        <option value="">-- Select Model --</option>
-                    <?php endif; ?>
+			<!-- UNIT PRICE -->
+			<div>
+				<label class="font-medium">Unit Price</label>
+				<input type="number"
+					step="0.01"
+					name="unit_price"
+					value="<?= $part->unit_price ?>"
+					class="w-full border p-2 rounded">
+			</div>
 
-                    <option value="add_model">+ Add Model</option>
-                </select>
-            </div>
+			<!-- MIN STOCK -->
+			<div>
+				<label class="font-medium">Minimum Stock</label>
+				<input type="number"
+					name="min_stock"
+					value="<?= $part->min_stock ?>"
+					class="w-full border p-2 rounded">
+			</div>
 
-            <!-- Part Name -->
-            <div class="col-span-2">
-                <label class="font-medium">Part Name <span class="text-red-500">*</span></label>
-                <input type="text"
-                       name="part_name"
-                       value="<?= $part->part_name ?>"
-                       class="w-full border p-2 rounded"
-                       required>
-            </div>
+			<!-- WARRANTY -->
+			<div>
+				<label class="font-medium">Warranty</label>
+				<input
+					type="text"
+					name="warrenty"
+					value="<?= $part->warrenty ?? '' ?>"
+					class="w-full border p-2 rounded"
+					placeholder="Eg: 6 Months">
+			</div>
 
-            <!-- Part Code -->
-            <div>
-                <label class="font-medium">Part Code</label>
-                <input type="text"
-                       name="part_code"
-                       value="<?= $part->part_code ?>"
-                       class="w-full border p-2 rounded">
-            </div>
+			<div class="flex flex-col mt-3">
+				<div class="flex items-center gap-2">
+					<input
+						type="checkbox"
+						id="labeling"
+						name="labeling"
+						value="1"
+						class="w-4 h-4 border rounded"
+						<?= !empty($part->labeling) ? 'checked' : '' ?>>
 
-            <!-- Unit Price -->
-            <div>
-                <label class="font-medium">Unit Price</label>
-                <input type="number"
-                       step="0.01"
-                       name="unit_price"
-                       value="<?= $part->unit_price ?>"
-                       class="w-full border p-2 rounded">
-            </div>
+					<label for="labeling" class="font-medium cursor-pointer">
+						Labeled Part
+					</label>
+				</div>
 
-            <!-- Minimum Stock -->
-            <div>
-                <label class="font-medium">Minimum Stock</label>
-                <input type="number"
-                       name="min_stock"
-                       value="<?= $part->min_stock ?>"
-                       class="w-full border p-2 rounded">
-            </div>
+				<p class="text-sm text-gray-500 ml-6 mt-1">
+					Enable this checkbox if labeling needs to be applied to this spare part.
+				</p>
+			</div>
 
-            <!-- Part Type -->
-            <div>
-                <label class="font-medium">Part Type <span class="text-red-500">*</span></label>
-                <select name="parttype"
-                        class="w-full border p-2 rounded"
-                        required>
-                    <option value="">-- Select Part Type --</option>
-                    <option value="New Parts"
-                        <?= $part->part_type == 'New Parts' ? 'selected' : '' ?>>
-                        New Parts
-                    </option>
-                    <option value="Aftermarket Parts"
-                        <?= $part->part_type == 'Aftermarket Parts' ? 'selected' : '' ?>>
-                        Aftermarket Parts
-                    </option>
-                    <option value="Used Parts"
-                        <?= $part->part_type == 'Used Parts' ? 'selected' : '' ?>>
-                        Used Parts
-                    </option>
-                </select>
-            </div>
 
-        </div>
+		</div>
 
-        <br>
+		<br>
 
-        <!-- Buttons -->
-        <button class="px-6 py-2 bg-blue-600 text-white rounded">
-            Update Part
-        </button>
+		<button class="px-6 py-2 bg-blue-600 text-white rounded">
+			Update Part
+		</button>
 
-        <a href="<?= base_url('index.php/SpareParts'); ?>"
-           class="ml-3 px-6 py-2 bg-gray-300 rounded">
-            Cancel
-        </a>
+		<a href="<?= base_url('index.php/SpareParts'); ?>"
+			class="ml-3 px-6 py-2 bg-gray-300 rounded">
+			Cancel
+		</a>
 
-    </form>
+	</form>
 </div>
+
 <script>
-$('#brandSelect, #modelSelect').select2({ width: '100%' });
+	$('#brandSelect, #modelSelect').select2({
+		width: '100%'
+	});
 
-$('#brandSelect').on('change', function () {
+	// ENABLE / DISABLE LOGIC
+	function enableVehicleFields() {
+		$('#brandWrapper, #modelWrapper').removeClass('opacity-disabled');
+		$('#brandSelect, #modelSelect').prop('disabled', false);
+	}
 
-    let val = $(this).val();
+	function disableVehicleFields() {
+		$('#brandWrapper, #modelWrapper').addClass('opacity-disabled');
+		$('#brandSelect, #modelSelect').prop('disabled', true);
+	}
 
-    if (val === 'add_brand') {
-        $('#brandModal').removeClass('hidden');
-        $(this).val('').trigger('change');
-        return;
-    }
+	// PART TYPE CHANGE
+	$('#partTypeSelect').on('change', function() {
+		if ($(this).val() === 'New Parts') {
+			enableVehicleFields();
+		} else {
+			disableVehicleFields();
+		}
+	});
 
-    $('#modelSelect').html('<option>Loading...</option>');
+	// INITIAL LOAD (EDIT PAGE)
+	if ($('#partTypeSelect').val() === 'New Parts') {
+		enableVehicleFields();
+	} else {
+		disableVehicleFields();
+	}
 
-    $.get('<?= base_url("index.php/SpareParts/get_models_by_brand/") ?>' + val,
-        function (res) {
+	// BRAND CHANGE → LOAD MODELS
+	$('#brandSelect').on('change', function() {
 
-            let options = '<option value="">-- Select Model --</option>';
+		let val = $(this).val();
 
-            JSON.parse(res).forEach(m => {
-                options += `<option value="${m.model_id}">${m.model_name}</option>`;
-            });
+		if (val === 'add_brand') {
+			$('#brandModal').removeClass('hidden');
+			$(this).val('').trigger('change');
+			return;
+		}
 
-            options += '<option value="add_model">+ Add Model</option>';
+		if (!val) return;
 
-            $('#modelSelect').html(options).trigger('change');
-        }
-    );
-});
+		$('#modelSelect').html('<option>Loading...</option>');
 
-$('#modelSelect').on('change', function () {
-    if ($(this).val() === 'add_model') {
-        $('#modelBrandSelect').val($('#brandSelect').val());
-        $('#modelModal').removeClass('hidden');
-        $(this).val('');
-    }
-});
+		$.get('<?= base_url("index.php/SpareParts/get_models_by_brand/") ?>' + val,
+			function(res) {
+
+				let options = '<option value="">-- Select Model --</option>';
+
+				JSON.parse(res).forEach(m => {
+					options += `<option value="${m.model_id}">${m.model_name}</option>`;
+				});
+
+				options += '<option value="add_model">+ Add Model</option>';
+				$('#modelSelect').html(options).trigger('change');
+			}
+		);
+	});
+
+	$('#modelSelect').on('change', function() {
+		if ($(this).val() === 'add_model') {
+			$('#modelBrandSelect').val($('#brandSelect').val());
+			$('#modelModal').removeClass('hidden');
+			$(this).val('');
+		}
+	});
 </script>

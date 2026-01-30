@@ -1,9 +1,10 @@
 <style>
-    /* Works in most modern browsers */
-    option[data-special="true"] {
-        font-weight: 600;
-        color: #16a34a; /* green-600 */
-    }
+	/* Works in most modern browsers */
+	option[data-special="true"] {
+		font-weight: 600;
+		color: #16a34a;
+		/* green-600 */
+	}
 </style>
 
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
@@ -14,7 +15,9 @@
 		<!-- CUSTOMER SECTION -->
 		<h3 class="text-xl font-semibold mb-3">Customer Details</h3>
 
-		<div class="grid grid-cols-3 gap-4">
+		<!-- <div class="grid grid-cols-3 gap-4"> -->
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
 			<div>
 				<label class="font-medium">Customer Name <span class="text-red-500">*</span></label>
 				<input type="text" name="name" required class="w-full border p-2 rounded">
@@ -34,6 +37,24 @@
 				<label class="font-medium">Address</label>
 				<textarea name="address" class="w-full border p-2 rounded"></textarea>
 			</div>
+			<div>
+				<label class="font-medium">Emirate</label>
+				<select name="emirate" class="w-full border p-2 rounded">
+					<option value="">-- Select Emirate --</option>
+					<option value="Abu Dhabi">Abu Dhabi</option>
+					<option value="Dubai">Dubai</option>
+					<option value="Sharjah">Sharjah</option>
+					<option value="Ajman">Ajman</option>
+					<option value="Umm Al Quwain">Umm Al Quwain</option>
+					<option value="Ras Al Khaimah">Ras Al Khaimah</option>
+					<option value="Fujairah">Fujairah</option>
+				</select>
+
+			</div>
+			<div>
+				<label class="font-medium">TRN</label>
+				<input type="text" name="trn" class="w-full border p-2 rounded">
+			</div>
 		</div>
 
 		<hr class="my-6">
@@ -44,7 +65,8 @@
 		<div id="vehicleRows">
 
 			<!-- VEHICLE ROW -->
-			<div class="vehicleRow grid grid-cols-4 gap-3 mb-4 p-4 border rounded-lg bg-gray-50 relative">
+			<!-- <div class="vehicleRow grid grid-cols-4 gap-3 mb-4 p-4 border rounded-lg bg-gray-50 relative"> -->
+			<div class="vehicleRow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 p-4 border rounded-lg bg-gray-50 relative">
 
 				<!-- DELETE ROW BUTTON -->
 				<button type="button"
@@ -134,7 +156,7 @@
 
 
 <div id="brandModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center">
-	<div class="bg-white p-6 rounded w-96">
+	<div class="bg-white p-6 rounded w-[90%] max-w-md">
 		<h3 class="font-bold mb-3">Add Brand</h3>
 		<input type="text" id="newBrandName" class="w-full border p-2 mb-4">
 		<button onclick="saveBrand()" class="bg-blue-600 text-white px-4 py-2 rounded">Save</button>
@@ -145,7 +167,7 @@
 <div id="modelModal"
 	class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
-	<div class="bg-white p-6 rounded w-96">
+	<div class="bg-white p-6 rounded w-[90%] max-w-md">
 		<h3 class="text-lg font-bold mb-4">Add Vehicle Model</h3>
 
 		<!-- Brand Select -->
@@ -185,7 +207,8 @@
 <script>
 	function addVehicleRow() {
 		let html = `
-        <div class="vehicleRow grid grid-cols-4 gap-3 mb-4 p-4 border rounded-lg bg-gray-50 relative">
+      
+			<div class="vehicleRow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 p-4 border rounded-lg bg-gray-50 relative">
 
             <button type="button"
                 onclick="removeVehicleRow(this)"

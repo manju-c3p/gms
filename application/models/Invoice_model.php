@@ -47,10 +47,10 @@ class Invoice_model extends CI_Model
         i.*,
         c.name AS customer_name,
         c.phone,
+		c.trn,c.address,c.emirates,
         v.registration_no,
         v.brand,
-        v.model
-    ');
+        v.model,v.chassis_no');
 		$this->db->from('invoices i');
 		$this->db->join('job_cards j', 'j.jobcard_id = i.jobcard_id');
 		$this->db->join('customers c', 'c.customer_id = j.customer_id');
@@ -69,8 +69,7 @@ class Invoice_model extends CI_Model
         i.grand_total,
         i.status,
         c.name,
-        v.registration_no
-    ');
+        v.registration_no');
 		$this->db->from('invoices i');
 		$this->db->join('job_cards j', 'j.jobcard_id = i.jobcard_id');
 		$this->db->join('customers c', 'c.customer_id = j.customer_id');
@@ -83,8 +82,93 @@ class Invoice_model extends CI_Model
 	}
 	public function create_invoice($data)
 	{
+
+
+		$type = $data['invoice_type'];
+		$invoice_no   = $data['invoice_no'];
+		// Pull out extra fields
+		$customer_id  = $data['customer_id'] ?? null;
+		// ❗ Remove fields NOT in invoices table
+		unset($data['customer_id']);
+
+
 		$this->db->insert('invoices', $data);
-		return $this->db->insert_id();
+		$insertid = $this->db->insert_id();
+
+
+
+		if ($type == 'TI') {
+			/// unblocking stock//////////////////
+			$qqid = $this->input->post('qid');
+			// add code for Voucher entry here ///
+
+			$AccountCode = $invoice_no;
+
+			$vdate = $this->input->post('invdate');
+			$vtime = date('h:i:s');
+
+			/// debit entry 
+			for ($i = 0; $i < count($_POST['inv_debtor']); $i++) {
+				$debtor = $_POST['inv_debtor'][$i];
+				$dr_amount = $_POST['inv_dr_amount'][$i];
+				if ($dr_amount > 0) {
+					$data = array(
+						'voucher_code' => $AccountCode,
+						'voucher_date' => date('Y-m-d h:i:s', strtotime("$vdate $vtime")),
+						'voucher_type' => 'S',  /// Sales invoice  entry
+						'customer_id' => $customer_id,
+						'account_id' => $debtor,
+						'amount' => $dr_amount,
+						'drcr_type' => 'Dr',
+						//'narration' => $this->input->post('narration'),
+						'trans_id' => $insertid,
+						'trans_type' => 'S',
+						'recordCreatedBy' => $this->session->userdata('user_id'),
+						'invoice_code' => $AccountCode,
+					);
+					$this->db->insert('voucher_transaction', $data);
+					$vid = $this->db->insert_id();
+				}
+			}
+
+			// credit entry
+			for ($i = 0; $i < count($_POST['inv_creditor']); $i++) {
+				$creditor = $_POST['inv_creditor'][$i];
+				$cr_amount = $_POST['inv_cr_amount'][$i];
+				if ($cr_amount > 0) {
+					$data = array(
+						'voucher_code' => $AccountCode,
+						'voucher_date' => date('Y-m-d h:i:s', strtotime("$vdate $vtime")),
+						'voucher_type' => 'S',  /// Sales invoice  entry
+						'customer_id' => $customer_id,
+						'account_id' => $creditor,
+						'amount' => $cr_amount,
+						'drcr_type' => 'Cr',
+						//'narration' => $this->input->post('narration'),
+						'trans_id' => $insertid,
+						'trans_type' => 'S',
+						'recordCreatedBy' => $this->session->userdata('user_id'),
+						'invoice_code' => $AccountCode,
+					);
+					$this->db->insert('voucher_transaction', $data);
+					$vid = $this->db->insert_id();
+				}
+			}
+
+			// if ($vid) {
+			// 	$user_se_id = $this->session->userdata('session_id');
+			// 	$uid = $this->session->userdata('user_id');
+			// 	$page_name = explode('index.php/', $_SERVER['REQUEST_URI']);
+			// 	$ci = get_instance();
+			// 	$ci->load->helper('log');
+			// 	$log_msg = add_log_entry($uid, 1, $page_name[1], 'voucher_transaction', 'voucher_id', $vid);
+			// 	return $insertid;
+			// }
+		}
+
+
+
+		return $insertid;
 	}
 
 	public function insert_invoice_items123($invoice_id, $jobcard_id)
@@ -104,7 +188,7 @@ class Invoice_model extends CI_Model
 				'item_name'   => $s->service_name,
 				'quantity'    => 1,
 				'unit_price'  => $s->amount,
-				'total_price' => $s->amount
+				'total_price' => $s->amount,
 			]);
 		}
 
@@ -123,7 +207,7 @@ class Invoice_model extends CI_Model
 				'item_name'   => $p->part_name,
 				'quantity'    => $p->qty,
 				'unit_price'  => $p->amount,
-				'total_price' => $p->qty * $p->amount
+				'total_price' => $p->qty * $p->amount,
 			]);
 		}
 	}
@@ -184,8 +268,8 @@ class Invoice_model extends CI_Model
             qp.qty,
             qp.selling_price,
             qp.total_price,
-            sp.part_name
-        ')
+			qp.dis_amount,
+            sp.part_name ')
 			->from('quotation_parts qp')
 			->join(
 				'spare_parts sp',
@@ -193,7 +277,7 @@ class Invoice_model extends CI_Model
 				'left'
 			)
 			->where('qp.quotation_id', $quotation_id)
-			->where('qp.selected', 1)
+
 			->get()
 			->result();
 
@@ -204,9 +288,36 @@ class Invoice_model extends CI_Model
 				'item_name'   => $p->part_name,
 				'quantity'    => $p->qty,
 				'unit_price'  => $p->selling_price,
-				'total_price' => $p->total_price
+				'total_price' => $p->total_price,
+				'disamount' => $p->dis_amount,
 			]);
 		}
+
+		/* =====================================================
+       3. sublet services (from quotation_job_descriptions)
+       ===================================================== */
+		$parts = $this->db
+			->select('
+            qjd.description,
+            qjd.amount                      
+        ')
+			->from('quotation_job_descriptions qjd')
+
+			->where('qjd.quotation_id', $quotation_id)
+
+			->get()
+			->result();
+
+		foreach ($parts as $p) {
+			$this->db->insert('invoice_items', [
+				'invoice_id'  => $invoice_id,
+				'item_type'   => 'Sublet',
+				'item_name'   => $p->description,
+				'total_price' => $p->amount,
+
+			]);
+		}
+
 
 		return true;
 	}
@@ -222,8 +333,7 @@ class Invoice_model extends CI_Model
         i.status,
         c.name AS customer_name,
         v.registration_no,
-        IFNULL(SUM(p.amount),0) AS paid_amount
-    ');
+        IFNULL(SUM(p.amount),0) AS paid_amount');
 		$this->db->from('invoices i');
 		$this->db->join('job_cards j', 'j.jobcard_id = i.jobcard_id');
 		$this->db->join('customers c', 'c.customer_id = j.customer_id');
@@ -267,5 +377,55 @@ class Invoice_model extends CI_Model
 		// Update
 		$this->db->where('invoice_id', $invoice_id)
 			->update('invoices', ['status' => $status]);
+	}
+
+
+	// ===============================================================
+
+	public function update_invoice_no($invoice_id, $invoice_no)
+	{
+		return $this->db
+			->where('invoice_id', $invoice_id)
+			->update('invoices', ['invoice_no' => $invoice_no]);
+	}
+	public function has_proforma($quotation_id)
+	{
+		return $this->db
+			->where('quotation_id', $quotation_id)
+			->where('invoice_type', 'Proforma')
+			->count_all_results('invoices') > 0;
+	}
+
+
+	function get_debt_invoice_list($id, $account_id)
+	{
+		// $query = $this->db->query("select one.*, two.paid_amt,two.customer_id from (select * from invoices order by invoice_date desc , invoice_no desc)as one left join(select trans_id, sum(amount)as paid_amt, customer_id from voucher_transaction where cancel=0 and voucher_type='R' and drcr_type='Cr' and account_id=$account_id group by trans_id )as two on(one.invoice_id=two.trans_id) group by invoice_no");
+		$query = $this->db->query("select one.*,
+		two.paid_amt,
+		two.customer_id
+			from
+			(
+				select *
+				from invoices where invoice_type='TI'
+				order by invoice_date desc, invoice_no desc
+			) as one
+			left join
+			(
+				select trans_id,
+					customer_id,
+					sum(amount) as paid_amt
+				from voucher_transaction
+				where cancel = 0
+				and voucher_type = 'R'
+				and drcr_type = 'Cr'
+				and account_id = 591
+				group by trans_id, customer_id
+			) as two
+			on one.invoice_id = two.trans_id
+			group by one.invoice_no;
+			");
+
+
+		return $query->result();
 	}
 }

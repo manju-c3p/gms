@@ -4,7 +4,7 @@
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.tailwindcss.min.js"></script>
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
 
-	<div class="flex justify-between items-center mb-4">
+	<div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-4">
 
 		<h2 class="text-2xl font-bold">Appointment List</h2>
 
@@ -22,6 +22,7 @@
 	</div>
 
 	<!-- DataTable -->
+	 <div class="overflow-x-auto w-full">
 	<table id="appointmentTable"
 		class="w-full border rounded text-sm">
 
@@ -137,38 +138,38 @@
 								// Title text
 								if (!$a->jobcard_id) {
 									$jobcardTitle = 'Create Job Card';
-								} elseif ($a->jobcard_status === 'Pending') {
-									$jobcardTitle = 'Job Card Pending';
+								} elseif ($a->jobcard_status === 'Scheduled') {
+									$jobcardTitle = 'Job Card Scheduled';
 								} elseif ($a->jobcard_status === 'In Progress') {
 									$jobcardTitle = 'Job Card In Progress';
-								} elseif ($a->jobcard_status === 'Completed') {
-									$jobcardTitle = 'Job Card Completed';
+								} elseif ($a->jobcard_status === 'Finished') {
+									$jobcardTitle = 'Job Card Finished';
 								}
 
 								// CSS class
 								if (!$a->jobcard_id) {
 									$jobcardClass = 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200';
-								} elseif ($a->jobcard_status === 'Pending') {
+								} elseif ($a->jobcard_status === 'Scheduled') {
 									$jobcardClass = 'bg-yellow-100 text-yellow-700';
 								} elseif ($a->jobcard_status === 'In Progress') {
 									$jobcardClass = 'bg-blue-100 text-blue-700';
-								} elseif ($a->jobcard_status === 'Completed') {
+								} elseif ($a->jobcard_status === 'Finished') {
 									$jobcardClass = 'bg-green-100 text-green-700';
 								}
 								?>
 
 								<a href="<?= base_url('index.php/Jobcard/create/' . $a->appointment_id); ?>"
-									title="<?= $jobcardTitle ?>"
+									title="<?= $jobcardTitle ?? null ?>"
 									class="px-3 py-1 text-xs rounded-full flex items-center gap-1
        								<?php
 										if (!$a->jobcard_id) {
 											// Estimation exists but job card not created
 											echo 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200';
-										} elseif ($a->jobcard_status === 'Pending') {
+										} elseif ($a->jobcard_status === 'Scheduled') {
 											echo 'bg-yellow-100 text-yellow-700';
 										} elseif ($a->jobcard_status === 'In Progress') {
 											echo 'bg-blue-100 text-blue-700';
-										} elseif ($a->jobcard_status === 'Completed') {
+										} elseif ($a->jobcard_status === 'Finished') {
 											echo 'bg-green-100 text-green-700';
 										}
 										?>">
@@ -188,9 +189,9 @@
 					</td>
 					<!-- <td class="p-3">
 						<span class="px-2 py-1 rounded text-white text-xs
-                            <?= $a->status == 'Pending' ? 'bg-yellow-500' : '' ?>
+                            <?= $a->status == 'Scheduled' ? 'bg-yellow-500' : '' ?>
                             <?= $a->status == 'Confirmed' ? 'bg-blue-600' : '' ?>
-                            <?= $a->status == 'Completed' ? 'bg-green-600' : '' ?>
+                            <?= $a->status == 'Finished' ? 'bg-green-600' : '' ?>
                             <?= $a->status == 'Cancelled' ? 'bg-red-600' : '' ?>
                         ">
 							<?= $a->status ?>
@@ -223,6 +224,7 @@
 		</tbody>
 
 	</table>
+	 </div>
 
 </div>
 

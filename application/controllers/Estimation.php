@@ -14,12 +14,19 @@ class Estimation extends CI_Controller
 			'Estimation_model',
 			'SpareParts_model',
 			'Employee_model',
-			'Quotation_model'
+			'Quotation_model',
+			'Customer_model',
+			'Vehicle_model'
 		]);
 	}
 
 	public function create($appointment_id)
+
 	{
+		$data['username'] = $this->session->userdata('username');
+		$data['userid'] = $this->session->userdata('user_id');
+
+
 		// 1️⃣ Prevent duplicate estimation
 		$existing = $this->Estimation_model->get_by_appointment($appointment_id);
 		if ($existing) {
@@ -30,6 +37,8 @@ class Estimation extends CI_Controller
 		$appointment = $this->Estimation_model->get_appointment_details($appointment_id);
 		if (!$appointment) show_404();
 
+
+
 		// 3️⃣ Get inspection (Estimation MUST come after inspection)
 		$inspection = $this->Inspection_view_model->get_by_appointment($appointment_id);
 		if (!$inspection) {
@@ -39,6 +48,15 @@ class Estimation extends CI_Controller
 			);
 			redirect('appointment');
 		}
+
+		// Customer from inspection
+		$customer = $this->Customer_model
+			->get_customer($inspection->customer_id);
+
+		// Vehicle from inspection
+		$vehicle = $this->Vehicle_model
+			->get_vehicle($inspection->vehicle_id);
+
 
 
 		// 4️⃣ Create estimation record (DRAFT)
@@ -68,6 +86,9 @@ class Estimation extends CI_Controller
 		$data['estimation_no'] = $estimation_no;
 		$data['appointment']  = $appointment;
 		$data['inspection']   = $inspection;
+
+		$data['customer']      = $customer;
+		$data['vehicle']      = $vehicle;
 		$data['parts'] = $this->SpareParts_model->get_all_parts();
 		$data['brands'] = $this->SpareParts_model->get_all_brands();
 		$data['usedbrands'] = $this->SpareParts_model
@@ -77,6 +98,14 @@ class Estimation extends CI_Controller
 		$data['afterbrands'] = $this->SpareParts_model
 			->get_brands_by_part_type("Aftermarket Parts");
 
+		$data['Newparts'] = $this->SpareParts_model
+			->get_parts_by_part_type("New Parts");
+
+		$data['afterparts'] = $this->SpareParts_model
+			->get_parts_by_part_type("Aftermarket Parts");
+		$data['usedparts'] = $this->SpareParts_model
+			->get_parts_by_part_type("Used Parts");
+
 		log_message('error', 'Used Brands: ' . print_r($data['usedbrands'], true));
 		log_message('error', 'New Brands: ' . print_r($data['newbrands'], true));
 		log_message('error', 'Aftermarket Brands: ' . print_r($data['afterbrands'], true));
@@ -84,9 +113,9 @@ class Estimation extends CI_Controller
 
 		// $data['technicians'] = $this->Employee_model->get_active_technicians();
 		$data['kms'] = $inspection->km_reading;
-
+		$data['estdate'] = $inspection->deliverytime;
 		$data['services_master'] = $this->db->where('status', 'Active')
-						->get('services_master')->result();
+			->get('services_master')->result();
 		// Services from inspection
 		$data['services'] = $this->Inspection_model
 			->get_saved_services($inspection->inspection_id);
@@ -100,6 +129,124 @@ class Estimation extends CI_Controller
 		$this->load->view('includes/template', $data);
 	}
 
+	public function create_inspection($inspection_id = null)
+	{
+		$data['username'] = $this->session->userdata('username');
+		$data['userid']   = $this->session->userdata('user_id');
+
+		/* ===============================
+       1️⃣ Inspection is MANDATORY
+       =============================== */
+		if (!$inspection_id) {
+			show_error('Inspection ID is required to create estimation');
+		}
+
+		// $inspection = $this->Inspection_view_model->get_inspection($inspection_id);
+
+		$inspection = $this->Inspection_model->get_by_id($inspection_id);
+		if (!$inspection) {
+			show_404();
+		}
+
+		// get customer and vehicle details
+
+		// Customer from inspection
+		$customer = $this->Customer_model
+			->get_customer($inspection->customer_id);
+
+		// Vehicle from inspection
+		$vehicle = $this->Vehicle_model
+			->get_vehicle($inspection->vehicle_id);
+
+		/* ===============================
+       2️⃣ Get appointment (OPTIONAL)
+       =============================== */
+		$appointment_id = $inspection->appointment_id ?? null;
+		$appointment    = null;
+
+		if ($appointment_id) {
+			$appointment = $this->Estimation_model
+				->get_appointment_details($appointment_id);
+		}
+
+		/* ===============================
+       3️⃣ Prevent duplicate estimation
+       =============================== */
+		$existing = $this->Estimation_model
+			->get_by_inspection($inspection_id);
+
+		if ($existing) {
+			redirect('estimation/edit/' . $existing->estimation_id);
+		}
+
+		/* ===============================
+       4️⃣ Create estimation (DRAFT)
+       =============================== */
+		$estimation_id = $this->Estimation_model->create_estimation([
+			'inspection_id'   => $inspection_id,
+			'appointment_id'  => $appointment_id, // NULL allowed
+			'customer_id'     => $inspection->customer_id,
+			'vehicle_id'      => $inspection->vehicle_id,
+			'estimation_date' => date('Y-m-d'),
+			'estimation_time' => date('H:i:s'),
+			'status'          => 'Draft'
+		]);
+
+		$year = date('Y');
+		$estimation_no = 'EST-' . $year . '-' . str_pad($estimation_id, 6, '0', STR_PAD_LEFT);
+
+		$this->Estimation_model->update_estimation(
+			$estimation_id,
+			['estimation_no' => $estimation_no]
+		);
+
+		/* ===============================
+       5️⃣ Prepare view data
+       =============================== */
+		$data['estimation_id'] = $estimation_id;
+		$data['estimation_no'] = $estimation_no;
+		$data['inspection']   = $inspection;
+		$data['appointment']  = $appointment;
+		$data['customer']      = $customer;
+		$data['vehicle']      = $vehicle;
+
+		$data['parts'] = $this->SpareParts_model->get_all_parts();
+		$data['brands'] = $this->SpareParts_model->get_all_brands();
+
+		$data['usedbrands'] = $this->SpareParts_model
+			->get_brands_by_part_type("Used Parts");
+		$data['newbrands'] = $this->SpareParts_model
+			->get_brands_by_part_type("New Parts");
+		$data['afterbrands'] = $this->SpareParts_model
+			->get_brands_by_part_type("Aftermarket Parts");
+
+		$data['Newparts'] = $this->SpareParts_model
+			->get_parts_by_part_type("New Parts");
+
+		$data['afterparts'] = $this->SpareParts_model
+			->get_parts_by_part_type("Aftermarket Parts");
+		$data['usedparts'] = $this->SpareParts_model
+			->get_parts_by_part_type("Used Parts");
+
+		$data['kms']     = $inspection->km_reading;
+		$data['estdate'] = $inspection->deliverytime;
+
+		$data['services_master'] = $this->db
+			->where('status', 'Active')
+			->get('services_master')
+			->result();
+
+		// Services selected during inspection
+		$data['services'] = $this->Inspection_model
+			->get_saved_services($inspection_id);
+
+		$data['spare_parts'] = $this->SpareParts_model->get_all_parts();
+
+		$data['title'] = 'Create Estimation';
+		$data['main_content'] = 'estimation/create';
+
+		$this->load->view('includes/template', $data);
+	}
 
 	public function save()
 	{
@@ -116,7 +263,7 @@ class Estimation extends CI_Controller
 		$estimationData = [
 			'subtotal'        => $this->input->post('subtotal'),
 			'tax_amount'      => $this->input->post('tax_amount'),
-			'discount'        => $this->input->post('discount'),
+			'discount'        => $this->input->post('tdiscount'),
 			'grand_total'     => $this->input->post('grand_total'),
 			'status'          => 'Approved',
 			'customer_approval'     => $this->input->post('custapproval'),
@@ -124,6 +271,8 @@ class Estimation extends CI_Controller
 			'est_delivery_date'     => $this->input->post('estdeldate'),
 			'est_completion_time'     => $this->input->post('completiontime'),
 			'remarks'     => $this->input->post('remarks'),
+			'kmin'     => $this->input->post('kmin'),
+				'service_discount'     => $this->input->post('service_discount'),
 		];
 
 		$this->Estimation_model->update_estimation($estimation_id, $estimationData);
@@ -151,6 +300,7 @@ class Estimation extends CI_Controller
 			$this->input->post('part_type') ?? [],
 			$this->input->post('brand_id') ?? [],
 			$this->input->post('customer_selected') ?? [],
+			$this->input->post('part_warrenty') ?? [],
 		);
 
 		// ---------------------------
@@ -172,6 +322,9 @@ class Estimation extends CI_Controller
 
 	public function update()
 	{
+
+		$data['username'] = $this->session->userdata('username');
+		$data['userid'] = $this->session->userdata('user_id');
 		$estimation_id = $this->input->post('estimation_id');
 
 		if (!$estimation_id) {
@@ -185,7 +338,7 @@ class Estimation extends CI_Controller
 		$estimationData = [
 			'subtotal'        => $this->input->post('subtotal'),
 			'tax_amount'      => $this->input->post('tax_amount'),
-			'discount'        => $this->input->post('discount'),
+			'discount'        => $this->input->post('tdiscount'),
 			'grand_total'     => $this->input->post('grand_total'),
 			'status'          => 'Approved',
 			'customer_approval'     => $this->input->post('custapproval'),
@@ -193,6 +346,8 @@ class Estimation extends CI_Controller
 			'est_delivery_date'     => $this->input->post('estdeldate'),
 			'est_completion_time'     => $this->input->post('completiontime'),
 			'remarks'     => $this->input->post('remarks'),
+			'kmin'     => $this->input->post('kmin'),
+			'service_discount'     => $this->input->post('service_discount'),
 		];
 
 		$this->Estimation_model->update_estimation($estimation_id, $estimationData);
@@ -219,6 +374,7 @@ class Estimation extends CI_Controller
 			$this->input->post('part_type') ?? [],
 			$this->input->post('brand_id') ?? [],
 			$this->input->post('customer_selected') ?? [],
+			$this->input->post('part_warrenty') ?? [],
 		);
 
 		// ---------------------------
@@ -276,9 +432,23 @@ class Estimation extends CI_Controller
 
 	public function edit($estimation_id)
 	{
+
+		$data['username'] = $this->session->userdata('username');
+		$data['userid'] = $this->session->userdata('user_id');
 		// 1️⃣ Get estimation header
 		$estimation = $this->Estimation_model->get_estimation_by_id($estimation_id);
 		if (!$estimation) show_404();
+
+		// get customer and vehicle details
+
+		// Customer from inspection
+		$customer = $this->Customer_model
+			->get_customer($estimation->customer_id);
+
+		// Vehicle from inspection
+		$vehicle = $this->Vehicle_model
+			->get_vehicle($estimation->vehicle_id);
+
 
 		// 2️⃣ Appointment + customer + vehicle
 		$appointment = $this->Estimation_model
@@ -293,6 +463,7 @@ class Estimation extends CI_Controller
 
 		$parts_used_new = $this->Estimation_model
 			->get_parts_type($estimation_id, "New Parts");
+
 		$parts_used_after = $this->Estimation_model
 			->get_parts_type($estimation_id, "Aftermarket Parts");
 
@@ -303,16 +474,18 @@ class Estimation extends CI_Controller
 		$services_used = $this->Estimation_model
 			->get_services($estimation_id);
 
-		$inspection = $this->Inspection_view_model->get_by_appointment($estimation->appointment_id);
+		$inspection = $this->Inspection_view_model->get_by_inspection($estimation->inspection_id);
 
 		// 4️⃣ Masters (dropdown data)
 		$data['parts'] = $this->SpareParts_model->get_all_parts();
 		$data['brands'] = $this->SpareParts_model->get_all_brands();
 		$data['services_master'] = $this->db->where('status', 'Active')
-						->get('services_master')
+			->get('services_master')
 			->result();
 		// $data['technicians'] = $this->Employee_model->get_active_technicians();
-		$data['kms'] = $inspection->km_reading;
+		$data['kms'] = $inspection->km_reading ?? $estimation->kmin;
+		$data['service_discount'] = $estimation->service_discount ?? null;
+		$data['estdate'] = $inspection->deliverytime ?? $estimation->est_completion_time;
 
 		$data['usedbrands'] = $this->SpareParts_model
 			->get_brands_by_part_type("Used Parts");
@@ -321,10 +494,20 @@ class Estimation extends CI_Controller
 		$data['afterbrands'] = $this->SpareParts_model
 			->get_brands_by_part_type("Aftermarket Parts");
 
+		$data['Newparts'] = $this->SpareParts_model
+			->get_parts_by_part_type("New Parts");
+
+		$data['afterparts'] = $this->SpareParts_model
+			->get_parts_by_part_type("Aftermarket Parts");
+		$data['usedparts'] = $this->SpareParts_model
+			->get_parts_by_part_type("Used Parts");
+
 		// 5️⃣ Send data to view
 		$data['estimation']       = $estimation;
 		$data['appointment']      = $appointment;
 		$data['job_descriptions'] = $job_descriptions;
+		$data['customer']      = $customer;
+		$data['vehicle']      = $vehicle;
 		// $data['parts_used']       = $parts_used;
 		$data['parts_used_new']       = $parts_used_new;
 		$data['parts_used_after']       = $parts_used_after;
@@ -342,6 +525,27 @@ class Estimation extends CI_Controller
 
 
 	public function get_parts_by_brand()
+	{
+		$brand_id = $this->input->post('brand_id');
+
+		if (!$brand_id) {
+			echo json_encode([]);
+			return;
+		}
+
+		$this->db->select('part_id, part_name, unit_price');
+		$this->db->from('spare_parts');
+		$this->db->group_start()
+			->where('brand_id IS NULL')
+			->or_where('brand_id', $brand_id)
+			->group_end();
+		$this->db->order_by('part_name', 'ASC');
+
+		$parts = $this->db->get()->result();
+
+		echo json_encode($parts);
+	}
+	public function get_parts_by_brand_parttype()
 	{
 		$brand_id = $this->input->post('brand_id');
 
@@ -411,9 +615,22 @@ class Estimation extends CI_Controller
 	public function view($estimation_id)
 	{
 
+		$data['username'] = $this->session->userdata('username');
+		$data['userid'] = $this->session->userdata('user_id');
+
 		// 1️⃣ Get estimation header
 		$estimation = $this->Estimation_model->get_estimation_by_id($estimation_id);
 		if (!$estimation) show_404();
+
+		// get customer and vehicle details
+
+		// Customer from inspection
+		$customer = $this->Customer_model
+			->get_customer($estimation->customer_id);
+
+		// Vehicle from inspection
+		$vehicle = $this->Vehicle_model
+			->get_vehicle($estimation->vehicle_id);
 
 		// 2️⃣ Appointment + customer + vehicle
 		$appointment = $this->Estimation_model
@@ -423,6 +640,9 @@ class Estimation extends CI_Controller
 		$job_descriptions = $this->Estimation_model
 			->get_job_descriptions($estimation_id);
 
+		$total_parts_count = $this->db
+				->where('estimation_id', $estimation_id)
+				->count_all_results('estimation_parts');
 
 
 		$parts_used_new = $this->Estimation_model
@@ -446,6 +666,10 @@ class Estimation extends CI_Controller
 		$data['estimation']       = $estimation;
 		$data['appointment']      = $appointment;
 		$data['job_descriptions'] = $job_descriptions;
+		$data['customer']      = $customer;
+		$data['vehicle']      = $vehicle;
+
+		$data['total_parts_count']       = $total_parts_count;
 
 		$data['parts_used_new']       = $parts_used_new;
 		$data['parts_used_after']       = $parts_used_after;
@@ -466,6 +690,9 @@ class Estimation extends CI_Controller
 	{
 		$data['title'] = 'Estimation List';
 		$data['estimations'] = $this->Estimation_model->get_all_estimations();
+		$data['customers'] = $this->Customer_model->get_all();
+		 $data['vehicles']    = $this->Vehicle_model->get_all_vehicles();
+
 
 		$data['main_content'] = 'estimation/list';
 		$this->load->view('includes/template', $data);
@@ -474,7 +701,7 @@ class Estimation extends CI_Controller
 	public function delete($estimation_id)
 	{
 		$this->Estimation_model->delete_estimation($estimation_id);
-		redirect('estimation');
+		redirect('Estimation');
 	}
 
 	public function number_to_words($number)
@@ -564,5 +791,127 @@ class Estimation extends CI_Controller
 		}
 
 		return trim($result) . ' Dirhams Only';
+	}
+
+	// ==========================================================
+
+	public function create_direct_estimation()
+	{
+		$this->load->model('Customer_model');
+		$this->load->model('Vehicle_model');
+		$this->load->model('Estimation_model');
+
+		$customer_id = $this->input->post('customer_id');
+		$vehicle_id  = $this->input->post('vehicle_id');
+
+		/* ===============================
+       1️⃣ CREATE CUSTOMER (IF NEW)
+    			=============================== */
+		if ($customer_id === 'new') {
+
+			$cust_name  = $this->input->post('cust_name');
+			$cust_phone = $this->input->post('cust_phone');
+
+			if (!$cust_name || !$cust_phone) {
+				echo json_encode([
+					'status' => 'error',
+					'message' => 'Customer name and phone are required'
+				]);
+				return;
+			}
+
+			$customer_id = $this->Customer_model->create([
+				'name'    => $cust_name,
+				'phone'   => $cust_phone,
+				'email'   => $this->input->post('cust_email'),
+				'address' => $this->input->post('cust_address')
+			]);
+		}
+
+		if (!$customer_id) {
+			echo json_encode([
+				'status' => 'error',
+				'message' => 'Customer is required'
+			]);
+			return;
+		}
+
+		/* ===============================
+       2️⃣ CREATE VEHICLE (IF NEW)
+    		=============================== */
+		if (!$vehicle_id) {
+
+			$plate_no = $this->input->post('plate_no');
+			$brand    = $this->input->post('brand');
+			$model    = $this->input->post('model');
+
+			if (!$plate_no || !$brand || !$model) {
+				echo json_encode([
+					'status' => 'error',
+					'message' => 'Vehicle details are required'
+				]);
+				return;
+			}
+
+			$vehicle_id = $this->Vehicle_model->create([
+				'customer_id'     => $customer_id,
+				'registration_no' => $plate_no,
+				'brand'           => $brand,
+				'model'           => $model,
+				'chassis_no'      => $this->input->post('vin_no')
+			]);
+		}
+
+		/* ===============================
+       3️⃣ CREATE ESTIMATION (DIRECT)
+   			 =============================== */
+		$estimation_data = [
+			'appointment_id'  => NULL,   // 🔥 DIRECT
+			'inspection_id'   => NULL,   // 🔥 DIRECT
+			'customer_id'     => $customer_id,
+			'vehicle_id'      => $vehicle_id,
+			// 'estimation_no'   => $this->generate_estimation_no(),
+			'estimation_date' => date('Y-m-d'),
+			'status'          => 'Draft',
+			'created_at'      => date('Y-m-d H:i:s')
+		];
+
+		$estimation_id = $this->Estimation_model->create_estimation($estimation_data);
+
+		$year = date('Y');
+
+		// Example: EST-2025-000123
+		$estimation_no = 'EST-' . $year . '-' . str_pad($estimation_id, 6, '0', STR_PAD_LEFT);
+
+		// Update estimation with number
+		$this->Estimation_model->update_estimation(
+			$estimation_id,
+			['estimation_no' => $estimation_no]
+		);
+
+		echo json_encode([
+			'status'        => 'success',
+			'estimation_id' => $estimation_id
+		]);
+	}
+	// private function generate_estimation_no()
+	// {
+	// 	return 'EST-' . date('Y') . '-' . str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT);
+	// }
+
+
+		public function get_by_chassis()
+	{
+		$chassis = $this->input->post('chassis_no');
+
+		$data = $this->db
+			->select('v.*, c.customer_id')
+			->from('vehicles v')
+			->join('customers c', 'c.customer_id = v.customer_id')
+			->where('v.chassis_no', $chassis)
+			->get()
+			->row();
+
+		echo json_encode($data);
 	}
 }

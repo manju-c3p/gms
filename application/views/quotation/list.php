@@ -1,3 +1,6 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <div class="bg-white rounded-2xl shadow p-6">
 
 	<div class="flex items-center justify-between mb-4">
@@ -82,7 +85,7 @@
 							<!-- Job Card -->
 							<td class="border px-3 py-2 text-center">
 								<?php if ($q->status == 'Approved' && empty($q->jobcard_id)): ?>
-									<a href="<?= base_url('index.php/quotation/jobcard/' . $q->quotation_id); ?>"
+									<a href="<?= base_url('index.php/Jobcard/create_from_quotation/' . $q->quotation_id); ?>"
 										class="quotation-btn px-3 py-1 text-xs rounded text-white">
 										Create Job Card
 									</a>
@@ -101,26 +104,31 @@
 
 							<!-- Actions -->
 							<td class="border px-3 py-2 text-center space-x-1">
-								<a href="<?= base_url('index.php/quotation/edit/' . $q->quotation_id); ?>"
+								<a href="<?= base_url('index.php/Quotation/edit/' . $q->quotation_id); ?>"
 									class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded">
 									Edit
 								</a>
 
-								<a href="<?= base_url('index.php/quotation/view/' . $q->quotation_id); ?>"
+								<a href="<?= base_url('index.php/Quotation/view/' . $q->quotation_id); ?>"
 									class="px-2 py-1 bg-blue-100 text-blue-700 rounded">
 									View
+								</a>
+
+								<a href="<?= base_url('index.php/Quotation/delete/' . $q->quotation_id); ?>"
+									class="px-2 py-1 bg-blue-100 text-red-700 rounded">
+									Delete
 								</a>
 							</td>
 
 						</tr>
 					<?php endforeach; ?>
 				<?php else: ?>
-					<tr>
+					<!-- <tr>
 						<td colspan="8"
 							class="border px-3 py-6 text-center text-gray-500">
 							No quotations found
 						</td>
-					</tr>
+					</tr> -->
 				<?php endif; ?>
 			</tbody>
 		</table>
@@ -131,6 +139,9 @@
 	$(document).ready(function() {
 		$('#quotationTable').DataTable({
 			pageLength: 10,
+				language: {
+				emptyTable: "No Quotation found"
+			},
 			order: [
 				[1, 'desc']
 			],

@@ -6,7 +6,7 @@
 
     <div class="text-gray-600 mb-4">
         Part Code: <strong><?= $part->part_code ?></strong><br>
-        Current Price: <strong>₹<?= $part->unit_price ?></strong>
+        Current Price: <strong>AED <?= $part->unit_price ?></strong>
     </div>
 
     <form method="POST" action="<?= base_url('index.php/SpareParts/stock_in_save'); ?>">
