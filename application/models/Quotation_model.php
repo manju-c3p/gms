@@ -208,7 +208,7 @@ class Quotation_model extends CI_Model
 			->row();
 	}
 
-		public function get_parts_type($quotation_id, $parttype)
+	public function get_parts_type($quotation_id, $parttype)
 	{
 		return $this->db
 			->select('qp.*, sp.part_name')
@@ -245,38 +245,10 @@ class Quotation_model extends CI_Model
 			return false;
 		}
 
-		/* ===============================
-       1. UPDATE QUOTATION HEADER
-       =============================== */
-
-		// $headerFields = [
-		// 	'status',
-		// 	'subtotal',
-		// 	'tax_amount',
-		// 	'tdiscount',
-		// 	'grand_total',
-		// 	'remarks',
-		// 	'est_delivery_date',
-		// 	'est_completion_time',
-		// 	'customer_estimated_price'
-		// ];
-
-		// $updateData = [];
-
-		// foreach ($headerFields as $field) {
-		// 	if (isset($data[$field])) {
-		// 		$updateData[$field] = $data[$field];
-		// 	}
-		// }
-
-		// if (!empty($updateData)) {
-		// 	$this->db->where('quotation_id', $quotation_id)
-		// 		->update('quotations', $updateData);
-		// }
 
 		/* ===============================
-   1. UPDATE QUOTATION HEADER
-   =============================== */
+			1. UPDATE QUOTATION HEADER
+			=============================== */
 
 		$updateData = [];
 
@@ -284,6 +256,12 @@ class Quotation_model extends CI_Model
 		if (isset($data['status'])) {
 			$updateData['status'] = $data['status'];
 		}
+
+		// Status
+		if (isset($data['srvice_discount'])) {
+			$updateData['srvice_discount'] = $data['srvice_discount'];
+		}
+
 
 		// Amounts (force numeric safety)
 		if (isset($data['subtotal'])) {
@@ -295,12 +273,12 @@ class Quotation_model extends CI_Model
 		}
 
 		/*
-|--------------------------------------------------------------------------
-| IMPORTANT:
-| Quotation-level discount ONLY
-| Do NOT use item discount array here
-|--------------------------------------------------------------------------
-*/
+			|--------------------------------------------------------------------------
+			| IMPORTANT:
+			| Quotation-level discount ONLY
+			| Do NOT use item discount array here
+			|--------------------------------------------------------------------------
+			*/
 		if (isset($data['tdiscount'])) {
 			$updateData['discount'] = (float) $data['tdiscount'];
 		}
@@ -374,19 +352,91 @@ class Quotation_model extends CI_Model
 			$this->db->where('quotation_id', $quotation_id)
 				->delete('quotation_services');
 
+			// ✅ STEP 1 — Calculate subtotal
+			$subtotal = 0;
+
+			foreach ($data['total_cost'] as $t) {
+				$subtotal += (float)$t;
+			}
+
+			if ($subtotal <= 0) {
+				$subtotal = 1; // prevent division error
+			}
+
+			// ✅ Total service discount from quotation header
+			$total_discount = isset($data['srvice_discount'])
+				? (float)$data['srvice_discount']
+				: 0;
+
+			$distributed_discount = 0;
+			$last_index = array_key_last($data['service_id']);
+
 			foreach ($data['service_id'] as $i => $sid) {
 
 				if (!$sid) continue;
 
+				$service_total = (float)($data['total_cost'][$i] ?? 0);
+
+				// ✅ Proportional discount
+				if ($i == $last_index) {
+
+					// Fix rounding mismatch
+					$service_discount = round($total_discount - $distributed_discount, 2);
+				} else {
+
+					$service_discount = round(
+						($service_total / $subtotal) * $total_discount,
+						2
+					);
+
+					$distributed_discount += $service_discount;
+				}
+
+				// ✅ Discount %
+				$discount_percentage = ($service_total > 0)
+					? round(($service_discount / $service_total) * 100, 2)
+					: 0;
+
+				// ✅ Taxable
+				$taxable_amount = round($service_total - $service_discount, 2);
+
+				// ✅ Insert
 				$this->db->insert('quotation_services', [
-					'quotation_id'  => $quotation_id,
-					'service_id'    => $sid,
-					'estimated_time' => $data['service_time'][$i] ?? 1,
-					'estimated_cost' => $data['service_cost'][$i] ?? 0,
-					'total_cost'    => $data['total_cost'][$i]   ?? 0
+					'quotation_id'        => $quotation_id,
+					'service_id'          => $sid,
+					'estimated_time'      => $data['service_time'][$i] ?? 1,
+					'estimated_cost'      => $data['service_cost'][$i] ?? 0,
+					'total_cost'          => $service_total,
+
+					'discount_amount'     => $service_discount,
+					'discount_percentage' => $discount_percentage,
+					'taxable_amount'      => $taxable_amount
 				]);
 			}
 		}
+
+
+		// if (isset($data['service_id']) && is_array($data['service_id'])) {
+
+		// 	$this->db->where('quotation_id', $quotation_id)
+		// 		->delete('quotation_services');
+
+
+
+
+		// 	foreach ($data['service_id'] as $i => $sid) {
+
+		// 		if (!$sid) continue;
+
+		// 		$this->db->insert('quotation_services', [
+		// 			'quotation_id'  => $quotation_id,
+		// 			'service_id'    => $sid,
+		// 			'estimated_time' => $data['service_time'][$i] ?? 1,
+		// 			'estimated_cost' => $data['service_cost'][$i] ?? 0,
+		// 			'total_cost'    => $data['total_cost'][$i]   ?? 0
+		// 		]);
+		// 	}
+		// }
 
 		return true;
 	}

@@ -289,44 +289,56 @@
 		</table>
 
 		<!-- SERVICES -->
-		<div class="section-title">Services</div>
-		<table class="data">
-			<tr>
-				<th>#</th>
-				<th>Description</th>
-				<th class="text-right">Amount</th>
-			</tr>
-			<?php $i = 1;
-			$total = 0;
-			$totalvat = 0;
-			foreach ($services_used as $s): $total += $s->total_cost;
+		<?php $totalvat = 0; ?>
+		<?php if ($total_services_used > 0) { ?>
 
-			?>
+			<div class="section-title">Services</div>
+			<table class="data">
 				<tr>
-					<td class="text-center"><?= $i++ ?></td>
-					<td><?= $s->service_name ?></td>
-					<td width="20%" class="text-right"><?= number_format($s->total_cost, 2) ?></td>
+					<th>#</th>
+					<th>Description</th>
+					<th class="text-right">Amount</th>
 				</tr>
-			<?php endforeach;
-			?>
-			<tr>
-				<td colspan="2" class="text-right"><strong>Service Total</strong></td>
-				<td width="20%" class="text-right"><strong><?= number_format($total, 2) ?></strong></td>
-			</tr>
-			<tr>
-				<?php $totalvat = $total * 5 / 100; ?>
-				<td colspan="2" class="text-right"><strong>Service VAT (5%)</strong></td>
-				<td width="20%" class="text-right"><strong><?= number_format($totalvat, 2) ?></strong></td>
-			</tr>
-			<tr>
+				<?php $i = 1;
+				$total = 0;
+				$totalvat = 0;
+				$totaldiscount = 0;
+				foreach ($services_used as $s): $total += $s->total_cost;
+					$totaldiscount += $s->discount_amount;
+				?>
+					<tr>
+						<td class="text-center"><?= $i++ ?></td>
+						<td><?= $s->service_name ?></td>
+						<td width="20%" class="text-right"><?= number_format($s->total_cost, 2) ?></td>
+					</tr>
+				<?php endforeach;
+				?>
+				<tr>
+					<td colspan="2" class="text-right"><strong>Service Total</strong></td>
+					<td width="20%" class="text-right"><strong><?= number_format($total, 2) ?></strong></td>
+				</tr>
+				<tr>
+					<td colspan="2" class="text-right"><strong>Service Discount</strong></td>
+					<td width="20%" class="text-right"><strong><?= number_format($totaldiscount, 2) ?></strong></td>
+				</tr>
+				<tr>
+					<td colspan="2" class="text-right"><strong>Taxable Amount</strong></td>
+					<td width="20%" class="text-right"><strong><?= number_format(($total - $totaldiscount), 2) ?></strong></td>
+				</tr>
+				<tr>
+					<?php $totalvat = ($total - $totaldiscount) * 5 / 100; ?>
+					<td colspan="2" class="text-right"><strong>Service VAT (5%)</strong></td>
+					<td width="20%" class="text-right"><strong><?= number_format($totalvat, 2) ?></strong></td>
+				</tr>
+				<tr>
 
-				<?php $totalservice = $total + $totalvat; ?>
-				<td colspan="2" class="text-right"><strong>Service Total (Including VAT)</strong></td>
-				<td width="20%" class="text-right"><strong><?= number_format($totalservice, 2) ?></strong></td>
-			</tr>
+					<?php $totalservice = ($total - $totaldiscount) + $totalvat; ?>
+					<td colspan="2" class="text-right"><strong>Service Total (Including VAT)</strong></td>
+					<td width="20%" class="text-right"><strong><?= number_format($totalservice, 2) ?></strong></td>
+				</tr>
 
-		</table>
-
+			</table>
+		<?php } ?>
 		<?php
 		$new_total = 0;
 		$i = 1;
@@ -511,44 +523,47 @@
 
 		<?php } ?>
 		<!-- Sublet services -->
-		<div class="section-title">Sublet Services</div>
-		<table class="data">
-			<tr>
-				<th width="5%">#</th>
-				<th>Work Description</th>
-				<th width="20%" class="text-right">Amount</th>
-			</tr>
-			<?php $i = 1;
-			$jd_total = 0;
 
-			$totalvat3 = 0;
-			$totalservice3 = 0;
-			foreach ($job_descriptions as $s): $jd_total += $s->amount;
-
-			?>
+		<?php if ($total_job_descriptions > 0) { ?>
+			<div class="section-title">Sublet Services</div>
+			<table class="data">
 				<tr>
-					<td class="text-center"><?= $i++ ?></td>
-					<td><?= $s->description ?></td>
-					<td width="20%" class="text-right"><?= number_format($s->amount, 2) ?></td>
+					<th width="5%">#</th>
+					<th>Work Description</th>
+					<th width="20%" class="text-right">Amount</th>
 				</tr>
-			<?php endforeach; ?>
-			<tr>
-				<td colspan="2" class="text-right"><strong>Total Services</strong></td>
-				<td width="20%" class="text-right"><strong><?= number_format($jd_total, 2) ?></strong></td>
-			</tr>
+				<?php $i = 1;
+				$jd_total = 0;
 
-			<tr>
-				<?php $totalvat3 = $jd_total * 5 / 100; ?>
-				<td colspan="2" class="text-right"><strong>Service VAT (5%)</strong></td>
-				<td width="20%" class="text-right"><strong><?= number_format($totalvat, 2) ?></strong></td>
-			</tr>
-			<tr>
+				$totalvat3 = 0;
+				$totalservice3 = 0;
+				foreach ($job_descriptions as $s): $jd_total += $s->amount;
 
-				<?php $totalservice3 = $jd_total + $totalvat3; ?>
-				<td colspan="2" class="text-right"><strong>Service Total (Including VAT)</strong></td>
-				<td width="20%" class="text-right"><strong><?= number_format($totalservice3, 2) ?></strong></td>
-			</tr>
-		</table>
+				?>
+					<tr>
+						<td class="text-center"><?= $i++ ?></td>
+						<td><?= $s->description ?></td>
+						<td width="20%" class="text-right"><?= number_format($s->amount, 2) ?></td>
+					</tr>
+				<?php endforeach; ?>
+				<tr>
+					<td colspan="2" class="text-right"><strong>Total Services</strong></td>
+					<td width="20%" class="text-right"><strong><?= number_format($jd_total, 2) ?></strong></td>
+				</tr>
+
+				<tr>
+					<?php $totalvat3 = $jd_total * 5 / 100; ?>
+					<td colspan="2" class="text-right"><strong>Service VAT (5%)</strong></td>
+					<td width="20%" class="text-right"><strong><?= number_format($totalvat3 ?? 0, 2) ?></strong></td>
+				</tr>
+				<tr>
+
+					<?php $totalservice3 = $jd_total + $totalvat3; ?>
+					<td colspan="2" class="text-right"><strong>Service Total (Including VAT)</strong></td>
+					<td width="20%" class="text-right"><strong><?= number_format($totalservice3, 2) ?></strong></td>
+				</tr>
+			</table>
+		<?php } ?>
 
 		<!-- <div class="page-break"></div> -->
 

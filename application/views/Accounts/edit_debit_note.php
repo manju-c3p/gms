@@ -1,76 +1,106 @@
  <!-- Basic Form Start -->
-<div class="basic-form-area mg-tb-15" >
-    <div class="container-fluid">
-        <div class="row">                   
-            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                <div class="sparkline9-list responsive-mg-b-30">
-                    <!--<div class="sparkline9-hd">
-                        <div class="main-sparkline9-hd">
-                            <h1>Company Details <span class="basic-ds-n">add</span></h1>
-                            <br>
-                        </div>
-                    </div>-->
-                    <div class="sparkline9-graph">
-                        <div class="basic-login-form-ad">                                    
-                            <div class="row">
-                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">			
-		<form class="form-horizontal" action="<?php echo base_url().'index.php/'; ?>accounts/update_debit_note" id="debit_note" method="post" name="debit_note" >
-			<div class="box-body">
-				<?php foreach($debit_note_edit as $row):?>			 	 			
-				<div class="form-group row">
-					<label class="col-sm-2 control-label">Voucher No :</label>
-					<div class="col-sm-2">
-						<input id="receipt_no" name="receipt_no" type="text" class="form-control col-sm-2 input-sm"  value="<?php echo $row->voucher_code ;?>"readonly />
+<div class="p-6">
+	<div class="bg-white rounded-xl shadow p-6">
+
+		<form action="<?php echo base_url().'index.php/'; ?>accounts/update_debit_note"
+			  id="debit_note"
+			  method="post"
+			  name="debit_note"
+			  class="space-y-6">
+
+			<?php foreach($debit_note_edit as $row):?>
+
+				<!-- Voucher & Date -->
+				<div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
+					<label class="md:col-span-1 text-sm font-medium">Voucher No</label>
+					<div class="md:col-span-2">
+						<input id="receipt_no"
+							   name="receipt_no"
+							   type="text"
+							   readonly
+							   value="<?php echo $row->voucher_code;?>"
+							   class="w-full border rounded-lg px-3 py-2 text-sm bg-gray-100">
 					</div>
-					<label class="col-sm-2 control-label">Date :</label>
-					 <div class="col-sm-2">
-						 <div class="form-group data-custon-pick" id="data_1">
-                                        <div class="input-group date">
-                                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                                            <input type="text" class="form-control" id='v_date' name='v_date' tabindex='1' value="<?php echo date('d-m-Y',strtotime($row->voucher_date));?>" required>
-                                        </div>
-                                    </div>
-					</div>
-				</div>
-				<div class="form-group row">
-					<label class="col-sm-2 control-label">Debit Account :</label>
-					<div class="col-sm-2">
-						<input type="text" id="occupier_name" name="occupier_name" class="form-control col-sm-2 input-sm" value="<?php echo $row->account_name;?>" readonly required/>
-					</div>
-				
-					<label class="col-sm-2 control-label">Credit Account :</label>
-					<div class="col-sm-2">
-						<input type="text" id="supp_name" name="supp_name" class="form-control col-sm-2 input-sm" value="<?php echo $row->cracc_name ;?>" readonly required/>
+
+					<label class="md:col-span-1 text-sm font-medium">Date</label>
+					<div class="md:col-span-2">
+						<div class="flex items-center border rounded-lg px-2 py-1">
+							<i class="fa fa-calendar text-gray-500 mr-2"></i>
+							<input type="text"
+								   id="v_date"
+								   name="v_date"
+								   tabindex="1"
+								   required
+								   value="<?php echo date('d-m-Y',strtotime($row->voucher_date));?>"
+								   class="w-full text-sm outline-none">
+						</div>
 					</div>
 				</div>
-				<div class="form-group row">
-					<label class="col-sm-2 control-label"> Amount :</label>
-					<div class="col-sm-2">
-						<input type="text" id="amount" name="amount" class="form-control col-sm-2 input-sm" value="<?php echo $row->amount;?>" readonly >
+
+				<!-- Accounts -->
+				<div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
+					<label class="md:col-span-1 text-sm font-medium">Debit Account</label>
+					<div class="md:col-span-2">
+						<input type="text"
+							   id="occupier_name"
+							   name="occupier_name"
+							   readonly
+							   required
+							   value="<?php echo $row->account_name;?>"
+							   class="w-full border rounded-lg px-3 py-2 text-sm bg-gray-100">
 					</div>
-					
-					<label class="col-sm-2 control-label">Narration :</label>
-					<div class="col-sm-2">	
-						<textarea id="remark" class="form-control col-sm-2 input-sm" rows="3"  name="remark" ><?php echo $row->narration;?></textarea>
+
+					<label class="md:col-span-1 text-sm font-medium">Credit Account</label>
+					<div class="md:col-span-2">
+						<input type="text"
+							   id="supp_name"
+							   name="supp_name"
+							   readonly
+							   required
+							   value="<?php echo $row->cracc_name;?>"
+							   class="w-full border rounded-lg px-3 py-2 text-sm bg-gray-100">
 					</div>
 				</div>
-				<div class="col-sm-offset-4">
-					<input type="submit" id="edit" class="btn btn-primary" value="Update" />
-					<input type="hidden" id="voucher_id" name="voucher_id" value="<?php echo $row->voucher_id;?>" >
-					
+
+				<!-- Amount & Narration -->
+				<div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-start">
+					<label class="md:col-span-1 text-sm font-medium">Amount</label>
+					<div class="md:col-span-2">
+						<input type="text"
+							   id="amount"
+							   name="amount"
+							   readonly
+							   value="<?php echo $row->amount;?>"
+							   class="w-full border rounded-lg px-3 py-2 text-sm bg-gray-100">
+					</div>
+
+					<label class="md:col-span-1 text-sm font-medium">Narration</label>
+					<div class="md:col-span-2">
+						<textarea id="remark"
+								  name="remark"
+								  rows="3"
+								  class="w-full border rounded-lg px-3 py-2 text-sm"><?php echo $row->narration;?></textarea>
+					</div>
 				</div>
-			 <?php endforeach ;?>	
-			</div>
-		</form>		
-		 </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-               
-    </div>
+
+				<!-- Submit -->
+				<div class="flex justify-center gap-4">
+					<input type="submit"
+						   id="edit"
+						   value="Update"
+						   class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg cursor-pointer">
+
+					<input type="hidden"
+						   id="voucher_id"
+						   name="voucher_id"
+						   value="<?php echo $row->voucher_id;?>">
+				</div>
+
+			<?php endforeach ;?>
+
+		</form>
+
+	</div>
 </div>
+
 

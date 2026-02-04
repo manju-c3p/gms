@@ -293,6 +293,31 @@
 						<td></td>
 					</tr>
 
+					<!-- ================================================= -->
+					<tr class="bg-gray-50">
+						<td colspan="4" class="text-right px-3 py-2">Discount Amount</td>
+						<td class="px-3 py-2 text-right">
+							<input type="text"
+								id="service_discount" name="service_discount"
+								class="w-full text-right bg-gray-100">
+						</td>
+						<td></td>
+					</tr>
+					<tr class="bg-gray-100">
+						<td colspan="4" class="text-right px-3 py-2">Taxable Amount</td>
+						<td class="px-3 py-2 text-right">
+							<input type="text"
+								id="service_taxable_amt"
+								class="w-full text-right bg-gray-100"
+								readonly>
+						</td>
+						<td></td>
+					</tr>
+
+
+
+					<!-- ================================================================== -->
+
 					<!-- VAT Amount (5%) -->
 					<tr class="bg-gray-50">
 						<td colspan="4" class="text-right px-3 py-2">Service VAT (5%)</td>
@@ -304,6 +329,8 @@
 						</td>
 						<td></td>
 					</tr>
+					
+
 
 					<!-- Total Including VAT -->
 					<tr class="bg-gray-200 font-semibold">
@@ -371,113 +398,113 @@
 							<?php foreach ($parts_used_new as $i => $p):
 								// if ($p->selected == 1) {
 							?>
-									<tr class="hover:bg-gray-50 transition">
-										<td class="border px-2 py-2 text-center">
-											<input type="checkbox"
-												name="customer_selected[]"
-												value="<?= $p->part_id ?>"
-												class="w-4 h-4 accent-green-600" <?= ($p->selected == 1) ? 'checked' : '' ?> disabled>
-										</td>
+								<tr class="hover:bg-gray-50 transition">
+									<td class="border px-2 py-2 text-center">
+										<input type="checkbox"
+											name="customer_selected[]"
+											value="<?= $p->part_id ?>"
+											class="w-4 h-4 accent-green-600" <?= ($p->selected == 1) ? 'checked' : '' ?> disabled>
+									</td>
 
-										<!-- SL -->
-										<td class="border px-2 py-2 text-center font-medium">
-											<?= $i + 1 ?>
-										</td>
+									<!-- SL -->
+									<td class="border px-2 py-2 text-center font-medium">
+										<?= $i + 1 ?>
+									</td>
 
-										<!-- Brand -->
-										<td class="border px-2 py-2 hidden">
-											<select name="brand_id[]"
-												class="brandSelect w-full border rounded-lg px-2 py-1">
-												<option value="">-- Select Brand --</option>
-												<?php foreach ($brands as $b): ?>
-													<option value="<?= $b->brand_id ?>"
-														<?= isset($p->brand_id) && $p->brand_id == $b->brand_id ? 'selected' : '' ?>>
-														<?= $b->brand_name ?>
-													</option>
-												<?php endforeach; ?>
-											</select>
-										</td>
+									<!-- Brand -->
+									<td class="border px-2 py-2 hidden">
+										<select name="brand_id[]"
+											class="brandSelect w-full border rounded-lg px-2 py-1">
+											<option value="">-- Select Brand --</option>
+											<?php foreach ($brands as $b): ?>
+												<option value="<?= $b->brand_id ?>"
+													<?= isset($p->brand_id) && $p->brand_id == $b->brand_id ? 'selected' : '' ?>>
+													<?= $b->brand_name ?>
+												</option>
+											<?php endforeach; ?>
+										</select>
+									</td>
 
 
-										<!-- Part -->
-										<td class="border px-2 py-2">
-											<select name="part_id[]"
-												class="partSelect w-full border rounded-lg px-2 py-1">
-												<!-- <option value="">-- Select Brand First --</option> -->
-												<option value="<?= $p->part_id ?>"><?= $p->part_name ?></option>
-											</select>
-											<textarea name="part_warrenty[]" rows="3"  class="partWarrenty w-full border rounded-lg px-2 py-1"><?= $p->partremarks ?? null ?></textarea>
+									<!-- Part -->
+									<td class="border px-2 py-2">
+										<select name="part_id[]"
+											class="partSelect w-full border rounded-lg px-2 py-1">
+											<!-- <option value="">-- Select Brand First --</option> -->
+											<option value="<?= $p->part_id ?>"><?= $p->part_name ?></option>
+										</select>
+										<textarea name="part_warrenty[]" rows="3" class="partWarrenty w-full border rounded-lg px-2 py-1"><?= $p->partremarks ?? null ?></textarea>
 
-										</td>
+									</td>
 
-										<!-- Qty -->
-										<td class="border px-2 py-2 text-center">
-											<input type="number" name="part_qty[]"
-												class="partQty w-20 border rounded-lg px-2 py-1 text-center"
-												value="<?= $p->qty ?>">
-										</td>
+									<!-- Qty -->
+									<td class="border px-2 py-2 text-center">
+										<input type="number" name="part_qty[]"
+											class="partQty w-20 border rounded-lg px-2 py-1 text-center"
+											value="<?= $p->qty ?>">
+									</td>
 
-										<!-- Unit Price -->
-										<td class="border px-2 py-2 text-right">
-											<input type="number" step="0.01" name="unit_price[]"
-												class="unitPrice w-full border rounded-lg px-2 py-1 text-right"
-												value="<?= $p->unit_price ?>">
-										</td>
+									<!-- Unit Price -->
+									<td class="border px-2 py-2 text-right">
+										<input type="number" step="0.01" name="unit_price[]"
+											class="unitPrice w-full border rounded-lg px-2 py-1 text-right"
+											value="<?= $p->unit_price ?>">
+									</td>
 
-										<!-- Markup % -->
-										<td class="border px-2 py-2 text-center">
-											<input type="number" step="0.01" name="markup[]"
-												class="markup w-20 border rounded-lg px-2 py-1 text-center"
-												value="<?= $p->markup_percentage ?? 0 ?>" oninput="calculateSellingPrice(this)">
-										</td>
+									<!-- Markup % -->
+									<td class="border px-2 py-2 text-center">
+										<input type="number" step="0.01" name="markup[]"
+											class="markup w-20 border rounded-lg px-2 py-1 text-center"
+											value="<?= $p->markup_percentage ?? 0 ?>" oninput="calculateSellingPrice(this)">
+									</td>
 
-										<!-- Selling Price -->
-										<td class="border px-2 py-2 text-right">
-											<input type="number" step="0.01" name="selling_price[]"
-												class="sellPrice w-full border rounded-lg px-2 py-1 text-right"
-												value="<?= $p->selling_price ?>">
-										</td>
+									<!-- Selling Price -->
+									<td class="border px-2 py-2 text-right">
+										<input type="number" step="0.01" name="selling_price[]"
+											class="sellPrice w-full border rounded-lg px-2 py-1 text-right"
+											value="<?= $p->selling_price ?>">
+									</td>
 
-										<!-- Discount -->
-										<td class="border px-2 py-2 text-center">
-											<input type="text" name="discount[]"
-												onkeydown="allowNumberAndPercent(event)"
-												oninput="this.value = this.value.replace(/[^0-9%]/g, ''); calculateDiscount(this);"
-												class="discount w-20 border rounded-lg px-2 py-1 text-right"
-												value="<?= $p->discount ?? 0 ?>">
-										</td>
-										<!-- Discount amt-->
-										<td class="border px-2 py-2 text-center">
-											<input type="number" step="0.01" name="discountamt[]"
-												class="discountamt w-20 border rounded-lg px-2 py-1 text-right bg-gray-100"
-												value="<?= $p->dis_amount ?? 0 ?>" readonly>
-										</td>
+									<!-- Discount -->
+									<td class="border px-2 py-2 text-center">
+										<input type="text" name="discount[]"
+											onkeydown="allowNumberAndPercent(event)"
+											oninput="this.value = this.value.replace(/[^0-9%]/g, ''); calculateDiscount(this);"
+											class="discount w-20 border rounded-lg px-2 py-1 text-right"
+											value="<?= $p->discount ?? 0 ?>">
+									</td>
+									<!-- Discount amt-->
+									<td class="border px-2 py-2 text-center">
+										<input type="number" step="0.01" name="discountamt[]"
+											class="discountamt w-20 border rounded-lg px-2 py-1 text-right bg-gray-100"
+											value="<?= $p->dis_amount ?? 0 ?>" readonly>
+									</td>
 
-										<!-- Total -->
-										<td class="border px-2 py-2 text-right">
-											<input type="number" step="0.01" name="total_price[]"
-												class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
-												value="<?= $p->total_price ?>" readonly>
-										</td>
+									<!-- Total -->
+									<td class="border px-2 py-2 text-right">
+										<input type="number" step="0.01" name="total_price[]"
+											class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
+											value="<?= $p->total_price ?>" readonly>
+									</td>
 
-										<!-- Action -->
-										<td class="border px-2 py-2 text-center hidden">
-											<button type="button"
-												class="remove-row inline-flex items-center justify-center
+									<!-- Action -->
+									<td class="border px-2 py-2 text-center hidden">
+										<button type="button"
+											class="remove-row inline-flex items-center justify-center
                                        bg-red-100 text-red-600
                                        hover:bg-red-500 hover:text-white
                                        px-3 py-1 rounded-lg transition">
-												✕
-											</button>
-										</td>
+											✕
+										</button>
+									</td>
 
-										<td class="hidden border px-2 py-2 text-right">
-											<input type="hidden" name="part_type[]"
-												class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
-												value="<?= $p->part_type ?>" readonly>
-										</td>
-									</tr>
-							<?php 
+									<td class="hidden border px-2 py-2 text-right">
+										<input type="hidden" name="part_type[]"
+											class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
+											value="<?= $p->part_type ?>" readonly>
+									</td>
+								</tr>
+							<?php
 							// }
 							endforeach; ?>
 						<?php endif; ?>
@@ -590,110 +617,110 @@
 							<?php foreach ($parts_used_after as $i => $p):
 								// if ($p->selected == 1) {
 							?>
-									<tr class="hover:bg-gray-50 transition">
-										<td class="border px-2 py-2 text-center">
-											<input type="checkbox"
-												name="customer_selected[]"
-												value="<?= $p->part_id ?>"
-												class="w-4 h-4 accent-green-600" <?= ($p->selected == 1) ? 'checked' : '' ?> disabled>
-										</td>
-										<!-- SL -->
-										<td class="border px-2 py-2 text-center font-medium">
-											<?= $i + 1 ?>
-										</td>
+								<tr class="hover:bg-gray-50 transition">
+									<td class="border px-2 py-2 text-center">
+										<input type="checkbox"
+											name="customer_selected[]"
+											value="<?= $p->part_id ?>"
+											class="w-4 h-4 accent-green-600" <?= ($p->selected == 1) ? 'checked' : '' ?> disabled>
+									</td>
+									<!-- SL -->
+									<td class="border px-2 py-2 text-center font-medium">
+										<?= $i + 1 ?>
+									</td>
 
-										<!-- Brand -->
-										<td class="border px-2 py-2 hidden">
-											<select name="brand_id[]"
-												class="brandSelect w-full border rounded-lg px-2 py-1">
-												<option value="">-- Select Brand --</option>
-												<?php foreach ($brands as $b): ?>
-													<option value="<?= $b->brand_id ?>"
-														<?= isset($p->brand_id) && $p->brand_id == $b->brand_id ? 'selected' : '' ?>>
-														<?= $b->brand_name ?>
-													</option>
-												<?php endforeach; ?>
-											</select>
-										</td>
+									<!-- Brand -->
+									<td class="border px-2 py-2 hidden">
+										<select name="brand_id[]"
+											class="brandSelect w-full border rounded-lg px-2 py-1">
+											<option value="">-- Select Brand --</option>
+											<?php foreach ($brands as $b): ?>
+												<option value="<?= $b->brand_id ?>"
+													<?= isset($p->brand_id) && $p->brand_id == $b->brand_id ? 'selected' : '' ?>>
+													<?= $b->brand_name ?>
+												</option>
+											<?php endforeach; ?>
+										</select>
+									</td>
 
 
-										<!-- Part -->
-										<td class="border px-2 py-2">
-											<select name="part_id[]"
-												class="partSelect w-full border rounded-lg px-2 py-1">
-												<option value="<?= $p->part_id ?>"><?= $p->part_name ?></option>
-											</select>
-											<textarea name="part_warrenty[]" rows="3"  class="partWarrenty w-full border rounded-lg px-2 py-1"><?= $p->partremarks ?? null ?></textarea>
+									<!-- Part -->
+									<td class="border px-2 py-2">
+										<select name="part_id[]"
+											class="partSelect w-full border rounded-lg px-2 py-1">
+											<option value="<?= $p->part_id ?>"><?= $p->part_name ?></option>
+										</select>
+										<textarea name="part_warrenty[]" rows="3" class="partWarrenty w-full border rounded-lg px-2 py-1"><?= $p->partremarks ?? null ?></textarea>
 
-										</td>
+									</td>
 
-										<!-- Qty -->
-										<td class="border px-2 py-2 text-center">
-											<input type="number" name="part_qty[]"
-												class="partQty w-20 border rounded-lg px-2 py-1 text-center"
-												value="<?= $p->qty ?>">
-										</td>
+									<!-- Qty -->
+									<td class="border px-2 py-2 text-center">
+										<input type="number" name="part_qty[]"
+											class="partQty w-20 border rounded-lg px-2 py-1 text-center"
+											value="<?= $p->qty ?>">
+									</td>
 
-										<!-- Unit Price -->
-										<td class="border px-2 py-2 text-right">
-											<input type="number" step="0.01" name="unit_price[]"
-												class="unitPrice w-full border rounded-lg px-2 py-1 text-right"
-												value="<?= $p->unit_price ?>">
-										</td>
+									<!-- Unit Price -->
+									<td class="border px-2 py-2 text-right">
+										<input type="number" step="0.01" name="unit_price[]"
+											class="unitPrice w-full border rounded-lg px-2 py-1 text-right"
+											value="<?= $p->unit_price ?>">
+									</td>
 
-										<!-- Markup % -->
-										<td class="border px-2 py-2 text-center">
-											<input type="number" step="0.01" name="markup[]"
-												class="markup w-20 border rounded-lg px-2 py-1 text-center"
-												value="<?= $p->markup_percentage ?? 0 ?>" oninput="calculateSellingPrice(this)">
-										</td>
+									<!-- Markup % -->
+									<td class="border px-2 py-2 text-center">
+										<input type="number" step="0.01" name="markup[]"
+											class="markup w-20 border rounded-lg px-2 py-1 text-center"
+											value="<?= $p->markup_percentage ?? 0 ?>" oninput="calculateSellingPrice(this)">
+									</td>
 
-										<!-- Selling Price -->
-										<td class="border px-2 py-2 text-right">
-											<input type="number" step="0.01" name="selling_price[]"
-												class="sellPrice w-full border rounded-lg px-2 py-1 text-right"
-												value="<?= $p->selling_price ?>">
-										</td>
+									<!-- Selling Price -->
+									<td class="border px-2 py-2 text-right">
+										<input type="number" step="0.01" name="selling_price[]"
+											class="sellPrice w-full border rounded-lg px-2 py-1 text-right"
+											value="<?= $p->selling_price ?>">
+									</td>
 
-										<!-- Discount -->
-										<td class="border px-2 py-2 text-center">
-											<input type="text" name="discount[]"
-												onkeydown="allowNumberAndPercent(event)"
-												oninput="this.value = this.value.replace(/[^0-9%]/g, ''); calculateDiscount(this);"
-												class="discount w-20 border rounded-lg px-2 py-1 text-right"
-												value="<?= $p->discount ?? 0 ?>">
-										</td>
-										<!-- Discount amt-->
-										<td class="border px-2 py-2 text-center">
-											<input type="number" step="0.01" name="discountamt[]"
-												class="discountamt w-20 border rounded-lg px-2 py-1 text-right bg-gray-100"
-												value="<?= $p->dis_amount ?? 0 ?>" readonly>
-										</td>
+									<!-- Discount -->
+									<td class="border px-2 py-2 text-center">
+										<input type="text" name="discount[]"
+											onkeydown="allowNumberAndPercent(event)"
+											oninput="this.value = this.value.replace(/[^0-9%]/g, ''); calculateDiscount(this);"
+											class="discount w-20 border rounded-lg px-2 py-1 text-right"
+											value="<?= $p->discount ?? 0 ?>">
+									</td>
+									<!-- Discount amt-->
+									<td class="border px-2 py-2 text-center">
+										<input type="number" step="0.01" name="discountamt[]"
+											class="discountamt w-20 border rounded-lg px-2 py-1 text-right bg-gray-100"
+											value="<?= $p->dis_amount ?? 0 ?>" readonly>
+									</td>
 
-										<!-- Total -->
-										<td class="border px-2 py-2 text-right">
-											<input type="number" step="0.01" name="total_price[]"
-												class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
-												value="<?= $p->total_price ?>" readonly>
-										</td>
+									<!-- Total -->
+									<td class="border px-2 py-2 text-right">
+										<input type="number" step="0.01" name="total_price[]"
+											class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
+											value="<?= $p->total_price ?>" readonly>
+									</td>
 
-										<!-- Action -->
-										<td class="border px-2 py-2 text-center hidden">
-											<button type="button"
-												class="remove-row inline-flex items-center justify-center
+									<!-- Action -->
+									<td class="border px-2 py-2 text-center hidden">
+										<button type="button"
+											class="remove-row inline-flex items-center justify-center
                                        bg-red-100 text-red-600
                                        hover:bg-red-500 hover:text-white
                                        px-3 py-1 rounded-lg transition">
-												✕
-											</button>
-										</td>
-										<td class="hidden border px-2 py-2 text-right">
-											<input type="hidden" name="part_type[]"
-												class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
-												value="<?= $p->part_type ?>" readonly>
-										</td>
-									</tr>
-							<?php 
+											✕
+										</button>
+									</td>
+									<td class="hidden border px-2 py-2 text-right">
+										<input type="hidden" name="part_type[]"
+											class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
+											value="<?= $p->part_type ?>" readonly>
+									</td>
+								</tr>
+							<?php
 							// }
 							endforeach; ?>
 						<?php endif; ?>
@@ -803,113 +830,113 @@
 					<tbody>
 						<!-- Rows will come here -->
 						<?php if (!empty($parts_used_used)): ?>
-							<?php foreach ($parts_used_used as $i => $p): 
+							<?php foreach ($parts_used_used as $i => $p):
 								// if ($p->selected == 1) { 
-									?>
-									<tr class="hover:bg-gray-50 transition">
-										<td class="border px-2 py-2 text-center">
-											<input type="checkbox"
-												name="customer_selected[]"
-												value="<?= $p->part_id ?>"
-												class="w-4 h-4 accent-green-600" <?= ($p->selected == 1) ? 'checked' : '' ?> disabled>
-										</td>
-										<!-- SL -->
-										<td class="border px-2 py-2 text-center font-medium">
-											<?= $i + 1 ?>
-										</td>
+							?>
+								<tr class="hover:bg-gray-50 transition">
+									<td class="border px-2 py-2 text-center">
+										<input type="checkbox"
+											name="customer_selected[]"
+											value="<?= $p->part_id ?>"
+											class="w-4 h-4 accent-green-600" <?= ($p->selected == 1) ? 'checked' : '' ?> disabled>
+									</td>
+									<!-- SL -->
+									<td class="border px-2 py-2 text-center font-medium">
+										<?= $i + 1 ?>
+									</td>
 
-										<!-- Brand -->
-										<td class="border px-2 py-2 hidden">
-											<select name="brand_id[]"
-												class="brandSelect w-full border rounded-lg px-2 py-1">
-												<option value="">-- Select Brand --</option>
-												<?php foreach ($brands as $b): ?>
-													<option value="<?= $b->brand_id ?>"
-														<?= isset($p->brand_id) && $p->brand_id == $b->brand_id ? 'selected' : '' ?>>
-														<?= $b->brand_name ?>
-													</option>
-												<?php endforeach; ?>
-											</select>
-										</td>
+									<!-- Brand -->
+									<td class="border px-2 py-2 hidden">
+										<select name="brand_id[]"
+											class="brandSelect w-full border rounded-lg px-2 py-1">
+											<option value="">-- Select Brand --</option>
+											<?php foreach ($brands as $b): ?>
+												<option value="<?= $b->brand_id ?>"
+													<?= isset($p->brand_id) && $p->brand_id == $b->brand_id ? 'selected' : '' ?>>
+													<?= $b->brand_name ?>
+												</option>
+											<?php endforeach; ?>
+										</select>
+									</td>
 
 
-										<!-- Part -->
-										<td class="border px-2 py-2">
-											<select name="part_id[]"
-												class="partSelect w-full border rounded-lg px-2 py-1">
-												<option value="<?= $p->part_id ?>"><?= $p->part_name ?></option>
-											</select>
-											<textarea name="part_warrenty[]" rows="3"  class="partWarrenty w-full border rounded-lg px-2 py-1"><?= $p->partremarks ?? null ?></textarea>
+									<!-- Part -->
+									<td class="border px-2 py-2">
+										<select name="part_id[]"
+											class="partSelect w-full border rounded-lg px-2 py-1">
+											<option value="<?= $p->part_id ?>"><?= $p->part_name ?></option>
+										</select>
+										<textarea name="part_warrenty[]" rows="3" class="partWarrenty w-full border rounded-lg px-2 py-1"><?= $p->partremarks ?? null ?></textarea>
 
-										</td>
+									</td>
 
-										<!-- Qty -->
-										<td class="border px-2 py-2 text-center">
-											<input type="number" name="part_qty[]"
-												class="partQty w-20 border rounded-lg px-2 py-1 text-center"
-												value="<?= $p->qty ?>">
-										</td>
+									<!-- Qty -->
+									<td class="border px-2 py-2 text-center">
+										<input type="number" name="part_qty[]"
+											class="partQty w-20 border rounded-lg px-2 py-1 text-center"
+											value="<?= $p->qty ?>">
+									</td>
 
-										<!-- Unit Price -->
-										<td class="border px-2 py-2 text-right">
-											<input type="number" step="0.01" name="unit_price[]"
-												class="unitPrice w-full border rounded-lg px-2 py-1 text-right"
-												value="<?= $p->unit_price ?>">
-										</td>
+									<!-- Unit Price -->
+									<td class="border px-2 py-2 text-right">
+										<input type="number" step="0.01" name="unit_price[]"
+											class="unitPrice w-full border rounded-lg px-2 py-1 text-right"
+											value="<?= $p->unit_price ?>">
+									</td>
 
-										<!-- Markup % -->
-										<td class="border px-2 py-2 text-center">
-											<input type="number" step="0.01" name="markup[]"
-												class="markup w-20 border rounded-lg px-2 py-1 text-center"
-												value="<?= $p->markup_percentage ?? 0 ?>" oninput="calculateSellingPrice(this)">
-										</td>
+									<!-- Markup % -->
+									<td class="border px-2 py-2 text-center">
+										<input type="number" step="0.01" name="markup[]"
+											class="markup w-20 border rounded-lg px-2 py-1 text-center"
+											value="<?= $p->markup_percentage ?? 0 ?>" oninput="calculateSellingPrice(this)">
+									</td>
 
-										<!-- Selling Price -->
-										<td class="border px-2 py-2 text-right">
-											<input type="number" step="0.01" name="selling_price[]"
-												class="sellPrice w-full border rounded-lg px-2 py-1 text-right"
-												value="<?= $p->selling_price ?>">
-										</td>
+									<!-- Selling Price -->
+									<td class="border px-2 py-2 text-right">
+										<input type="number" step="0.01" name="selling_price[]"
+											class="sellPrice w-full border rounded-lg px-2 py-1 text-right"
+											value="<?= $p->selling_price ?>">
+									</td>
 
-										<!-- Discount -->
-										<td class="border px-2 py-2 text-center">
-											<input type="text" name="discount[]"
-												onkeydown="allowNumberAndPercent(event)"
-												oninput="this.value = this.value.replace(/[^0-9%]/g, ''); calculateDiscount(this);"
-												class="discount w-20 border rounded-lg px-2 py-1 text-right"
-												value="<?= $p->discount ?? 0 ?>">
-										</td>
-										<!-- Discount amt-->
-										<td class="border px-2 py-2 text-center">
-											<input type="number" step="0.01" name="discountamt[]"
-												class="discountamt w-20 border rounded-lg px-2 py-1 text-right bg-gray-100"
-												value="<?= $p->dis_amount ?? 0 ?>" readonly>
-										</td>
+									<!-- Discount -->
+									<td class="border px-2 py-2 text-center">
+										<input type="text" name="discount[]"
+											onkeydown="allowNumberAndPercent(event)"
+											oninput="this.value = this.value.replace(/[^0-9%]/g, ''); calculateDiscount(this);"
+											class="discount w-20 border rounded-lg px-2 py-1 text-right"
+											value="<?= $p->discount ?? 0 ?>">
+									</td>
+									<!-- Discount amt-->
+									<td class="border px-2 py-2 text-center">
+										<input type="number" step="0.01" name="discountamt[]"
+											class="discountamt w-20 border rounded-lg px-2 py-1 text-right bg-gray-100"
+											value="<?= $p->dis_amount ?? 0 ?>" readonly>
+									</td>
 
-										<!-- Total -->
-										<td class="border px-2 py-2 text-right">
-											<input type="number" step="0.01" name="total_price[]"
-												class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
-												value="<?= $p->total_price ?>" readonly>
-										</td>
+									<!-- Total -->
+									<td class="border px-2 py-2 text-right">
+										<input type="number" step="0.01" name="total_price[]"
+											class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
+											value="<?= $p->total_price ?>" readonly>
+									</td>
 
-										<!-- Action -->
-										<td class="border px-2 py-2 text-center hidden">
-											<button type="button"
-												class="remove-row inline-flex items-center justify-center
+									<!-- Action -->
+									<td class="border px-2 py-2 text-center hidden">
+										<button type="button"
+											class="remove-row inline-flex items-center justify-center
                                        bg-red-100 text-red-600
                                        hover:bg-red-500 hover:text-white
                                        px-3 py-1 rounded-lg transition">
-												✕
-											</button>
-										</td>
-										<td class="hidden border px-2 py-2 text-right">
-											<input type="hidden" name="part_type[]"
-												class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
-												value="<?= $p->part_type ?>" readonly>
-										</td>
-									</tr>
-							<?php 
+											✕
+										</button>
+									</td>
+									<td class="hidden border px-2 py-2 text-right">
+										<input type="hidden" name="part_type[]"
+											class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
+											value="<?= $p->part_type ?>" readonly>
+									</td>
+								</tr>
+							<?php
 							// }
 							endforeach; ?>
 						<?php endif; ?>
@@ -1165,6 +1192,16 @@
 						readonly
 						class="w-full border rounded-lg px-3 py-2 bg-gray-100 text-right">
 				</div>
+
+				<!-- Discount -->
+				<div>
+					<label class="block text-gray-600 font-medium mb-1">Service Discount</label>
+					<input id="totservicediscount" name="totservicediscount"
+
+						value="<?= isset($estimation) && $estimation ? $estimation->service_discount : '0.00' ?>"
+						class="w-full border rounded-lg px-3 py-2 text-right">
+				</div>
+
 
 				<!-- Discount -->
 				<div>
@@ -2281,19 +2318,7 @@
 		document.getElementById("job_total").value = (subtotal + vat).toFixed(2);
 	}
 
-	function calculateServiceTotals() {
 
-		let subtotal = 0;
-		document.querySelectorAll("#serviceTable .totalCost").forEach(el => {
-			subtotal += num(el.value);
-		});
-
-		const vat = subtotal * 0.05;
-
-		document.getElementById("service_total").value = subtotal.toFixed(2);
-		document.getElementById("service_vat").value = vat.toFixed(2);
-		document.getElementById("service_total_with_vat").value = (subtotal + vat).toFixed(2);
-	}
 
 	function updateServiceRow(row) {
 		const time = num(row.querySelector(".serviceTime")?.value);
@@ -2476,12 +2501,16 @@
 		document.querySelectorAll("#serviceTable .totalCost").forEach(el => {
 			subtotal += num(el.value);
 		});
-
-		const vat = subtotal * 0.05;
+		const servicediscountamt = document.getElementById("totservicediscount").value;
+		const taxableamt = subtotal - document.getElementById("totservicediscount").value;
+		const vat = taxableamt * 0.05;
 
 		document.getElementById("service_total").value = subtotal.toFixed(2);
+
+		document.getElementById("service_discount").value = servicediscountamt;
+		document.getElementById("service_taxable_amt").value = taxableamt.toFixed(2);
 		document.getElementById("service_vat").value = vat.toFixed(2);
-		document.getElementById("service_total_with_vat").value = (subtotal + vat).toFixed(2);
+		document.getElementById("service_total_with_vat").value = (taxableamt + vat).toFixed(2);
 	}
 
 	function calculatesubletServiceTotals() {

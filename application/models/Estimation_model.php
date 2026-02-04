@@ -71,7 +71,7 @@ class Estimation_model extends CI_Model
 	}
 
 
-	public function save_parts($estimation_id, $part_ids, $qtys, $unit_prices, $sell_prices, $totals, $markup, $discount, $discountamt, $parttype, $brandid, $selected,$remarks)
+	public function save_parts($estimation_id, $part_ids, $qtys, $unit_prices, $sell_prices, $totals, $markup, $discount, $discountamt, $parttype, $brandid, $selected, $remarks)
 	{
 
 		// 🔹 LOG START
@@ -115,11 +115,11 @@ class Estimation_model extends CI_Model
 				'part_type' => $parttype[$i],
 				'brand_id' => $brandid[$i],
 				'selected' => $is_selected,
-				'partremarks'=>$remarks[$i]
+				'partremarks' => $remarks[$i]
 			]);
 		}
 	}
-	public function save_services($estimation_id, $service_names, $times, $costs, $totals)
+	public function save_servicesold($estimation_id, $service_names, $times, $costs, $totals, $serdiscount)
 	{
 		// log_message('error', '--- save_services called ---');
 		// log_message('error', 'Estimation ID: ' . $estimation_id);
@@ -146,6 +146,69 @@ class Estimation_model extends CI_Model
 			log_message('error', json_encode($this->db->error()));
 		}
 	}
+
+	public function save_services($estimation_id, $service_names, $times, $costs, $totals, $serdiscount)
+	{
+		// 1. Remove existing services
+		$this->db->where('estimation_id', $estimation_id)
+			->delete('estimation_services');
+
+		// 2. Calculate subtotal
+		$subtotal = 0;
+		foreach ($totals as $t) {
+			$subtotal += (float)$t;
+		}
+
+		// Safety
+		if ($subtotal <= 0) {
+			$subtotal = 1; // avoid division by zero
+		}
+
+		$total_discount = (float)$serdiscount;
+		$distributed_discount = 0;
+		$last_index = array_key_last($service_names);
+
+		foreach ($service_names as $i => $service_name) {
+
+			if (!$service_name) continue;
+
+			$service_total = (float)$totals[$i];
+
+			// 3. Proportional discount calculation
+			if ($i == $last_index) {
+				// Adjust last row to fix rounding difference
+				$service_discount = round($total_discount - $distributed_discount, 2);
+			} else {
+				$service_discount = round(($service_total / $subtotal) * $total_discount, 2);
+				$distributed_discount += $service_discount;
+			}
+
+			// 4. Discount percentage
+			$discount_percentage = ($service_total > 0)
+				? round(($service_discount / $service_total) * 100, 2)
+				: 0;
+
+			// 5. Taxable & net amounts (VAT later if needed)
+			$taxable_amount = round($service_total - $service_discount, 2);
+
+			// 6. Insert
+			$this->db->insert('estimation_services', [
+				'estimation_id'       => $estimation_id,
+				'service_id'          => $service_name,
+				'estimated_time'      => $times[$i],
+				'estimated_cost'      => $costs[$i],
+				'total_cost'          => $service_total,
+
+				'discount_amount'     => $service_discount,
+				'discount_percentage' => $discount_percentage,
+				'taxable_amount'      => $taxable_amount
+			]);
+
+			log_message('error', $this->db->last_query());
+			log_message('error', json_encode($this->db->error()));
+		}
+	}
+
 
 
 	public function get_estimation_by_id($id)

@@ -1,6 +1,6 @@
 <?php
 
-date_default_timezone_set('Asia/Kolkata');
+// date_default_timezone_set('Asia/Kolkata');
 
 class Accounts extends CI_Controller
 {
@@ -614,8 +614,8 @@ class Accounts extends CI_Controller
     $d1 = date('Y-m-d');
     $data['opening_bal'] = '';
 
-    $this->load->model('Users_model');
-    $data['suppliers'] = $this->Users_model->get_supplier_list(); //customer
+    $this->load->model('Supplier_model');
+    $data['suppliers'] = $this->Supplier_model->get_supplier_list(); //customer
 
     $this->load->model('Accounts_model');
     $data['sundry_detors_records'] = $this->Accounts_model->get_general_ledger_accounts('2', '4');

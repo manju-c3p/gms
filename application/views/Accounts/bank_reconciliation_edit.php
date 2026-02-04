@@ -1,76 +1,111 @@
+<div class="bg-white rounded-xl shadow p-6">
+	<form action="<?php echo base_url() . 'index.php/Accounts/update_bank_reconciliation'; ?>"
+		  id="receipt"
+		  method="post"
+		  name="receipt"
+		  class="space-y-6">
 
-<div class="card-body">
-	<form class="form-horizontal" action="<?php echo base_url().'index.php/Accounts/update_bank_reconciliation'; ?>" id="receipt" method="post" name="receipt" >
-    <?php  foreach($records as $row) :?>
+		<?php foreach ($records as $row) : ?>
 
-	<div class="form-group row">
-          <label class="col-xs-12 col-sm-2 col-md-3 col-lg-2 col-form-label">Instrument Number:</label>
-              <div class="col-xs-12 col-sm-9 col-md-3 col-lg-3" role='group'>
-              <div class="input-group">
-                      <input type="text" class="form-control form-control-sm" id="instrument_no" name="instrument_no" value="<?php echo $row->instrument_no;?>" tabindex="1">
-                  </div>
-              </div>           
-        </div>
+			<!-- Instrument Number -->
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+				<label class="md:col-span-2 text-sm font-medium">
+					Instrument Number
+				</label>
+				<div class="md:col-span-3">
+					<input type="text"
+						   id="instrument_no"
+						   name="instrument_no"
+						   value="<?php echo $row->instrument_no; ?>"
+						   tabindex="1"
+						   class="w-full border rounded-lg px-3 py-2 text-sm">
+				</div>
+			</div>
 
-		<div class="form-group row">
+			<!-- Instrument Date -->
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+				<label class="md:col-span-2 text-sm font-medium">
+					Instrument Date
+				</label>
+				<div class="md:col-span-3">
+					<div class="flex items-center border rounded-lg px-2 py-1">
+						<input type="text"
+							   id="date"
+							   name="date"
+							   value="<?php echo date('d-m-Y'); ?>"
+							   tabindex="2"
+							   class="w-full text-sm outline-none datepicker1">
+						<i class="fa fa-calendar text-gray-500"></i>
+					</div>
+				</div>
+			</div>
 
-                        <label  class="col-xs-12 col-sm-2 col-md-3 col-lg-2 col-form-label">Instrument Date:</label>
-                        <div class="col-xs-12 col-sm-9 col-md-3 col-lg-3" role='group'>
-                            <div class="input-group date datepicker1">
-                                <input type="text" class="form-control form-control-sm datepicker1" value="<?php echo date('d-m-Y') ?>" id="date" name="date" tabindex="2" >
-                                <div class="input-group-addon"><i class="fa fa-calendar"></i></div>
-								</div>
-              </div>           
-        </div>
+			<!-- Amount -->
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+				<label class="md:col-span-2 text-sm font-medium">
+					Amount Number
+				</label>
+				<div class="md:col-span-3">
+					<input type="number"
+						   id="amount_no"
+						   name="amount_no"
+						   min="0"
+						   value="<?php echo $row->amount_no; ?>"
+						   tabindex="3"
+						   class="w-full border rounded-lg px-3 py-2 text-sm">
+				</div>
+			</div>
 
+			<!-- Type -->
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+				<label class="md:col-span-2 text-sm font-medium">
+					Type
+				</label>
+				<div class="md:col-span-3">
+					<select id="instrument_type"
+							name="instrument_type"
+							tabindex="4"
+							class="w-full border rounded-lg px-3 py-2 text-sm select2">
+						<option value="">Please select Type</option>
+						<option <?php if ($row->instrument_type == 'Dr/Cr') echo 'selected'; ?> value="Dr/Cr">Dr/Cr</option>
+						<option <?php if ($row->instrument_type == 'Distribution') echo 'selected'; ?> value="Distribution">Distribution</option>
+					</select>
+				</div>
+			</div>
 
-		<div class="form-group row">
-          <label class="col-xs-12 col-sm-2 col-md-3 col-lg-2 col-form-label"> Amount Number:</label>
-              <div class="col-xs-12 col-sm-9 col-md-3 col-lg-3" role='group'>
-              <div class="input-group">
-                      <input type="number" class="form-control form-control-sm" id="amount_no" name="amount_no" min="0" value="<?php echo $row->amount_no;?>" tabindex="3">
-                  </div>
-              </div>           
-        </div>
+			<!-- Remark -->
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+				<label class="md:col-span-2 text-sm font-medium">
+					Remark
+				</label>
+				<div class="md:col-span-4">
+					<textarea id="remark"
+							  name="remark"
+							  rows="2"
+							  tabindex="5"
+							  placeholder="remark"
+							  class="w-full border rounded-lg px-3 py-2 text-sm"><?php echo ($row->remark); ?></textarea>
+				</div>
+			</div>
 
-		<div class="form-group row">
-            <label class="col-xs-12 col-sm-2 col-md-3 col-lg-2 col-form-label">Type:</span></label>
-            <div class="col-xs-12 col-sm-9 col-md-3 col-lg-3" role='group'>
-                <select class="form-select form-control-sm select2" name="instrument_type" id="instrument_type" value="<?php echo $row->instrument_type;?>"  tabindex="4">
-                <option value="">Please select Type</option>
-                <option <?php if ($row->instrument_type == 'Dr/Cr') echo 'selected'; ?> value="Dr/Cr">Dr/Cr</option>
-                    <option <?php if ($row->instrument_type == 'Distribution') echo 'selected'; ?> value="Distribution">Distribution</option>
-                </select>
-            </div>
+		<?php endforeach; ?>
 
+		<!-- Submit -->
+		<div class="flex items-center gap-4">
+			<input type="hidden"
+				   name="reconciliation_id"
+				   value="<?php echo $row->reconciliation_id; ?>">
 
-			<div class="form-group row">
-        </div>
-
-           
-                <label class="col-xs-12 col-sm-2 col-md-3 col-lg-2 col-form-label">Remark:</label>
-            <div class="col-xs-12 col-sm-9 col-md-3 col-lg-3" role='group'>
-            <div class="input-group">
-
-                <textarea id="remark" name="remark" rows="2" placeholder="remark" style="width: 100%;" tabindex="5"><?php echo ($row->remark); ?></textarea>
-            </div>
-
-        </div>
-        <?php endforeach; ?>
-
-
-		</div>       
-        <div class="form-group row">
-            <label class="col-sm-2"></label>
-            <div class="col-sm-10">
-            <input type="hidden" name="reconciliation_id" value="<?php echo $row->reconciliation_id; ?>">
-
-                <button type="submit" tabindex="6" id="add" class="btn btn-primary m-b-0">Update</button>
-            </div>
-        </div>
-        </form>
+			<button type="submit"
+					id="add"
+					tabindex="6"
+					class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
+				Update
+			</button>
 		</div>
 
+	</form>
+</div>
 
 
 
@@ -109,4 +144,6 @@
 
 
 
-	</div>
+
+
+</div>

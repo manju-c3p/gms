@@ -272,7 +272,7 @@ class Estimation extends CI_Controller
 			'est_completion_time'     => $this->input->post('completiontime'),
 			'remarks'     => $this->input->post('remarks'),
 			'kmin'     => $this->input->post('kmin'),
-				'service_discount'     => $this->input->post('service_discount'),
+			'service_discount'     => $this->input->post('service_discount'),
 		];
 
 		$this->Estimation_model->update_estimation($estimation_id, $estimationData);
@@ -311,7 +311,8 @@ class Estimation extends CI_Controller
 			$this->input->post('service_id') ?? [],
 			$this->input->post('service_time') ?? [],
 			$this->input->post('service_cost') ?? [],
-			$this->input->post('total_cost') ?? []
+			$this->input->post('total_cost') ?? [],
+			$this->input->post('service_discount'),
 		);
 
 		// ---------------------------
@@ -385,7 +386,8 @@ class Estimation extends CI_Controller
 			$this->input->post('service_id') ?? [],
 			$this->input->post('service_time') ?? [],
 			$this->input->post('service_cost') ?? [],
-			$this->input->post('total_cost') ?? []
+			$this->input->post('total_cost') ?? [],
+		    $this->input->post('service_discount'),
 		);
 		// ---------------------------
 		// 5️⃣ quotation
@@ -641,8 +643,8 @@ class Estimation extends CI_Controller
 			->get_job_descriptions($estimation_id);
 
 		$total_parts_count = $this->db
-				->where('estimation_id', $estimation_id)
-				->count_all_results('estimation_parts');
+			->where('estimation_id', $estimation_id)
+			->count_all_results('estimation_parts');
 
 
 		$parts_used_new = $this->Estimation_model
@@ -658,6 +660,15 @@ class Estimation extends CI_Controller
 		$services_used = $this->Estimation_model
 			->get_services_print($estimation_id);
 
+
+		$total_job_descriptions = is_array($job_descriptions)
+			? count($job_descriptions)
+			: count($job_descriptions->result());
+
+		$total_services_used = is_array($services_used)
+			? count($services_used)
+			: count($services_used->result());
+
 		$inspection = $this->Inspection_view_model->get_by_appointment($estimation->appointment_id);
 
 		// 5️⃣ Send data to view
@@ -670,6 +681,8 @@ class Estimation extends CI_Controller
 		$data['vehicle']      = $vehicle;
 
 		$data['total_parts_count']       = $total_parts_count;
+		$data['total_job_descriptions']       = $total_job_descriptions;
+		$data['total_services_used']       = $total_services_used;
 
 		$data['parts_used_new']       = $parts_used_new;
 		$data['parts_used_after']       = $parts_used_after;
@@ -691,7 +704,7 @@ class Estimation extends CI_Controller
 		$data['title'] = 'Estimation List';
 		$data['estimations'] = $this->Estimation_model->get_all_estimations();
 		$data['customers'] = $this->Customer_model->get_all();
-		 $data['vehicles']    = $this->Vehicle_model->get_all_vehicles();
+		$data['vehicles']    = $this->Vehicle_model->get_all_vehicles();
 
 
 		$data['main_content'] = 'estimation/list';
@@ -900,7 +913,7 @@ class Estimation extends CI_Controller
 	// }
 
 
-		public function get_by_chassis()
+	public function get_by_chassis()
 	{
 		$chassis = $this->input->post('chassis_no');
 

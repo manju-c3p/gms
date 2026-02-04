@@ -181,10 +181,10 @@
 								<th class="border px-2 py-2 text-left">Debit Customer (Dr)</th>
 								<th class="border px-2 py-2 text-left">Debit Amount (AED)</th>
 								<th class="border px-2 py-2 text-center w-[10%]">
-									<a id="inv_dr_add_row" title="Add"
+									<!-- <a id="inv_dr_add_row" title="Add"
 										class="inline-flex items-center justify-center bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 rounded cursor-pointer">
 										<span class="fa fa-plus"></span>
-									</a>
+									</a> -->
 								</th>
 							</tr>
 						</thead>
@@ -231,10 +231,10 @@
 								<th class="border px-2 py-2 text-left">Credit Account (Cr)</th>
 								<th class="border px-2 py-2 text-left">Credit Amount (AED)</th>
 								<th class="border px-2 py-2 text-center w-[10%]">
-									<a id="inv_cr_add_row" title="Add"
+									<!-- <a id="inv_cr_add_row" title="Add"
 										class="inline-flex items-center justify-center bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 rounded cursor-pointer">
 										<span class="fa fa-plus"></span>
-									</a>
+									</a> -->
 								</th>
 							</tr>
 						</thead>

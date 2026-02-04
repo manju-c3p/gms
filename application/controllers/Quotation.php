@@ -287,6 +287,7 @@ class Quotation extends CI_Controller
 			'grand_total' => $post['grand_total'],
 			'remarks'     => $post['remarks'],
 			'status' => $status,
+			'srvice_discount'     => $this->input->post('service_discount'),
 
 			// parts
 			'part_id'        => $post['part_id'] ?? null,
@@ -299,6 +300,7 @@ class Quotation extends CI_Controller
 			'part_type'      => $post['part_type'] ?? null,
 			'customer_selected' => $post['customer_selected'] ?? [],
 			'partremarks' => $post['part_warrenty'] ?? [],
+			
 
 			// services
 			'service_id'     => $post['service_id'],
@@ -370,6 +372,15 @@ class Quotation extends CI_Controller
 
 		$services_used = $this->Quotation_model->get_services($data['quotation']->quotation_id);
 
+		$total_job_descriptions = is_array($job_descriptions)
+			? count($job_descriptions)
+			: count($job_descriptions->result());
+
+		$total_services_used = is_array($services_used)
+			? count($services_used)
+			: count($services_used->result());
+
+
 		$inspection = $this->Inspection_view_model->get_by_appointment($data['quotation']->appointment_id);
 		$data['parts'] = $this->SpareParts_model->get_all_parts();
 		$data['brands'] = $this->SpareParts_model->get_all_brands();
@@ -383,6 +394,9 @@ class Quotation extends CI_Controller
 		$data['vehicle']      = $vehicle;
 
 		$data['total_parts_count']       = $total_parts_count;
+		$data['total_job_descriptions']       = $total_job_descriptions;
+		$data['total_services_used']       = $total_services_used;
+		
 		$data['parts_used_new']       = $parts_used_new;
 		$data['parts_used_after']       = $parts_used_after;
 		$data['parts_used_used']       = $parts_used_used;

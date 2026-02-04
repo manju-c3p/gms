@@ -1,3 +1,7 @@
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 <div class="bg-white rounded-xl shadow p-4">
     <div class="overflow-x-auto">
         <table id="datatable" class="min-w-full text-sm border border-gray-200">
@@ -101,3 +105,21 @@
 
 	}
 </script>
+<script>
+$(document).ready(function () {
+	$('#datatable').DataTable({
+		pageLength: 10,
+		lengthMenu: [10, 25, 50, 100],
+		order: [[0, 'asc']],   // Sr.no
+		searching: true,
+		paging: true,
+		info: true,
+		autoWidth: false,
+		responsive: true,
+		columnDefs: [
+			{ orderable: false, targets: -1 } // Disable sorting on Action column
+		]
+	});
+});
+</script>
+

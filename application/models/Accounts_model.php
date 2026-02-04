@@ -60,7 +60,7 @@ class Accounts_model extends CI_Model
 		$vcode = $query->row('voucher_code');
 
 		//$query = $this->db->query("select one.*, two.account_name from(select * from  voucher_transaction where voucher_code='$vcode')as one left join(select account_id, account_name from general_ledger)as two on(one.account_id=two.account_id);");
-		$query = $this->db->query("SELECT one.*, two.account_name, i.invoice_code FROM (SELECT * FROM voucher_transaction WHERE voucher_code = '$vcode') AS one LEFT JOIN (SELECT account_id, account_name FROM general_ledger) AS two ON one.account_id = two.account_id LEFT JOIN invoice_master i ON one.trans_id = i.invoice_id;");
+		$query = $this->db->query("SELECT one.*, two.account_name, i.invoice_no FROM (SELECT * FROM voucher_transaction WHERE voucher_code = '$vcode') AS one LEFT JOIN (SELECT account_id, account_name FROM general_ledger) AS two ON one.account_id = two.account_id LEFT JOIN invoices i ON one.trans_id = i.invoice_id;");
 		return $query->result();
 	}
 	////////////////////////////////// Accounts Group Start ///////////////////////////////////
