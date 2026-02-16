@@ -99,13 +99,46 @@ class Customer_model extends CI_Model
 	public function create_customer($data)
 	{
 		$this->db->insert('customers', $data);
-		return $this->db->insert_id();
+
+			$insert_id = $this->db->insert_id();
+
+		$prifix = 'CUST';
+
+		$digit = sprintf("%1$04d", $insert_id);
+		$Code = $prifix . $digit;
+
+		$grp_no = 30;
+		$data1 = array(
+			'account_name' => $this->input->post('name') . ' ' . $Code,
+			'group_no' => $grp_no,
+			'customer_id' => $insert_id,
+			'opening_bal_type' => 'Dr',
+		);
+		$this->db->insert('general_ledger', $data1);
+		return $this->db->insert_id(); // return customer_id
+		
 	}
 
 	public function create($data)
 	{
 		$this->db->insert('customers', $data);
-		return $this->db->insert_id();
+
+			$insert_id = $this->db->insert_id();
+
+		$prifix = 'CUST';
+
+		$digit = sprintf("%1$04d", $insert_id);
+		$Code = $prifix . $digit;
+
+		$grp_no = 30;
+		$data1 = array(
+			'account_name' => $this->input->post('name') . ' ' . $Code,
+			'group_no' => $grp_no,
+			'customer_id' => $insert_id,
+			'opening_bal_type' => 'Dr',
+		);
+		$this->db->insert('general_ledger', $data1);
+		return $this->db->insert_id(); // return customer_id
 	}
 
 	public function filter_customers($filters = [])

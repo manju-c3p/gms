@@ -17,6 +17,13 @@
 
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
 
+	<?php if ($this->session->flashdata('error')): ?>
+		<div class="bg-red-100 text-red-700 px-4 py-2 rounded mb-3">
+			<?= $this->session->flashdata('error'); ?>
+		</div>
+	<?php endif; ?>
+
+
 	<h2 class="text-2xl font-bold mb-6">Add Spare Part</h2>
 
 	<form method="POST" action="<?= base_url('index.php/SpareParts/save'); ?>">
@@ -36,7 +43,7 @@
 			</div>
 
 			<!-- BRAND -->
-			<div id="brandWrapper" class="opacity-disabled">
+			<div id="brandWrapper" class="opacity-disabled" style="display:none;">
 				<label class="font-medium">Brand</label>
 				<select name="brand_id" id="brandSelect"
 					class="w-full border p-2 rounded" disabled>
@@ -51,7 +58,7 @@
 			</div>
 
 			<!-- VEHICLE MODEL -->
-			<div id="modelWrapper" class="opacity-disabled">
+			<div id="modelWrapper" class="opacity-disabled " style="display:none;">
 				<label class="font-medium">Vehicle Model</label>
 				<select name="vehicle_model_id" id="modelSelect"
 					class="w-full border p-2 rounded" disabled>
@@ -60,7 +67,7 @@
 			</div>
 
 			<!-- PART NAME -->
-			<div class="col-span-2">
+			<div>
 				<label class="font-medium">Part Name <span class="text-red-500">*</span></label>
 				<input type="text" name="part_name" required
 					class="w-full border p-2 rounded"
@@ -82,6 +89,70 @@
 					class="w-full border p-2 rounded"
 					placeholder="0.00">
 			</div>
+			<!-- PURCHASE UOM -->
+			<div>
+				<label class="font-medium">
+					Purchase Unit <span class="text-red-500">*</span>
+				</label>
+
+				<select name="purchase_unit_id"
+					id="purchaseUnit"
+					class="w-full border p-2 rounded" required>
+
+					<option value="">-- Select Unit --</option>
+
+					<?php foreach ($units as $u): ?>
+						<option value="<?= $u->unit_id ?>">
+							<?= $u->unit_name ?> (<?= $u->unit_abbr ?>)
+						</option>
+					<?php endforeach; ?>
+
+				</select>
+			</div>
+
+
+			<!-- STOCK UOM -->
+			<div>
+				<label class="font-medium">
+					Stock Unit <span class="text-red-500">*</span>
+				</label>
+
+				<select name="stock_unit_id"
+					id="stockUnit"
+					class="w-full border p-2 rounded" required>
+
+					<option value="">-- Select Unit --</option>
+
+					<?php foreach ($units as $u): ?>
+						<option value="<?= $u->unit_id ?>">
+							<?= $u->unit_name ?> (<?= $u->unit_abbr ?>)
+						</option>
+					<?php endforeach; ?>
+
+				</select>
+			</div>
+
+
+			<!-- CONVERSION -->
+			<div>
+				<label class="font-medium">
+					Qty per Purchase Unit <span class="text-red-500">*</span>
+				</label>
+
+				<input type="number"
+					step="0.01"
+					min="0.01"
+					name="qty_per_purchase_unit"
+					id="conversionQty"
+					class="w-full border p-2 rounded"
+					placeholder="Example: 1 Barrel = 50 Liters"
+					required>
+
+				<p class="text-sm text-gray-500 mt-1">
+					Enter how many <b>Stock Units</b> are inside one Purchase Unit.
+				</p>
+			</div>
+
 
 			<!-- MIN STOCK -->
 			<div>
@@ -189,9 +260,9 @@
 		let type = $(this).val();
 
 		if (type === 'New Parts') {
-			enableVehicleFields();
+			// enableVehicleFields();
 		} else {
-			disableVehicleFields();
+			// disableVehicleFields();
 		}
 	});
 
@@ -271,4 +342,33 @@
 
 	// INITIAL STATE
 	disableVehicleFields();
+
+	$('#purchaseUnit').on('change', function() {
+
+		let val = $(this).val();
+
+		if (val) {
+			$('#stockUnit').val(val);
+			$('#conversionQty')
+				.val(1);
+
+		}
+
+	});
+	$('#stockUnit').on('change', function() {
+
+		if ($(this).val() === $('#purchaseUnit').val()) {
+
+			$('#conversionQty')
+				.val(1)
+				.prop('readonly', true);
+
+		} else {
+
+			$('#conversionQty')
+				.prop('readonly', false)
+				.val('');
+		}
+
+	});
 </script>

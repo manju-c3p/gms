@@ -14,7 +14,11 @@
 </style>
 
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
-
+	<?php if ($this->session->flashdata('error')): ?>
+		<div class="bg-red-100 text-red-700 px-4 py-2 rounded mb-3">
+			<?= $this->session->flashdata('error'); ?>
+		</div>
+	<?php endif; ?>
 	<h2 class="text-2xl font-bold mb-6">Edit Spare Part</h2>
 
 	<form method="POST" action="<?= base_url('index.php/SpareParts/update'); ?>">
@@ -44,7 +48,7 @@
 			</div>
 
 			<!-- BRAND -->
-			<div id="brandWrapper">
+			<div id="brandWrapper" style="display:none;">
 				<label class="font-medium">Brand</label>
 				<select name="brand_id"
 					id="brandSelect"
@@ -61,7 +65,7 @@
 			</div>
 
 			<!-- VEHICLE MODEL -->
-			<div id="modelWrapper">
+			<div id="modelWrapper" style="display:none;">
 				<label class="font-medium">Vehicle Model</label>
 				<select name="vehicle_model_id"
 					id="modelSelect"
@@ -78,7 +82,7 @@
 			</div>
 
 			<!-- PART NAME -->
-			<div class="col-span-2">
+			<div>
 				<label class="font-medium">Part Name <span class="text-red-500">*</span></label>
 				<input type="text"
 					name="part_name"
@@ -105,6 +109,76 @@
 					value="<?= $part->unit_price ?>"
 					class="w-full border p-2 rounded">
 			</div>
+
+			<!-- PURCHASE UOM -->
+			<div>
+				<label class="font-medium">
+					Purchase Unit
+				</label>
+
+				<select name="purchase_unit_id"
+					class="w-full border p-2 rounded"
+					<?= $has_stock ? 'disabled' : '' ?>>
+
+					<?php foreach ($units as $u): ?>
+						<option value="<?= $u->unit_id ?>"
+							<?= ($u->unit_id == $part->purchase_unit_id) ? 'selected' : '' ?>>
+							<?= $u->unit_name ?> (<?= $u->unit_abbr ?>)
+						</option>
+					<?php endforeach; ?>
+
+				</select>
+			</div>
+
+
+			<!-- STOCK UOM -->
+			<div>
+				<label class="font-medium">
+					Stock Unit
+				</label>
+
+				<select name="stock_unit_id"
+					id="stockUnit"
+					class="w-full border p-2 rounded"
+					<?= $has_stock ? 'disabled' : '' ?>>
+
+					<?php foreach ($units as $u): ?>
+						<option value="<?= $u->unit_id ?>"
+							<?= ($u->unit_id == $part->stock_unit_id) ? 'selected' : '' ?>>
+							<?= $u->unit_name ?> (<?= $u->unit_abbr ?>)
+						</option>
+					<?php endforeach; ?>
+
+				</select>
+			</div>
+
+
+			<!-- CONVERSION -->
+			<div>
+				<label class="font-medium">
+					Stock Qty per Purchase Unit
+				</label>
+
+				<input type="number"
+					step="0.01"
+					name="qty_per_purchase_unit"
+					id="conversionQty"
+					value="<?= $part->qty_per_purchase_unit ?>"
+					class="w-full border p-2 rounded"
+					<?= $has_stock ? 'readonly' : '' ?>>
+			</div>
+
+			<?php if ($has_stock): ?>
+
+				<div class="col-span-2">
+					<div class="bg-yellow-100 text-yellow-800 px-4 py-2 rounded">
+						⚠️ Units cannot be changed because stock already exists.
+						Please perform a stock adjustment if conversion must change.
+					</div>
+				</div>
+
+			<?php endif; ?>
+
 
 			<!-- MIN STOCK -->
 			<div>
@@ -190,9 +264,9 @@
 
 	// INITIAL LOAD (EDIT PAGE)
 	if ($('#partTypeSelect').val() === 'New Parts') {
-		enableVehicleFields();
+		// enableVehicleFields();
 	} else {
-		disableVehicleFields();
+		// disableVehicleFields();
 	}
 
 	// BRAND CHANGE → LOAD MODELS
@@ -231,5 +305,35 @@
 			$('#modelModal').removeClass('hidden');
 			$(this).val('');
 		}
+	});
+
+
+	$('#purchaseUnit').on('change', function() {
+
+		let val = $(this).val();
+
+		if (val) {
+			$('#stockUnit').val(val);
+			$('#conversionQty')
+				.val(1);
+
+		}
+
+	});
+	$('#stockUnit').on('change', function() {
+
+		if ($(this).val() === $('#purchaseUnit').val()) {
+
+			$('#conversionQty')
+				.val(1)
+				.prop('readonly', true);
+
+		} else {
+
+			$('#conversionQty')
+				.prop('readonly', false)
+				.val('');
+		}
+
 	});
 </script>

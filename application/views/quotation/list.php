@@ -58,7 +58,7 @@
 
 							<!-- Amount -->
 							<td class="border px-3 py-2 text-right">
-								₹<?= number_format($q->grand_total, 2) ?>
+								AED <?= number_format($q->grand_total, 2) ?>
 							</td>
 
 							<!-- Status -->
@@ -142,9 +142,9 @@
 				language: {
 				emptyTable: "No Quotation found"
 			},
-			order: [
-				[1, 'desc']
-			],
+			// order: [
+			// 	[0, 'desc']
+			// ],
 			columnDefs: [{
 				orderable: false,
 				targets: [0, 6, 7]

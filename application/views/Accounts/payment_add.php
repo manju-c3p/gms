@@ -1,4 +1,9 @@
 <div class="bg-white rounded-xl shadow p-6">
+
+<!-- Header -->
+		<div class="px-6 py-4 border-b border-gray-200">
+			<h2 class="text-lg font-semibold text-gray-800">Payment Entry</h2>
+		</div><br>
 	<form action="<?php echo base_url() . 'index.php/accounts/add_payment_details'; ?>"
 		  id="receipt"
 		  method="post"

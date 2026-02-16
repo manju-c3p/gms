@@ -1,7 +1,29 @@
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+<!-- <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
 
-<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script> -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
 <div class="bg-white rounded-xl shadow p-6">
+
+	<!-- Header -->
+		<div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+			<h2 class="text-lg font-semibold text-gray-800">Bank Reconciliation</h2>
+
+			<span class="flex gap-2">
+				<a href="<?php echo base_url('index.php/accounts/add_bank_reconciliation'); ?>"
+					class="inline-flex items-center rounded-full bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1 hover:bg-blue-200 transition"
+					title="Add New Record">
+					Add New Record
+				</a>
+
+				<a href="<?php echo base_url('index.php/accounts/list_bank_reconciliation'); ?>"
+					class="inline-flex items-center rounded-full bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1 hover:bg-blue-200 transition"
+					title="List Records">
+					List Records
+				</a>
+			</span>
+
+		</div><br>
 	<form action="<?php echo base_url() . 'index.php/Accounts/view_bank_reconciliation'; ?>"
 		  id="receipt"
 		  method="post"
@@ -21,7 +43,7 @@
 						tabindex="1"
 						required
 						onchange="get_doc_list()"
-						class="w-full border rounded-lg px-3 py-2 text-sm select2">
+						class="account-select w-full border rounded-lg px-3 py-2 text-sm select2">
 					<option value="">Select Code</option>
 					<?php foreach ($account_ledgers as $s) { ?>
 						<option <?php if ($s->account_id == $account_id) echo 'selected'; ?>
@@ -112,20 +134,26 @@
 </script>
 <script>
 $(document).ready(function () {
-	$('#datatable').DataTable({
-		pageLength: 10,
-		lengthMenu: [10, 25, 50, 100],
-		order: [[0, 'asc']],   // Sr.no
-		searching: true,
-		paging: true,
-		info: true,
-		autoWidth: false,
-		responsive: true,
-		columnDefs: [
-			{ orderable: false, targets: -1 } // Disable sorting on Action column
-		]
-	});
+	// $('#datatable').DataTable({
+	// 	pageLength: 10,
+	// 	lengthMenu: [10, 25, 50, 100],
+	// 	order: [[0, 'asc']],   // Sr.no
+	// 	searching: true,
+	// 	paging: true,
+	// 	info: true,
+	// 	autoWidth: false,
+	// 	responsive: true,
+	// 	columnDefs: [
+	// 		{ orderable: false, targets: -1 } // Disable sorting on Action column
+	// 	]
+	// });
+
+	$('.account-select').select2({
+			width: '100%'
+		});
 });
+
+
 </script>
 
 

@@ -479,6 +479,29 @@ class Quotation_model extends CI_Model
 			->get()
 			->result();
 	}
+	public function get_all_quotations()
+	{
+		return $this->db
+			->select('
+                q.*,
+
+                c.name AS customer_name,
+                c.phone AS customer_phone,
+
+                v.registration_no,
+                v.brand,
+                v.model,
+
+               
+            ')
+			->from('quotations q')
+			->join('customers c', 'c.customer_id = q.customer_id')
+			->join('vehicles v', 'v.vehicle_id = q.vehicle_id')
+			
+			->order_by('q.quotation_id ', 'DESC')
+			->get()
+			->result();
+	}
 
 	/**
 	 * Create jobcard from quotation

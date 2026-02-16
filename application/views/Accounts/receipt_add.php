@@ -4,12 +4,27 @@
 	<div class="bg-white rounded-xl shadow-sm border border-gray-200">
 
 		<!-- Header -->
-		<div class="px-6 py-4 border-b border-gray-200">
+		<div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
 			<h2 class="text-lg font-semibold text-gray-800">Receipt Entry</h2>
+
+			<span class="flex gap-2">
+				<a href="<?php echo base_url('index.php/accounts/add_receipt'); ?>"
+					class="inline-flex items-center rounded-full bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1 hover:bg-blue-200 transition"
+					title="Add New Record">
+					Add New Record
+				</a>
+
+				<a href="<?php echo base_url('index.php/accounts/view_receipt_list'); ?>"
+					class="inline-flex items-center rounded-full bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1 hover:bg-blue-200 transition"
+					title="List Records">
+					List Records
+				</a>
+			</span>
+
 		</div>
 
 		<!-- Form -->
-		<form action="<?= base_url('index.php/accounts/add_receipt_details'); ?>"
+		<form action="<?= base_url('index.php/Accounts/add_receipt_details'); ?>"
 			id="receipt"
 			method="post"
 			class="p-6 space-y-8">
@@ -34,9 +49,10 @@
 					<label class="block text-sm font-medium text-gray-700 mb-1">
 						Select Customer <span class="text-red-500">*</span>
 					</label>
+					<!-- onchange="get_invoice_list()" -->
 					<select name="debtor"
 						id="debtor"
-						onchange="get_invoice_list()"
+						
 						class="w-full rounded-lg border border-gray-300 px-4 py-2 select2 debtor-select">
 						<option value="">Select</option>
 						<?php foreach ($receipt_Creditors as $s): ?>
@@ -46,7 +62,8 @@
 							</option>
 						<?php endforeach; ?>
 					</select>
-					<input type="hidden" name="customer_id" id="customer_id">
+					<input type="text" name="customer_org_id" id="customer_org_id">
+					<!-- <input type="text" name="customer_id" id="customer_id"> -->
 				</div>
 
 				<!-- Transaction Type -->
@@ -88,20 +105,20 @@
 					</label>
 					<input type="text"
 						id="transaction_no"
-						name="transaction_no"
+						name="transaction_no" placeholder="Enter Cheque No / Transaction ID"
 						class="w-full rounded-lg border border-gray-300 px-4 py-2">
 				</div>
 			</div>
 
 			<!-- Invoice Details -->
-    <div class="form-group row">
-      <label class="col-sm-12" id="invoice_details"></label>
-    </div>
+			<div class="form-group row">
+				<label class="col-sm-12" id="invoice_details"></label>
+			</div>
 
-    <!-- Receipt Details -->
-    <div class="form-group row">
-      <label class="col-sm-2 col-form-label">Receipt Details:</label>
-    </div>
+			<!-- Receipt Details -->
+			<div class="form-group row">
+				<label class="col-sm-2 col-form-label">Receipt Details:</label>
+			</div>
 
 			<!-- Invoice List -->
 			<div>
@@ -227,7 +244,7 @@
 		const label = document.getElementById("transaction_label");
 
 		// Close select2 dropdown
-		$('#transaction_type').select2('close');
+		// $('#transaction_type').select2('close');
 
 		if (type === 'cheque') {
 			transactionFields.style.display = 'flex';
@@ -335,13 +352,24 @@
 		return true;
 	}
 
+$('#debtor').on('select2:select', function (e) {
+
+    var customerId = e.params.data.element.dataset.customerId;
+
+    $('#customer_org_id').val(customerId);
+
+    get_invoice_list();
+});
+
+
 	function get_invoice_list() {
 		var debtorSelect = document.getElementById('debtor');
 		var account_id = debtorSelect.value;
 
 		// Get customer_id from selected option data attribute
 		var customer_id = debtorSelect.options[debtorSelect.selectedIndex]?.getAttribute('data-customer-id');
-		document.getElementById('customer_id').value = customer_id || '';
+		// alert(customer_id);
+		// document.getElementById('customer_id').value = customer_id || '';
 
 		if (account_id != '') {
 			$.ajax({
@@ -398,6 +426,6 @@
 			width: '100%'
 		});
 
-		
+
 	});
 </script>

@@ -1,9 +1,29 @@
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
 <div class="bg-white rounded-xl shadow p-6">
-	<form action="<?php echo base_url() . 'index.php/accounts/add_credit_note'; ?>"
-		  id="receipt"
-		  method="post"
-		  name="receipt"
-		  class="space-y-6">
+	<div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+		<h2 class="text-lg font-semibold text-gray-800">Credit Note</h2>
+
+		<span class="flex gap-2">
+			<a href="<?php echo base_url('index.php/Accounts/credit_note'); ?>"
+				class="inline-flex items-center rounded-full bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1 hover:bg-blue-200 transition"
+				title="Add New Record">
+				Add New Record
+			</a>
+
+			<a href="<?php echo base_url('index.php/Accounts/view_credit_note_list'); ?>"
+				class="inline-flex items-center rounded-full bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1 hover:bg-blue-200 transition"
+				title="List Records">
+				List Records
+			</a>
+		</span>
+
+	</div><br>
+	<form action="<?php echo base_url() . 'index.php/Accounts/add_credit_note'; ?>"
+		id="receipt"
+		method="post"
+		name="receipt"
+		class="space-y-6">
 
 		<!-- Date -->
 		<div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
@@ -14,12 +34,12 @@
 			<div class="md:col-span-2">
 				<div class="flex items-center border rounded-lg px-2 py-1">
 					<input type="text"
-						   id="v_date"
-						   name="v_date"
-						   value="<?php echo date('d-m-Y') ?>"
-						   required
-						   tabindex="1"
-						   class="w-full text-sm outline-none datepicker1">
+						id="v_date"
+						name="v_date"
+						value="<?php echo date('d-m-Y') ?>"
+						required
+						tabindex="1"
+						class="w-full text-sm outline-none datepicker1">
 					<i class="fa fa-calendar text-gray-500"></i>
 				</div>
 			</div>
@@ -28,7 +48,7 @@
 		<!-- Debit Table -->
 		<div class="overflow-x-auto">
 			<table id="dr_table"
-				   class="w-full border border-gray-200 rounded-lg text-sm">
+				class="w-full border border-gray-200 rounded-lg text-sm">
 				<thead class="bg-gray-100">
 					<tr>
 						<th class="border px-3 py-2 text-left">Debit Account (Dr)</th>
@@ -41,10 +61,10 @@
 					<tr id="dr_addr0">
 						<td class="border px-3 py-2">
 							<select id="debtor0"
-									name="debtor[]"
-									onchange="get_account_balance(0,'dr')"
-									class="w-full border rounded px-2 py-1 select2"
-									requird>
+								name="debtor[]"
+								onchange="get_account_balance(0,'dr')"
+								class="w-full border rounded px-2 py-1 select2 debtor-select"
+								requird>
 								<option value="">Select</option>
 								<?php foreach ($sundry_detors_records as $row) { ?>
 									<option value="<?php echo $row->account_id; ?>">
@@ -56,13 +76,13 @@
 
 						<td class="border px-3 py-2">
 							<input type="number"
-								   step="0.01"
-								   id="dr_amount0"
-								   name="dr_amount[]"
-								   min="0"
-								   onkeyup="calculate_grand_total()"
-								   class="w-full border rounded px-2 py-1 debit_sum"
-								   requird>
+								step="0.01"
+								id="dr_amount0"
+								name="dr_amount[]"
+								min="0"
+								onkeyup="calculate_grand_total()"
+								class="w-full border rounded px-2 py-1 debit_sum"
+								requird>
 						</td>
 
 						<td class="border px-3 py-2">
@@ -77,7 +97,7 @@
 		<!-- Credit Table -->
 		<div class="overflow-x-auto">
 			<table id="cr_table"
-				   class="w-full border border-gray-200 rounded-lg text-sm">
+				class="w-full border border-gray-200 rounded-lg text-sm">
 				<thead class="bg-gray-100">
 					<tr>
 						<th class="border px-3 py-2 text-left">Credit Account (Cr)</th>
@@ -90,10 +110,10 @@
 					<tr id="cr_addr0">
 						<td class="border px-3 py-2">
 							<select id="creditor0"
-									name="creditor[]"
-									onchange="get_account_balance(0,'cr')"
-									class="w-full border rounded px-2 py-1 select2"
-									requird>
+								name="creditor[]"
+								onchange="get_account_balance(0,'cr')"
+								class="w-full border rounded px-2 py-1 select2 creditor-select"
+								requird>
 								<option value="">Select</option>
 								<?php foreach ($credit_records as $row) { ?>
 									<option value="<?php echo $row->account_id; ?>">
@@ -105,13 +125,13 @@
 
 						<td class="border px-3 py-2">
 							<input type="number"
-								   step="0.01"
-								   id="cr_amount0"
-								   name="cr_amount[]"
-								   min="0"
-								   onkeyup="calculate_grand_total()"
-								   class="w-full border rounded px-2 py-1 credit_sum"
-								   requird>
+								step="0.01"
+								id="cr_amount0"
+								name="cr_amount[]"
+								min="0"
+								onkeyup="calculate_grand_total()"
+								class="w-full border rounded px-2 py-1 credit_sum"
+								requird>
 						</td>
 
 						<td class="border px-3 py-2">
@@ -127,23 +147,23 @@
 		<div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
 			<label class="font-medium">Debit Total</label>
 			<input id="debit_total"
-				   name="debit_total"
-				   readonly
-				   class="border rounded px-3 py-2 bg-gray-100">
+				name="debit_total"
+				readonly
+				class="border rounded px-3 py-2 bg-gray-100">
 
 			<label class="font-medium">Credit Total</label>
 			<input id="credit_total"
-				   name="credit_total"
-				   readonly
-				   class="border rounded px-3 py-2 bg-gray-100">
+				name="credit_total"
+				readonly
+				class="border rounded px-3 py-2 bg-gray-100">
 		</div>
 
 		<!-- Narration -->
 		<div class="grid grid-cols-1 md:grid-cols-5 gap-4">
 			<label class="font-medium">Narration</label>
 			<textarea id="narration"
-					  name="narration"
-					  class="md:col-span-4 border rounded-lg px-3 py-2"></textarea>
+				name="narration"
+				class="md:col-span-4 border rounded-lg px-3 py-2"></textarea>
 		</div>
 
 		<!-- Actions -->
@@ -153,13 +173,13 @@
 			<input type="hidden" id="check_dr_id" name="check_dr_id">
 
 			<button type="submit"
-					onclick="return check_total();"
-					class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
+				onclick="return check_total();"
+				class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
 				Save
 			</button>
 
 			<button type="reset"
-					class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg">
+				class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg">
 				Reset
 			</button>
 		</div>
@@ -173,6 +193,18 @@
 
 <script>
 	$(document).ready(function() {
+
+
+		$('.debtor-select').select2({
+			width: '100%'
+		});
+		$('.creditor-select').select2({
+			width: '100%'
+		});
+
+
+
+
 		var i = 1;
 		$("#dr_add_row").click(function() {
 			$('#dr_addr' + i).html("<td><select class='form-select form-control-sm select2 select2Width' id='debtor" + i + "' name='debtor[]' onchange='get_account_balance(" + i + ",'dr')' requird><option value=''>Select Code</option><?php foreach ($sundry_detors_records as $s) { ?>  <option value='<?php echo $s->account_id; ?>'><?php echo $s->account_name; ?></option><?php } ?></select><br><label id='set_balancedr" + i + "'>Balance</label></td><td><input type='number' step='0.01' name='dr_amount[]' id='dr_amount" + i + "' class='form-control form-control-sm debit_sum' min='0' required onkeyup='calculate_grand_total()'></td><td><a onclick='remove_row_dr(" + i + ");' id='delete_row1' title='Delete' class='btn btn-xs bg-orange remove1'><span class='fa fa-trash'></span></a></td>");

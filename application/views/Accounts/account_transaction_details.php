@@ -5,11 +5,19 @@
 }
 ?>
 <div class="bg-white rounded-xl shadow p-6">
+
+	<div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+		<h2 class="text-lg font-semibold text-gray-800">Transaction Details</h2>
+
+
+
+	</div>
+
 	<form action="<?php echo base_url() . 'index.php/'; ?>accounts/update_transaction_details"
-		  id="receipt"
-		  method="post"
-		  name="receipt"
-		  class="space-y-6">
+		id="receipt"
+		method="post"
+		name="receipt"
+		class="space-y-6">
 
 		<!-- Date & Narration -->
 		<div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-start">
@@ -19,14 +27,14 @@
 			</label>
 			<div class="md:col-span-1">
 				<input type="text"
-					   id="v_date"
-					   name="v_date"
-					   readonly
-					   value="<?php echo date('d-m-Y', strtotime($trans_date)); ?>"
-					   class="w-full border rounded-lg px-3 py-2 text-sm bg-gray-100 datepicker1">
+					id="v_date"
+					name="v_date"
+					readonly
+					value="<?php echo date('d-m-Y', strtotime($trans_date)); ?>"
+					class="w-full border rounded-lg px-3 py-2 text-sm bg-gray-100 datepicker1">
 				<input type="hidden"
-					   name="voucherid"
-					   value="<?php echo $voucher_id; ?>">
+					name="voucherid"
+					value="<?php echo $voucher_id; ?>">
 			</div>
 
 			<label class="md:col-span-1 text-sm font-medium">
@@ -34,8 +42,8 @@
 			</label>
 			<div class="md:col-span-3">
 				<textarea name="narration"
-						  rows="2"
-						  class="w-full border rounded-lg px-3 py-2 text-sm"><?php echo $narration; ?></textarea>
+					rows="2"
+					class="w-full border rounded-lg px-3 py-2 text-sm"><?php echo $narration; ?></textarea>
 			</div>
 
 		</div>
@@ -69,14 +77,14 @@
 
 							<td class="border px-3 py-2">
 								<input type="number"
-									   step="any"
-									   name="amount[]"
-									   value="<?php echo $row->amount; ?>"
-									   class="w-full border rounded px-2 py-1 text-sm">
+									step="any"
+									name="amount[]"
+									value="<?php echo $row->amount; ?>"
+									class="w-full border rounded px-2 py-1 text-sm">
 
 								<input type="hidden"
-									   name="voucher_id[]"
-									   value="<?php echo $row->voucher_id; ?>">
+									name="voucher_id[]"
+									value="<?php echo $row->voucher_id; ?>">
 							</td>
 						</tr>
 					<?php } ?>
@@ -87,13 +95,12 @@
 		<!-- Submit -->
 		<div class="flex justify-end">
 			<input type="submit"
-				   id="add"
-				   name="submit"
-				   tabindex="39"
-				   value="Update"
-				   class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg cursor-pointer">
+				id="add"
+				name="submit"
+				tabindex="39"
+				value="Update"
+				class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg cursor-pointer">
 		</div>
 
 	</form>
 </div>
-

@@ -21,7 +21,7 @@ class Quotation extends CI_Controller
 	public function index()
 	{
 		$data['title'] = 'Quotation List';
-		$data['quotations'] = $this->Quotation_model->get_all_quotations_with_jobcard();
+		$data['quotations'] = $this->Quotation_model->get_all_quotations();
 
 		$data['main_content'] = 'quotation/list';
 		$this->load->view('includes/template', $data);
@@ -99,7 +99,7 @@ class Quotation extends CI_Controller
 		if (!$data['quotation']) {
 			show_404();
 		}
-		// log_message('error',)
+
 
 		// 1️⃣ Get estimation header
 		$estimation = $this->Estimation_model->get_estimation_by_id($data['quotation']->estimation_id);
@@ -118,19 +118,19 @@ class Quotation extends CI_Controller
 
 
 
-		// $parts_used_new = $this->Estimation_model
-		// 	->get_parts_type($data['quotation']->estimation_id, "New Parts");
+		$parts_used_new = $this->Estimation_model
+			->get_parts_type_forquote($data['quotation']->estimation_id, "New Parts");
 
-		// $parts_used_after = $this->Estimation_model
-		// 	->get_parts_type($data['quotation']->estimation_id, "Aftermarket Parts");
+		$parts_used_after = $this->Estimation_model
+			->get_parts_type_forquote($data['quotation']->estimation_id, "Aftermarket Parts");
 
-		// $parts_used_used = $this->Estimation_model
-		// 	->get_parts_type($data['quotation']->estimation_id, "Used Parts");
-		$parts_used_new = $this->Quotation_model->get_parts_type($quotation_id, "New Parts");
+		$parts_used_used = $this->Estimation_model
+			->get_parts_type_forquote($data['quotation']->estimation_id, "Used Parts");
+		// $parts_used_new = $this->Quotation_model->get_parts_type($quotation_id, "New Parts");
 
-		$parts_used_after = $this->Quotation_model->get_parts_type($quotation_id, "Aftermarket Parts");
+		// $parts_used_after = $this->Quotation_model->get_parts_type($quotation_id, "Aftermarket Parts");
 
-		$parts_used_used = $this->Quotation_model->get_parts_type($quotation_id, "Used Parts");
+		// $parts_used_used = $this->Quotation_model->get_parts_type($quotation_id, "Used Parts");
 
 		// log_message('error', 'New Parts: ' . print_r($parts_used_new, true));
 		// log_message('error', 'Aftermarket Parts: ' . print_r($parts_used_after, true));
@@ -229,6 +229,7 @@ class Quotation extends CI_Controller
 				->count_all_results('estimation_parts');
 
 			if ($total_parts_count > 0) {
+				log_message('error', $total_parts_count);
 
 				$selected_parts_count = $this->db
 					->where('estimation_id', $estimation_id)
@@ -252,6 +253,11 @@ class Quotation extends CI_Controller
 			$quotation_id = $this->Quotation_model
 				->create_from_estimation($estimation_id);
 		} else {
+
+
+
+
+			log_message('error', "quotation exist");
 			$quotation_id = $quotation->quotation_id;
 		}
 
@@ -300,7 +306,7 @@ class Quotation extends CI_Controller
 			'part_type'      => $post['part_type'] ?? null,
 			'customer_selected' => $post['customer_selected'] ?? [],
 			'partremarks' => $post['part_warrenty'] ?? [],
-			
+
 
 			// services
 			'service_id'     => $post['service_id'],
@@ -358,17 +364,24 @@ class Quotation extends CI_Controller
 		// $parts_used = $this->Estimation_model
 		// 	->get_parts($estimation_id);
 
-			$total_parts_count = $this->db
-				->where('quotation_id', $quotation_id)
-				->count_all_results('quotation_parts');
+		$total_parts_count = $this->db
+			->where('quotation_id', $quotation_id)
+			->count_all_results('quotation_parts');
 
 
-		$parts_used_new = $this->Quotation_model->get_parts_type($quotation_id, "New Parts");
+		// $parts_used_new = $this->Quotation_model->get_parts_type($quotation_id, "New Parts");
 
-		$parts_used_after = $this->Quotation_model->get_parts_type($quotation_id, "Aftermarket Parts");
+		// $parts_used_after = $this->Quotation_model->get_parts_type($quotation_id, "Aftermarket Parts");
 
-		$parts_used_used = $this->Quotation_model->get_parts_type($quotation_id, "Used Parts");
+		// $parts_used_used = $this->Quotation_model->get_parts_type($quotation_id, "Used Parts");
+		$parts_used_new = $this->Estimation_model
+			->get_parts_type_forquote($data['quotation']->estimation_id, "New Parts");
 
+		$parts_used_after = $this->Estimation_model
+			->get_parts_type_forquote($data['quotation']->estimation_id, "Aftermarket Parts");
+
+		$parts_used_used = $this->Estimation_model
+			->get_parts_type_forquote($data['quotation']->estimation_id, "Used Parts");
 
 		$services_used = $this->Quotation_model->get_services($data['quotation']->quotation_id);
 
@@ -396,7 +409,7 @@ class Quotation extends CI_Controller
 		$data['total_parts_count']       = $total_parts_count;
 		$data['total_job_descriptions']       = $total_job_descriptions;
 		$data['total_services_used']       = $total_services_used;
-		
+
 		$data['parts_used_new']       = $parts_used_new;
 		$data['parts_used_after']       = $parts_used_after;
 		$data['parts_used_used']       = $parts_used_used;
@@ -416,6 +429,108 @@ class Quotation extends CI_Controller
 
 		$data['title'] = 'View Quotation';
 		$data['main_content'] = 'quotation/view';
+
+		$this->load->view('includes/template', $data);
+	}
+
+
+
+		public function viewnew($quotation_id)
+	{
+
+		$data['username'] = $this->session->userdata('username');
+		$data['userid'] = $this->session->userdata('user_id');
+		$data['quotation'] = $this->Quotation_model->get_quotation($quotation_id);
+
+		if (!$data['quotation']) {
+			show_404();
+		}
+
+
+		// 1️⃣ Get estimation header
+		$estimation = $this->Estimation_model->get_estimation_by_id($data['quotation']->estimation_id);
+		if (!$estimation) show_404();
+
+		// Customer from inspection
+		$customer = $this->Customer_model->get_customer($data['quotation']->customer_id);
+
+		// Vehicle from inspection
+		$vehicle = $this->Vehicle_model->get_vehicle($data['quotation']->vehicle_id);
+
+		// 2️⃣ Appointment + customer + vehicle
+		$appointment = $this->Estimation_model->get_appointment_details($data['quotation']->appointment_id);
+
+		// 3️⃣ Sub tables
+		$job_descriptions = $this->Estimation_model->get_job_descriptions($data['quotation']->estimation_id);
+
+		// $parts_used = $this->Estimation_model
+		// 	->get_parts($estimation_id);
+
+		$total_parts_count = $this->db
+			->where('quotation_id', $quotation_id)
+			->count_all_results('quotation_parts');
+
+
+		// $parts_used_new = $this->Quotation_model->get_parts_type($quotation_id, "New Parts");
+
+		// $parts_used_after = $this->Quotation_model->get_parts_type($quotation_id, "Aftermarket Parts");
+
+		// $parts_used_used = $this->Quotation_model->get_parts_type($quotation_id, "Used Parts");
+		$parts_used_new = $this->Estimation_model
+			->get_parts_type_forquote($data['quotation']->estimation_id, "New Parts");
+
+		$parts_used_after = $this->Estimation_model
+			->get_parts_type_forquote($data['quotation']->estimation_id, "Aftermarket Parts");
+
+		$parts_used_used = $this->Estimation_model
+			->get_parts_type_forquote($data['quotation']->estimation_id, "Used Parts");
+
+		$services_used = $this->Quotation_model->get_services($data['quotation']->quotation_id);
+
+		$total_job_descriptions = is_array($job_descriptions)
+			? count($job_descriptions)
+			: count($job_descriptions->result());
+
+		$total_services_used = is_array($services_used)
+			? count($services_used)
+			: count($services_used->result());
+
+
+		$inspection = $this->Inspection_view_model->get_by_appointment($data['quotation']->appointment_id);
+		$data['parts'] = $this->SpareParts_model->get_all_parts();
+		$data['brands'] = $this->SpareParts_model->get_all_brands();
+		$data['services_master'] = $this->db->where('status', 'Active')
+			->get('services_master')->result();
+		$data['kms'] = $estimation->kmin;
+		$data['estimation']       = $estimation;
+		$data['appointment']      = $appointment;
+		$data['job_descriptions'] = $job_descriptions;
+		$data['customer']      = $customer;
+		$data['vehicle']      = $vehicle;
+
+		$data['total_parts_count']       = $total_parts_count;
+		$data['total_job_descriptions']       = $total_job_descriptions;
+		$data['total_services_used']       = $total_services_used;
+
+		$data['parts_used_new']       = $parts_used_new;
+		$data['parts_used_after']       = $parts_used_after;
+		$data['parts_used_used']       = $parts_used_used;
+		$data['services_used']    = $services_used;
+
+		$data['estimation_id'] = $estimation->estimation_id;
+		$data['estimation_no'] = $estimation->estimation_no;
+
+
+		$data['parts']    = $this->Quotation_model->get_parts($quotation_id);
+		$data['services'] = $this->Quotation_model->get_services($quotation_id);
+
+		$data['locked'] = ($data['quotation']->status === 'Approved');
+
+
+		// $data['amount_in_words'] = $this->number_to_words_aed($data['estimation']->grand_total);
+
+		$data['title'] = 'View Quotation';
+		$data['main_content'] = 'quotation/viewnew';
 
 		$this->load->view('includes/template', $data);
 	}

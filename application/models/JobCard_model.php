@@ -680,7 +680,7 @@ class Jobcard_model extends CI_Model
 	}
 
 
-	public function get_jobcard_full_details_quotation($jobcard_id)
+	public function get_jobcard_full_details_quotationold($jobcard_id)
 	{
 		/* =====================================================
        1. Jobcard + Quotation + Customer + Vehicle
@@ -696,6 +696,7 @@ class Jobcard_model extends CI_Model
             q.discount AS quotation_discount,
             q.grand_total AS quotation_grand_total,
             q.status AS quotation_status,
+			q.srvice_discount as sdiscount,
 
             c.name  AS customer_name,
             c.phone AS customer_phone,
@@ -733,10 +734,12 @@ class Jobcard_model extends CI_Model
             qs.estimated_time,
             qs.estimated_cost,
             qs.total_cost,
+			qs.discount_percentage,
+			qs.discount_amount,
+			qs.taxable_amount,
 
             s.service_name,
-            s.service_type
-        ')
+            s.service_type')
 			->from('quotation_services qs')
 			->join(
 				'services_master s',
@@ -795,37 +798,177 @@ class Jobcard_model extends CI_Model
 			->get()
 			->result();
 
-		// 	$jobcard->descriptions = $this->db
-		// 		->select('
-		//     jd.jobcard_description_id,
-		//     jd.service_id,
-		//     jd.description,
-		//     jd.amount,
-
-		//     s.service_name,
-		//     s.service_type,
-
-		//     e.employee_id,
-		//     e.employee_name
-		// ')
-		// 		->from('jobcard_descriptions jd')
-		// 		->join(
-		// 			'services_master s',
-		// 			's.master_service_id  = jd.service_id',
-		// 			'left'
-		// 		)
-		// 		->join(
-		// 			'employees e',
-		// 			'e.employee_id = jd.employee_id',
-		// 			'left'
-		// 		)
-		// 		->where('jd.jobcard_id', $jobcard->jobcard_id)
-		// 		->get()
-		// 		->result();
+		
 
 
 		return $jobcard;
 	}
+
+public function get_jobcard_full_details_quotation($jobcard_id)
+{
+
+    /* =====================================================
+       1. Jobcard + Quotation + Customer + Vehicle
+    ===================================================== */
+
+    $jobcard = $this->db
+        ->select('
+            jc.*,
+            q.quotation_id,
+            q.quotation_no,
+            q.srvice_discount as sdiscount,
+
+            c.name  AS customer_name,
+            c.phone AS customer_phone,
+
+            v.registration_no,
+            v.brand,
+            v.model
+        ')
+        ->from('job_cards jc')
+        ->join('quotations q', 'q.quotation_id = jc.quotation_id')
+        ->join('customers c', 'c.customer_id = q.customer_id')
+        ->join('vehicles v', 'v.vehicle_id = q.vehicle_id')
+        ->where('jc.jobcard_id', $jobcard_id)
+        ->get()
+        ->row();
+
+    if (!$jobcard) {
+        return null;
+    }
+
+    $quotation_id = $jobcard->quotation_id;
+
+    /* =====================================================
+       2. SERVICES (Exclude Already Invoiced)
+    ===================================================== */
+
+    $jobcard->services = $this->db
+        ->select('
+            qs.service_id,
+            qs.total_cost,
+            qs.discount_amount,
+            s.service_name,
+            s.service_type
+        ')
+        ->from('quotation_services qs')
+
+        ->join('invoice_items ii',
+            "ii.source_jobcard_item_id = qs.service_id
+             AND ii.item_type='Service'",
+            'left'
+        )
+
+        ->join('invoices inv',
+            "inv.invoice_id = ii.invoice_id
+             AND inv.quotation_id = {$quotation_id}",
+            'left'
+        )
+
+        ->join('services_master s',
+            's.master_service_id = qs.service_id',
+            'left'
+        )
+
+        ->where('qs.quotation_id', $quotation_id)
+        ->where('inv.invoice_id IS NULL', null, false)
+
+        ->get()
+        ->result();
+
+
+
+    /* =====================================================
+       3. PARTS (Exclude Already Invoiced)
+    ===================================================== */
+
+    $jobcard->parts = $this->db
+        ->select('
+            qp.part_id,
+            qp.qty,
+            qp.selling_price,
+            qp.dis_amount,
+            qp.total_price,
+            p.part_name
+        ')
+        ->from('quotation_parts qp')
+
+        ->join('invoice_items ii',
+            "ii.source_jobcard_item_id = qp.part_id
+             AND ii.item_type='Part'",
+            'left'
+        )
+
+        ->join('invoices inv',
+            "inv.invoice_id = ii.invoice_id
+             AND inv.quotation_id = {$quotation_id}",
+            'left'
+        )
+
+        ->join('spare_parts p',
+            'p.part_id = qp.part_id',
+            'left'
+        )
+
+        ->where('qp.quotation_id', $quotation_id)
+        ->where('inv.invoice_id IS NULL', null, false)
+
+        ->get()
+        ->result();
+
+
+
+    /* =====================================================
+       4. SUBLET / DESCRIPTIONS
+    ===================================================== */
+
+    $jobcard->descriptions = $this->db
+        ->select('
+            qjd.id,
+            qjd.description,
+            qjd.amount,
+            e.employee_name
+        ')
+        ->from('quotation_job_descriptions qjd')
+
+        ->join('invoice_items ii',
+            "ii.source_jobcard_item_id = qjd.id
+             AND ii.item_type='Sublet'",
+            'left'
+        )
+
+        ->join('invoices inv',
+            "inv.invoice_id = ii.invoice_id
+             AND inv.quotation_id = {$quotation_id}",
+            'left'
+        )
+
+        ->join('employees e',
+            'e.employee_id = qjd.employee_id',
+            'left'
+        )
+
+        ->where('qjd.quotation_id', $quotation_id)
+        ->where('inv.invoice_id IS NULL', null, false)
+
+        ->get()
+        ->result();
+
+
+
+    /* =====================================================
+       5. FULLY INVOICED CHECK
+    ===================================================== */
+
+    $jobcard->fully_invoiced =
+        empty($jobcard->services) &&
+        empty($jobcard->parts) &&
+        empty($jobcard->descriptions);
+
+
+    return $jobcard;
+}
+
 
 
 

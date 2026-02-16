@@ -77,7 +77,7 @@
 
 							<!-- Amount -->
 							<td class="border px-3 py-2 text-right">
-								₹<?= number_format($e->grand_total, 2) ?>
+								AED <?= number_format($e->grand_total, 2) ?>
 							</td>
 
 							<!-- Status -->
@@ -273,7 +273,7 @@
         language: {
             emptyTable: "No Estimation found"
         },
-        order: [[1, 'desc']],
+        // order: [[1, 'desc']],
         columnDefs: [
             { orderable: false, targets: [0, 6, 7] }
         ]

@@ -2222,6 +2222,8 @@
 			renumber("#partsTable");
 			renumber("#serviceTable");
 			renumber("#jobDescTable");
+			calculateServiceTotals();
+			calculateJobTotals();
 			calculatePartsTotals();
 			calculateGrandTotal();
 		}

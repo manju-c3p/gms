@@ -1,177 +1,183 @@
 <?php
 
-/**
 
- * supplier add,delete,edit,update
-
- */
-
-class Supplier extends CI_Controller {	
+class Supplier extends CI_Controller
+{
 
 	public function __construct()
-    {
-             parent::__construct();
-           	//  $this->is_logged_in();
-    }		
+	{
+		parent::__construct();
+		//  $this->is_logged_in();
+		$this->load->model('Supplier_model');
+	}
 
 	function is_logged_in()
 	{
 		$is_logged_in = $this->session->userdata('is_logged_in');
-		if(!isset($is_logged_in) || $is_logged_in != true)
-		{
-			echo 'You don\'t have permission to access this page. <a href="../login">Login</a>';	
+		if (!isset($is_logged_in) || $is_logged_in != true) {
+			echo 'You don\'t have permission to access this page. <a href="../login">Login</a>';
 
 			die();
 			//$this->load->view('login/login_form');
-		}		
-	}		
-
-///////////////////////////////////////supplier Details Start////////////////////////////////////////////// 
-
-	function add_supplier() {
-		$data['title'] = "Supplier Details";
-		$this->load->model('supplier/supplier_model');
-		$data['supplier_records']=$this->supplier_model->get_records_sort_by_order();	
-		$data['record_supplier']=$this->supplier_model->get_supplier_type_list();
-		$data['su_id']="";
-		$data['main_content'] = 'supplier/add_supplier';
-		$this->load->view('includes/template', $data);
-
-	}	
-	function view_supplier_list() {
-		$this->load->model('supplier/supplier_model');
-		$data['record_supplier']=$this->supplier_model->get_supplier();
-		$data['main_content'] = 'supplier/supplier_list';
-		$this->load->view('includes/template', $data);
+		}
 	}
 
-	function add_supplier_with_id($su_id) {
-		$data['title'] = "Supplier Details";
-		$this->load->model('supplier/supplier_model');
-		$data['supplier_records']=$this->supplier_model->get_records_sort_by_order();	
-		$data['su_id']=$su_id;
-		$data['main_content'] = 'supplier/add_supplier';
-		$this->load->view('includes/template', $data);
-	}	
+	///////////////////////////////////////supplier Details Start////////////////////////////////////////////// 
 
-	function add_supplier_data()
+	public function list_suppliers()
 	{
-		$data['title'] = "Supplier Details";
-		$this->load->model('occupier/occupier_model');
-		$group_id = $this->occupier_model->get_group_number('Vendors/Suppliers');
-		
-		$this->load->model('supplier/supplier_model');
-		$flag=$this->supplier_model->add_supplier_record($group_id);
-		if($flag == 0)
-		{
-			$this->session->set_flashdata('success','Record Successfully Saved');
-			redirect('supplier/view_supplier_list');
-		}	
-		else
-		{
-			$this->session->set_flashdata('warning','Supplier Company Name Already Exist');
-			redirect('supplier/add_supplier');		
-			//$data['main_content'] = 'pmc/error_insert_message';
-			//$this->load->view('includes/template', $data);
-		}
-	}	
+		$user = $this->session->userdata('user_id');
+		// if (!has_view_access($user, 'Setup/list_suppliers')) {
+		// 	$data['title'] = 'Access Denied';
+		// 	$data['main_content'] = 'errors/access_control.php';
+		// } else {
+		$data['title'] = 'Suppliers List';
 
-	function edit_supplier()
-	{
-		$data['title'] = "Supplier Details";
-		$id =$this->input->post('sup');
-		$this->load->model('supplier/supplier_model');
-		$data['supplier_records']=$this->supplier_model->get_records();
-		$data['supplier_details']=$this->supplier_model->get_records_by_id($id);
-		$data['record_supplier']=$this->supplier_model->get_supplier_type_list();
-		$data['su_id']=$id;
-		$data['main_content'] = 'supplier/edit_supplier';
+		$data['all_suppliers'] = $this->Supplier_model->get_all_supplier_list();
+
+		$data['main_content'] = 'suppliers/list_supplier.php';
+		// }
+
 		$this->load->view('includes/template', $data);
 	}
 
-	function edit_supplier_data()
+	public function add_supplier()
 	{
-		$data['title'] = "Supplier Details";
-		$this->load->model('supplier/supplier_model');
-		$id = $this->supplier_model->update_record_by_id();	
-		if($id!='')
-		{
-			$this->session->set_flashdata('success','Record Successfully Updated');
-			redirect('supplier/view_supplier_list');	
-		}
-	}	
-	
-	function delete_supplier()
-	{
-		$id = $this->input->post('post_id');
-		$this->load->model('supplier/supplier_model');		
-		$this->supplier_model->delete_record($id);
-		echo json_encode("success");
-	}
-	
-	
-	function view_supplier_type() {
-		$data['main_content'] = 'supplier/add_supplier_type_master.php';
+		$user = $this->session->userdata('user_id');
+		// if (!has_access($user, 'Setup/list_suppliers', 'A')) {
+		// 	$data['title'] = 'Access Denied';
+		// 	$data['main_content'] = 'errors/access_control.php';
+		// } else {
+		$data['title'] = 'Add Supplier';
+		$data['supplier_code'] = $this->Supplier_model->generate_supplier_code();
+
+		$data['main_content'] = 'suppliers/add_supplier.php';
+		// }
+
 		$this->load->view('includes/template', $data);
 	}
-	
-	function view_supplier_type_list() {
-		$this->load->model('supplier/supplier_model');
-		$data['record_supplier']=$this->supplier_model->get_supplier_type_list();
-		$data['main_content'] = 'supplier/supplier_type_list';
-		$this->load->view('includes/template', $data);
-	}
-	
-	function edit_supplier_type() {
-		$this->load->model('supplier/supplier_model');
-		$data['record_supplier']=$this->supplier_model->get_supplier_type_list_id();
-		$data['main_content'] = 'supplier/edit_supplier_type';
-		$this->load->view('includes/template', $data);
-	}
-	
-	function add_supplier_type() {
-		$this->load->model('supplier/supplier_model');
-		$id = $this->supplier_model->add_supplier_type();	
-		if($id!='') {
-			$this->session->set_flashdata('success','Record Successfully Updated');
-			redirect('supplier/view_supplier_type_list');	
-		}
-		else {
-			$this->session->set_flashdata('warning','Supplier Company Name Already Exist');
-			redirect('supplier/view_supplier_type');		
-		}
-	}
-	
-	function update_supplier_type() {
-		$this->load->model('supplier/supplier_model');
-		$id = $this->supplier_model->update_supplier_type();	
-		if($id!='') {
-			$this->session->set_flashdata('success','Record Successfully Updated');
-			redirect('supplier/view_supplier_type_list');	
-		}
-		else {
-			$this->session->set_flashdata('warning','Supplier Company Name Already Exist');
-			redirect('supplier/edit_supplier_type');		
-		}
-	}
-	
-	function get_supplier()
+
+	public function add_supplier_data()
 	{
-		
-	$this->load->model('supplier/supplier_model');
-	$data['rec'] = $this->supplier_model->get_supplier_records_using_supplier_type();
-	$this->load->view('ajax/select_supplier.php',$data);	
-		
+		$result = $this->Supplier_model->add_supplier_data();
+
+		if ($result) {
+			echo 'Added';
+		} else {
+			echo 'Not Added';
+		}
+		redirect('Supplier/list_suppliers');
 	}
-	
-	
-//////////////////////////////////////Supplier Details End/////////////////////////////////////////////
-	
-	
-	
+	public function delete_supplier()
+	{
+		$sup_id = $this->uri->segment('3');
+		$this->Supplier_model->delete_supplier($sup_id);
+		redirect('Supplier/list_suppliers');
+	}
+
+	public function edit_supplier($supplier_id)
+	{
+		$data['supplier'] = $this->Supplier_model->get_supplier($supplier_id);
+		$data['contacts'] = $this->Supplier_model->get_supplier_contacts($supplier_id);
+
+		$data['title'] = 'Edit Supplier';
+
+		$data['main_content'] = 'suppliers/edit_supplier.php';
+
+
+		$this->load->view('includes/template', $data);
+	}
+	public function update_supplier()
+	{
+		$supplier_id = $this->input->post('supplier_id');
+
+		$supplier_data = [
+			'supplier_name'   => $this->input->post('supplier_name'),
+			'email_id'  => $this->input->post('supplier_email'),
+			'contact_no'  => $this->input->post('contact_number'),
+			'billing_address' => $this->input->post('supplier_address'),
+			'trn_no'          => $this->input->post('trn_no')
+		];
+
+		$this->Supplier_model->update_supplier($supplier_id, $supplier_data);
+
+		// 🔥 Delete old contacts and reinsert (simplest + safest)
+		$this->Supplier_model->delete_contacts($supplier_id);
+
+		$names  = $this->input->post('contact_name');
+		$phones = $this->input->post('contact_phone');
+		$emails = $this->input->post('contact_email');
+
+		if (!empty($names)) {
+			$contacts = [];
+
+			for ($i = 0; $i < count($names); $i++) {
+				$contacts[] = [
+					'supplier_id' => $supplier_id,
+					'contact_name' => $names[$i],
+					'contact_phone' => $phones[$i],
+					'contact_email' => $emails[$i],
+				];
+			}
+
+			$this->Supplier_model->insert_contacts($contacts);
+		}
+
+		redirect('Supplier/list_suppliers');
+	}
+
+
+	//////////////////////////////////////Supplier Details End/////////////////////////////////////////////
+
+	//place in unit Supplier controller
+
+	function add_unit()
+	{
+
+		$data['title'] = 'unit Master';
+
+		$data['main_content'] = 'unit_master/add_unit';
+		$this->load->view('includes/template.php', $data);
+	}
+
+	function add_unit_records()
+	{
+		$data['title'] = 'Unit Master';
+		$insert_id = $this->Supplier_model->add_units();
+		if ($insert_id != '') {
+			$this->session->set_flashdata('success', 'Data Saved Successfully..');
+			redirect('Supplier/view_unit_list');
+		}
+	}
+
+	function view_unit_list()
+	{
+		$data['title'] = 'Supplier List';
+		$data['units'] = $this->Supplier_model->get_units();
+		$data['main_content'] = 'unit_master/unit_list';
+		$this->load->view('includes/template', $data);
+	}
+
+	function edit_unit()
+	{
+		$data['title'] = 'Edit Supplier';
+		$id = $this->uri->segment('3');
+
+		$data['records'] = $this->Supplier_model->get_units_by_id($id);
+
+		$data['main_content'] = 'unit_master/edit_unit.php';
+		$this->load->view('includes/template.php', $data);
+	}
+
+
+	function update_unit_data()
+	{
+		$data['title'] = 'New Unit';
+		$gid = $this->input->post('id');
+
+		$this->Supplier_model->update_unit_data($gid);
+
+		$this->session->set_flashdata('success', 'Data Updated Successfully..');
+		redirect('Supplier/view_unit_list');
+	}
 }
-
-
-
-?>
-

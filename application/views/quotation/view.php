@@ -311,7 +311,7 @@
 						<tr>
 							<td>Mileage</td>
 							<td>:</td>
-							<td><?= $appointment->mileage ?? '' ?></td>
+							<td><?= $kms ?? '' ?></td>
 						</tr>
 						<tr>
 							<td>Year</td>
@@ -367,25 +367,12 @@
 
 				<!-- =========================================================== -->
 
-				<tr>
-					<td colspan="2" class="text-right"><strong>Service Discount</strong></td>
-					<td width="20%" class="text-right"><strong><?= number_format($totaldiscount, 2) ?></strong></td>
-				</tr>
-				<tr>
-					<td colspan="2" class="text-right"><strong>Taxable Amount</strong></td>
-					<td width="20%" class="text-right"><strong><?= number_format(($service_total - $totaldiscount), 2) ?></strong></td>
-				</tr>
-				<tr>
+				
+				
 					<?php $totalvat = ($service_total - $totaldiscount) * 5 / 100; ?>
-					<td colspan="2" class="text-right"><strong>Service VAT (5%)</strong></td>
-					<td width="20%" class="text-right"><strong><?= number_format($totalvat, 2) ?></strong></td>
-				</tr>
-				<tr>
-
+					
 					<?php $totalservice = ($service_total - $totaldiscount) + $totalvat; ?>
-					<td colspan="2" class="text-right"><strong>Service Total (Including VAT)</strong></td>
-					<td width="20%" class="text-right"><strong><?= number_format($totalservice, 2) ?></strong></td>
-				</tr>
+					
 
 
 
@@ -398,7 +385,7 @@
 			</table>
 		<?php } ?>
 		<!-- SPARE PARTS -->
-		<?php if ($total_parts_count > 0) { ?>
+		<?php if ($total_parts_count > 0) { $i = 1; ?>
 			<div class="section-title">Spare Parts</div>
 			<table class="data">
 				<tr>
@@ -409,7 +396,7 @@
 					<th>Dis Amt</th>
 					<th width="20%" class="text-right">Amount</th>
 				</tr>
-				<?php $i = 1;
+				<?php 
 				$parts_total = 0;
 
 				foreach ($parts_used_new as $p):
@@ -437,8 +424,7 @@
 						<td class="text-right"><?= number_format($p->total_price, 2) ?></td>
 					</tr>
 				<?php endforeach; ?>
-				<?php $i = 1;
-
+				<?php 
 				foreach ($parts_used_after as $p):
 					$parts_total += $p->total_price;
 					$parts_discount_total += $p->dis_amount; ?>
@@ -463,7 +449,7 @@
 						<td class="text-right"><?= number_format($p->total_price, 2) ?></td>
 					</tr>
 				<?php endforeach; ?>
-				<?php $i = 1;
+				<?php 
 
 				foreach ($parts_used_used as $p):
 					$parts_total += $p->total_price;
@@ -492,25 +478,13 @@
 					<td class="text-right"><strong><?= number_format($parts_total, 2) ?></strong></td>
 				</tr>
 				<!-- ========================================================================== -->
-				<tr>
-					<td colspan="5" class="text-right"><strong>Total Discount</strong></td>
-					<td width="20%" class="text-right"><strong><?= number_format($parts_discount_total, 2) ?></strong></td>
-				</tr>
+				
 				<?php $taxamt = $parts_total -  $parts_discount_total; ?>
-				<tr>
-					<td colspan="5" class="text-right"><strong>Taxable Amount</strong></td>
-					<td width="20%" class="text-right"><strong><?= number_format($taxamt, 2) ?></strong></td>
-				</tr>
+				
 				<?php $vatamt = $taxamt * 5 / 100;; ?>
-				<tr>
-					<td colspan="5" class="text-right"><strong>VAT (5%)</strong></td>
-					<td width="20%" class="text-right"><strong><?= number_format($vatamt, 2) ?></strong></td>
-				</tr>
+				
 				<?php $totalparts = $taxamt + $vatamt; ?>
-				<tr>
-					<td colspan="5" class="text-right"><strong>Parts Total (Including VAT)</strong></td>
-					<td width="20%" class="text-right"><strong><?= number_format($totalparts, 2) ?></strong></td>
-				</tr>
+				
 
 
 				<!-- =============================================================================================== -->
@@ -539,17 +513,12 @@
 					<td class="text-right"><strong><?= number_format($jd_total, 2) ?></strong></td>
 				</tr>
 				<!-- ================================================================ -->
-				<tr>
+				
 					<?php $totalvat3 = $jd_total * 5 / 100; ?>
-					<td colspan="2" class="text-right"><strong>Service VAT (5%)</strong></td>
-					<td width="20%" class="text-right"><strong><?= number_format($totalvat3 ?? 0, 2) ?></strong></td>
-				</tr>
-				<tr>
+					
 
 					<?php $totalservice3 = $jd_total + $totalvat3; ?>
-					<td colspan="2" class="text-right"><strong>Service Total (Including VAT)</strong></td>
-					<td width="20%" class="text-right"><strong><?= number_format($totalservice3, 2) ?></strong></td>
-				</tr>
+				
 
 
 				<!-- ================================================================================= -->

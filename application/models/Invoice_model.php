@@ -212,6 +212,94 @@ class Invoice_model extends CI_Model
 		}
 	}
 
+	public function insert_invoice_items_from_post($invoice_id)
+	{
+
+		/* ================= SERVICES ================= */
+
+		$services = $this->input->post('service_name');
+
+		if (!empty($services)) {
+			$sid = $this->input->post('service_ids');
+			// log_message('error', print_r($sid, true));
+			$names      = $this->input->post('service_name');
+			$prices     = $this->input->post('service_price');
+			$discounts  = $this->input->post('service_discount');
+
+			for ($i = 0; $i < count($names); $i++) {
+
+				$this->db->insert('invoice_items', [
+
+					'invoice_id'  => $invoice_id,
+					'source_jobcard_item_id' => $sid[$i],
+					'item_type'   => 'Service',
+					'item_name'   => $names[$i],
+					'quantity'    => 1,
+					'unit_price'  => $prices[$i],
+					'total_price' => $prices[$i],
+					'disamount'   => $discounts[$i] ?? 0
+				]);
+			}
+		}
+
+
+		/* ================= PARTS ================= */
+
+		$parts = $this->input->post('part_name');
+
+		if (!empty($parts)) {
+			$paid = $this->input->post('part_id');
+			$names   = $this->input->post('part_name');
+			$qty     = $this->input->post('part_qty');
+			$price   = $this->input->post('part_price');
+			$total   = $this->input->post('part_total');
+			$disc    = $this->input->post('part_discount');
+
+			for ($i = 0; $i < count($names); $i++) {
+
+				$this->db->insert('invoice_items', [
+
+					'invoice_id'  => $invoice_id,
+					'source_jobcard_item_id' => $paid[$i],
+					'item_type'   => 'Part',
+					'item_name'   => $names[$i],
+					'quantity'    => $qty[$i],
+					'unit_price'  => $price[$i],
+					'total_price' => $total[$i],
+					'disamount'   => $disc[$i] ?? 0
+				]);
+			}
+		}
+
+
+		/* ================= SUBLET ================= */
+
+		$descs = $this->input->post('desc_name');
+
+		if (!empty($descs)) {
+			$deid = $this->input->post('desc_id');
+			$names = $this->input->post('desc_name');
+			$amt   = $this->input->post('desc_amount');
+
+			for ($i = 0; $i < count($names); $i++) {
+
+				$this->db->insert('invoice_items', [
+
+					'invoice_id'  => $invoice_id,
+					'item_type'   => 'Sublet',
+					'source_jobcard_item_id' =>$deid[$i],
+					'item_name'   => $names[$i],
+					'quantity'    => 1,
+					'unit_price'  => $amt[$i],
+					'total_price' => $amt[$i]
+				]);
+			}
+		}
+
+		return true;
+	}
+
+
 	public function insert_invoice_items($invoice_id, $jobcard_id)
 	{
 		/* =====================================================

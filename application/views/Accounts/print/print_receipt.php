@@ -2,14 +2,14 @@
 $this->load->helper('myopeningbalance_helper.php'); // for convert_number_to_words()
 
 // Company info from logo_details
-$company = $logo_details[0] ?? null;
-$company_name    = $company->company_name ?? '';
-$company_add1    = $company->company_address ?? '';
-$company_city    = $company->company_city ?? '';
-$company_pin     = $company->company_pincode ?? '';
-$company_state   = $company->company_state ?? '';
-$company_website = $company->company_website ?? '';
-$company_email   = $company->company_email_id ?? '';
+// $company = $logo_details[0] ?? null;
+// $company_name    = $company->company_name ?? '';
+// $company_add1    = $company->company_address ?? '';
+// $company_city    = $company->company_city ?? '';
+// $company_pin     = $company->company_pincode ?? '';
+// $company_state   = $company->company_state ?? '';
+// $company_website = $company->company_website ?? '';
+// $company_email   = $company->company_email_id ?? '';
 
 // Receipt header info
 $receipt_no       = $header->voucher_code ?? '';
@@ -96,18 +96,21 @@ $remark           = $header->narration ?? '';
   }
 </style>
 
-<div class="header-wrapper">
-  <div class="logo">
-    <img src="<?= base_url('public/logo/Logo-bsg.jpg'); ?>" alt="Company Logo" />
-  </div>
-  <div class="company-info">
-    <div><?= strtoupper($company_name); ?></div>
-    <small><?= $company_add1; ?></small>
-    <small><?= $company_city . ' - ' . $company_pin; ?></small>
-    <small>Emirate: <?= $company_state; ?></small>
-    <small>E-Mail: <?= $company_email; ?></small>
-  </div>
-</div>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+
+			<!-- Logo -->
+			<img src="<?= base_url('public/images/logocooling.png'); ?>" width="30%" style="height:70px;">
+
+			<!-- Company Details -->
+			<div style="text-align:right; font-size:13px; line-height:1.5;">
+				<strong>Cool Runnings Garage Co LLC</strong><br>
+				Al Quoz 3, Dubai, UAE<br>
+				www.coolrunningsgarage.com<br>
+				Tel: +971 4 265 4887<br>
+				TRN: 104026094300003
+			</div>
+
+		</div>
 <h3 align="center"> <?php 
       if ($voucher_type == 'R') echo "Receipt Voucher";
       elseif ($voucher_type == 'D') echo "Debit Note";

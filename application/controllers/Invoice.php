@@ -99,7 +99,8 @@ class Invoice extends CI_Controller
 		]);
 
 		// 2. Save invoice items from jobcard
-		$this->Invoice_model->insert_invoice_items($invoice_id, $this->input->post('jobcard_id'));
+		// $this->Invoice_model->insert_invoice_items($invoice_id, $this->input->post('jobcard_id'));
+			$this->Invoice_model->insert_invoice_items_from_post($invoice_id);
 
 		// 3. Redirect to view page
 		redirect('invoice/view/' . $invoice_id);

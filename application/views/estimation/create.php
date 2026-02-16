@@ -285,7 +285,7 @@
 						<td colspan="4" class="text-right px-3 py-2">Discount Amount</td>
 						<td class="px-3 py-2 text-right">
 							<input type="text"
-								id="service_discount" name="service_discount" value="<?= $service_discount ?>"
+								id="service_discount" name="service_discount" value="<?= !empty($service_discount) ? $service_discount : 0 ?>"
 								class="w-full text-right bg-gray-100">
 						</td>
 						<td></td>
@@ -2217,6 +2217,8 @@
 			renumber("#partsTable");
 			renumber("#serviceTable");
 			renumber("#jobDescTable");
+			calculateServiceTotals();
+			calculateJobTotals();
 			calculatePartsTotals();
 			calculateGrandTotal();
 		}

@@ -1,0 +1,259 @@
+<?php
+// Assuming $company_records array is passed with company info
+$this->load->helper('myopeningbalance');  // if needed for any helper functions
+
+// Extract company info
+
+?>
+
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Balance Sheet Report</title>
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: Arial, sans-serif;
+			font-size: 13px;
+			background: white;
+			margin: 0;
+			padding: 0;
+		}
+
+		#printable {
+			min-height: 100vh;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			padding: 20px;
+		}
+
+		/* Header and title bar */
+		.header {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			margin-bottom: 10px;
+			gap: 15px;
+		}
+
+		.header img {
+			width: 90px;
+		}
+
+		.company-info {
+			text-align: left;
+		}
+
+		.company-info .name {
+			font-weight: bold;
+			font-size: 16px;
+		}
+
+		.company-info .details {
+			font-size: 13px;
+			line-height: 1.5;
+		}
+
+		.report-title-bar {
+			width: 100%;
+			background: #e4e4e4;
+			padding: 8px 0;
+			text-align: center;
+			font-weight: bold;
+			text-transform: uppercase;
+			margin-bottom: 10px;
+			font-size: 16px;
+		}
+
+		/* Info table */
+		.info-table {
+			width: 100%;
+			margin-bottom: 10px;
+			font-size: 13px;
+		}
+
+		.info-table td {
+			padding: 4px 10px;
+		}
+
+		/* Data table */
+		table.data-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			font-size: 13px;
+		}
+
+		table.data-table th,
+		table.data-table td {
+			border: 1px solid #000;
+			padding: 6px;
+			text-align: left;
+		}
+
+		table.data-table th {
+			background-color: #f2f2f2;
+		}
+
+		.table-primary {
+			background-color: #d9edf7 !important;
+			font-weight: bold;
+		}
+
+		.text-end {
+			text-align: right;
+		}
+
+		/* Footer */
+		.meta-info {
+			margin-top: 30px;
+			font-size: 13px;
+		}
+
+		.footer {
+			font-size: 12px;
+			page-break-inside: avoid;
+			margin-top: auto;
+			padding-top: 20px;
+		}
+
+		.footer .bottom {
+			display: flex;
+			justify-content: space-between;
+			font-weight: bold;
+			border-top: 1px solid #000;
+			padding-top: 8px;
+		}
+
+		@media print {
+
+			html,
+			body {
+				height: 100%;
+			}
+
+			#printable {
+				height: auto;
+				min-height: 100vh;
+				display: flex;
+				flex-direction: column;
+				justify-content: space-between;
+				page-break-after: auto;
+			}
+
+			.footer {
+				position: relative;
+				bottom: 0;
+				width: 100%;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div id="printable">
+
+		<!-- Header -->
+		<!-- Header -->
+		<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+
+			<!-- Logo -->
+			<img src="<?= base_url('public/images/logocooling.png'); ?>" width="30%" style="height:70px;">
+
+			<!-- Company Details -->
+			<div style="text-align:right; font-size:13px; line-height:1.5;">
+				<strong>Cool Runnings Garage Co LLC</strong><br>
+				Al Quoz 3, Dubai, UAE<br>
+				www.coolrunningsgarage.com<br>
+				Tel: +971 4 265 4887<br>
+				TRN: 104026094300003
+			</div>
+
+		</div>
+
+		<!-- Report Title Bar -->
+		<div class="report-title-bar">
+			Balance Sheet Report
+		</div>
+
+		<!-- Report Info -->
+		<table class="info-table">
+			<tr>
+				<td><strong>Report Date:</strong> <?= date('d-M-Y'); ?></td>
+				<td><strong>Group:</strong> <?= isset($group_name) ? htmlspecialchars($group_name) : 'All'; ?></td>
+				<td><strong>Period:</strong> <?= date('d-M-Y', strtotime($from_date)) . ' to ' . date('d-M-Y', strtotime($to_date)); ?></td>
+			</tr>
+		</table>
+
+		<!-- Balance Sheet Table -->
+		<table class="data-table">
+			<thead>
+				<tr>
+					<th>Group</th>
+					<th>Ledger</th>
+					<th class="text-end">Opening Balance</th>
+					<th class="text-end">Debit</th>
+					<th class="text-end">Credit</th>
+					<th class="text-end">Closing Balance</th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php
+				if (!empty($balances)) :
+					$prev_group = '';
+					foreach ($balances as $row):
+						if ($prev_group !== $row->group_name) {
+							echo "<tr class='table-primary'><td colspan='6'>" . htmlspecialchars($row->group_name) . "</td></tr>";
+							$prev_group = $row->group_name;
+						}
+				?>
+						<tr>
+							<td></td>
+							<td><?= htmlspecialchars($row->account_name); ?></td>
+							<td class="text-end"><?= number_format($row->opening_balance, 2); ?></td>
+							<td class="text-end"><?= number_format($row->debit, 2); ?></td>
+							<td class="text-end"><?= number_format($row->credit, 2); ?></td>
+							<td class="text-end"><?= number_format($row->closing_balance, 2); ?></td>
+						</tr>
+					<?php
+					endforeach;
+				else:
+					?>
+					<tr>
+						<td colspan="6" class="text-center">No data available for selected criteria.</td>
+					</tr>
+				<?php endif; ?>
+			</tbody>
+		</table>
+
+
+		<!-- Meta Info -->
+		<div class="meta-info">
+			<strong>Report Dated:</strong> <?= date('d-M-Y'); ?><br>
+			<strong>Report Generated By:</strong> <?= $this->session->userdata('user_name'); ?>
+		</div>
+
+		<!-- Footer Section -->
+		<div class="footer">
+			<div class="bottom">
+				<div>&copy;<?= date('Y'); ?> For Cool Runnings Garage Co LLC, Designed and developed by Concepts 360 Plus</div>
+				<div id="page-number"></div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		window.onload = function() {
+			window.print();
+		};
+		// Simple page number placeholder (single page)
+		document.getElementById("page-number").innerText = "Page 1";
+	</script>
+</body>
+
+</html>

@@ -7,6 +7,7 @@ class SpareParts extends CI_Controller
 		parent::__construct();
 		$this->load->model('SpareParts_model');
 		$this->load->model('Stock_model');
+		$this->load->model('Supplier_model');
 	}
 
 	// List
@@ -32,27 +33,57 @@ class SpareParts extends CI_Controller
 
 		$data['title'] = "Inventory";
 		$data['brands'] = $this->SpareParts_model->get_all_brands();
+		$data['units'] = $this->Supplier_model->get_units();
 
 		$data['main_content'] = 'inventory/parts_add_form';
 		$this->load->view('includes/template', $data);
 	}
 
-	// Save new part
+
 	public function save()
 	{
+		$part_name = $this->input->post('part_name');
+		$part_type = $this->input->post('parttype');
+
+		// ✅ Check duplicate
+		if ($this->SpareParts_model->part_exists($part_name, $part_type)) {
+
+			$this->session->set_flashdata(
+				'error',
+				'Part already exists with the same type!'
+			);
+			redirect('SpareParts/add'); // change if your add page differs
+			return;
+		}
+
+		if (
+			$this->input->post('purchase_unit_id')
+			== $this->input->post('stock_unit_id')
+			&& $this->input->post('qty_per_purchase_unit') != 1
+		) {
+
+			// optional warning
+		}
+
 		$data = [
-			'part_name' => $this->input->post('part_name'),
+			'part_name' => $part_name,
 			'part_code' => $this->input->post('part_code'),
 			'brand_id' => $this->input->post('brand_id'),
 			'vehicle_model_id' => $this->input->post('vehicle_model_id'),
 			'unit_price' => $this->input->post('unit_price'),
 			'min_stock' => $this->input->post('min_stock'),
-			'part_type' => $this->input->post('parttype'),
+			'part_type' => $part_type,
 			'warrenty' => $this->input->post('warrenty'),
 			'labeling' => $this->input->post('labeling'),
+
+			'purchase_unit_id' => $this->input->post('purchase_unit_id'),
+			'stock_unit_id' => $this->input->post('stock_unit_id'),
+			'qty_per_purchase_unit' => $this->input->post('qty_per_purchase_unit'),
 		];
 
 		$this->SpareParts_model->add_part($data);
+
+		$this->session->set_flashdata('success', 'Part added successfully!');
 		redirect('SpareParts');
 	}
 
@@ -63,32 +94,58 @@ class SpareParts extends CI_Controller
 		$data['title'] = "Inventory";
 		$data['brands'] = $this->SpareParts_model->get_all_brands();
 		$data['part'] = $this->SpareParts_model->get_part($part_id);
+		$data['units'] = $this->Supplier_model->get_units();
+		$stock = $this->db
+			->select('current_stock')
+			->where('part_id', $part_id)
+			->get('stock_summary')
+			->row();
 
+		$data['has_stock'] = ($stock && $stock->current_stock > 0);
 
 		$data['main_content'] = 'inventory/parts_edit_form';
 		$this->load->view('includes/template', $data);
 	}
 
-	// Update
+
 	public function update()
 	{
-		$part_id = $this->input->post('part_id');
+		$part_id   = $this->input->post('part_id');
+		$part_name = $this->input->post('part_name');
+		$part_type = $this->input->post('parttype');
+
+		// ✅ Check duplicate excluding current row
+		// if ($this->SpareParts_model->part_exists($part_name, $part_type, $part_id)) {
+
+		// 	$this->session->set_flashdata(
+		// 		'error',
+		// 		'Another part with the same name and type already exists!'
+		// 	);
+		// 	redirect('SpareParts/edit/' . $part_id);
+		// 	return;
+		// }
 
 		$data = [
-			'part_name' => $this->input->post('part_name'),
+			'part_name' => $part_name,
 			'part_code' => $this->input->post('part_code'),
 			'unit_price' => $this->input->post('unit_price'),
 			'min_stock' => $this->input->post('min_stock'),
-			'part_type' => $this->input->post('parttype'),
+			'part_type' => $part_type,
 			'brand_id' => $this->input->post('brand_id'),
 			'vehicle_model_id' => $this->input->post('vehicle_model_id'),
 			'warrenty' => $this->input->post('warrenty'),
 			'labeling' => $this->input->post('labeling'),
+			'purchase_unit_id' => $this->input->post('purchase_unit_id'),
+			'stock_unit_id' => $this->input->post('stock_unit_id'),
+			'qty_per_purchase_unit' => $this->input->post('qty_per_purchase_unit'),
 		];
 
 		$this->SpareParts_model->update_part($part_id, $data);
+
+		$this->session->set_flashdata('success', 'Part updated successfully!');
 		redirect('SpareParts');
 	}
+
 
 	// Delete
 	public function delete($part_id)
@@ -173,6 +230,22 @@ class SpareParts extends CI_Controller
 		echo json_encode($this->SpareParts_model->get_models_by_brand($brand_id));
 	}
 
+
+
+	public function get_part()
+	{
+		$id = $this->input->post('item_id');
+
+		if (!$id) {
+			echo json_encode(['error' => 'Missing Item ID']);
+			return;
+		}
+
+		// fetch part
+		echo json_encode($this->SpareParts_model->get_part_rfq($id));
+	}
+
+
 	public function save_brand()
 	{
 
@@ -194,7 +267,7 @@ class SpareParts extends CI_Controller
 		$part_name  = trim($this->input->post('part_name'));
 		$unit_price = $this->input->post('unit_price');
 		$part_type  = $this->input->post('part_type'); // New / After / Used
-		$labelling = $this->input->post('labeling'); 
+		$labelling = $this->input->post('labeling');
 
 		if ($part_name == '' || $part_type == '') {
 			echo json_encode([
@@ -210,7 +283,7 @@ class SpareParts extends CI_Controller
 			'part_type' => $part_type,
 			'created_at' => date('Y-m-d H:i:s'),
 			'min_stock' => 1,
-			'labeling'=>$labelling
+			'labeling' => $labelling
 		];
 
 		// $opening_qty = (int) $this->input->post('opening_qty');

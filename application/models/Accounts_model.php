@@ -35,6 +35,7 @@ class Accounts_model extends CI_Model
 	function get_general_ledger_accounts($cond1, $cond2)
 	{
 		$query = $this->db->query("select account_id, account_name,gl.customer_id from general_ledger gl,account_group ag where gl.group_no=ag.group_no and (sno like '%$cond1%' or sno like '%$cond2%' or sno like '%1%')");
+		// echo $this->db->last_query();exit;
 		return $query->result();
 	}
 	function get_all_general_ledger_accounts()
@@ -742,7 +743,7 @@ class Accounts_model extends CI_Model
 	// 		);
 	// 		$this->db->insert('voucher_transaction', $data);
 	// 		$insert_id = $this->db->insert_id();
-	// 		$this->db->query("update invoice_master set paid_amt='paid_amt+$dr_amount' where invoice_id=$inv_id");
+	// 		$this->db->query("update invoices set paid_amt='paid_amt+$dr_amount' where invoice_id=$inv_id");
 	// 	}
 	// 	// debit entry
 	// 	for ($i = 0; $i < count($_POST['creditor']); $i++) {
@@ -825,7 +826,7 @@ class Accounts_model extends CI_Model
 
 	//                 $this->db->insert('voucher_transaction', $data_cr);
 	//                 // Update paid amount in invoice
-	//                 $this->db->query("UPDATE invoice_master SET paid_amt = paid_amt + $dr_amount WHERE invoice_id = $inv_id");
+	//                 $this->db->query("UPDATE invoices SET paid_amt = paid_amt + $dr_amount WHERE invoice_id = $inv_id");
 	//             }
 	//         }
 	//     }
@@ -872,7 +873,7 @@ class Accounts_model extends CI_Model
 		// Get posted data safely
 		$vdate = $this->input->post('v_date');
 		$vtime = $this->input->post('vtime');
-		$cust_id = $this->input->post('customer_id');
+		$cust_id = $this->input->post('customer_org_id');
 		$debtor_account_id = $this->input->post('debtor');
 		$narration = $this->input->post('narration');
 		$transaction_type = $this->input->post('transaction_type');
@@ -881,7 +882,7 @@ class Accounts_model extends CI_Model
 
 		$invoiceIDs = $this->input->post('invoiceID');
 		$dr_amounts = $this->input->post('dr_amount');
-		$invoice_codes = $this->input->post('invoice_code');
+		$invoice_codes = $this->input->post('invoice_no');
 
 		// Convert date & time to MySQL datetime format
 		$voucher_datetime = date('Y-m-d H:i:s', strtotime("$vdate $vtime"));
@@ -892,7 +893,7 @@ class Accounts_model extends CI_Model
 		if (!empty($invoiceIDs) && is_array($invoiceIDs)) {
 			foreach ($invoiceIDs as $inv_id) {
 				$dr_amount = isset($dr_amounts[$inv_id]) ? (float)$dr_amounts[$inv_id] : 0;
-				$invoice_code = isset($invoice_codes[$inv_id]) ? $invoice_codes[$inv_id] : '';
+				$invoice_no = isset($invoice_codes[$inv_id]) ? $invoice_codes[$inv_id] : '';
 
 				if ($dr_amount > 0) {
 					$data_cr = array(
@@ -905,7 +906,7 @@ class Accounts_model extends CI_Model
 						'drcr_type'        => 'Cr',
 						'narration'        => $narration,
 						'trans_id'         => $inv_id,
-						'invoice_code'     => $invoice_code,
+						'invoice_code'     => $invoice_no,
 						'invoice_amount'   => $dr_amount,
 						'trans_type'       => 'R',
 						'transaction_type' => $transaction_type,
@@ -915,7 +916,7 @@ class Accounts_model extends CI_Model
 
 					$this->db->insert('voucher_transaction', $data_cr);
 
-					// Update invoice_master paid amount safely
+					// Update invoices paid amount safely
 					$this->db->set('paid_amt', 'paid_amt + ' . $dr_amount, false);
 					$this->db->where('invoice_id', $inv_id);
 					$this->db->update('invoices');
@@ -1067,7 +1068,7 @@ class Accounts_model extends CI_Model
 		if (!empty($invoiceIDs) && is_array($invoiceIDs)) {
 			foreach ($invoiceIDs as $inv_id) {
 				$dr_amount = isset($dr_amounts[$inv_id]) ? $dr_amounts[$inv_id] : 0;
-				$invoice_code = isset($grn_codes[$inv_id]) ? $grn_codes[$inv_id] : '';
+				$invoice_no = isset($grn_codes[$inv_id]) ? $grn_codes[$inv_id] : '';
 
 				if ($dr_amount <= 0) {
 					// Skip zero or negative amounts
@@ -1084,7 +1085,7 @@ class Accounts_model extends CI_Model
 					'drcr_type'         => 'Dr',
 					'narration'         => $narration,
 					'trans_id'          => $inv_id,
-					'invoice_code'      => $invoice_code,
+					'invoice_code'      => $invoice_no,
 					'invoice_amount'    => $dr_amount,
 					'trans_type'        => 'P',
 					'transaction_type'  => $transaction_type,
@@ -1278,7 +1279,7 @@ class Accounts_model extends CI_Model
 	{
 		$type = $this->input->post('type');
 
-		$query = $this->db->query("select one.id, concat(coalesce(two.cust_code,''),' ',one.value)as value from (select gl.account_id as id, gl.gl_code, gl.account_name as value, gl.group_no, gl.customer_id, gl.supplier_id, gl.isdeleteable, gl.opening_balance, gl.opening_bal_type, gl.date, ag.group_name from general_ledger gl, account_group ag  where gl.group_no=ag.group_no and ag.group_no='$type') as one left join (select * from customer_master) as two on(one.customer_id=two.customer_id)");
+		$query = $this->db->query("select one.id, concat(coalesce(two.cust_code,''),' ',one.value)as value from (select gl.account_id as id, gl.gl_code, gl.account_name as value, gl.group_no, gl.customer_id, gl.supplier_id, gl.isdeleteable, gl.opening_balance, gl.opening_bal_type, gl.date, ag.group_name from general_ledger gl, account_group ag  where gl.group_no=ag.group_no and ag.group_no='$type') as one left join (select * from customers) as two on(one.customer_id=two.customer_id)");
 		return $query->result();
 	}
 
@@ -1301,10 +1302,10 @@ class Accounts_model extends CI_Model
 	// 			$query = $this->db->query("select one.*, invoice_no as ref_no, invoice_date as invoice_date, po_code as po_code  from(select v.*,g. account_name,g.opening_balance from general_ledger g,voucher_transaction v where g.account_id=$acc_id and v.account_id=g.account_id and date(v.voucher_date) between '$from_date' and '$to_date' and v.cancel=0 $condition order by v.voucher_date, voucher_id)as one  left join(select g.invoice_no,grn_id,g.invoice_date, o.po_code from GRN_master g, purchase_order o where g.po_id=o.po_id)as two on(one.trans_id=two.grn_id) ");
 	// 		} else if ($r->group_no == 30) //sundry debitors
 	// 		{
-	// 			$query = $this->db->query("select one.*, three.invoice_code as ref_no, three.invoice_date as invoice_date, three.po_number as po_code from(select v.*,g. account_name,g.opening_balance from general_ledger g,voucher_transaction v where g.account_id=$acc_id and v.account_id=g.account_id and date(v.voucher_date) between '$from_date' and '$to_date' and v.cancel=0 $condition order by v.voucher_date, voucher_id)as one left join(select * from invoice_master)as three on(one.trans_id=three.invoice_id)");
+	// 			$query = $this->db->query("select one.*, three.invoice_no as ref_no, three.invoice_date as invoice_date, three.po_number as po_code from(select v.*,g. account_name,g.opening_balance from general_ledger g,voucher_transaction v where g.account_id=$acc_id and v.account_id=g.account_id and date(v.voucher_date) between '$from_date' and '$to_date' and v.cancel=0 $condition order by v.voucher_date, voucher_id)as one left join(select * from invoices)as three on(one.trans_id=three.invoice_id)");
 	// 		} else //others
 	// 		{
-	// 			$query = $this->db->query("select one.*, if(one.voucher_type='G',two.invoice_no,three.invoice_code)as ref_no, if(one.voucher_type='G',two.invoice_date,three.invoice_date)as invoice_date, if(one.voucher_type='G',two.po_code, three.po_number)as po_code from(select v.*,g. account_name,g.opening_balance from general_ledger g,voucher_transaction v where g.account_id=$acc_id and v.account_id=g.account_id and date(v.voucher_date) between '$from_date' and '$to_date' and v.cancel=0 $condition order by v.voucher_date, voucher_id)as one  left join(select g.invoice_no,grn_id,g.invoice_date, o.po_code from GRN_master g, purchase_order o where g.po_id=o.po_id)as two on(one.trans_id=two.grn_id) left join(select * from invoice_master)as three on(one.trans_id=three.invoice_id)");
+	// 			$query = $this->db->query("select one.*, if(one.voucher_type='G',two.invoice_no,three.invoice_no)as ref_no, if(one.voucher_type='G',two.invoice_date,three.invoice_date)as invoice_date, if(one.voucher_type='G',two.po_code, three.po_number)as po_code from(select v.*,g. account_name,g.opening_balance from general_ledger g,voucher_transaction v where g.account_id=$acc_id and v.account_id=g.account_id and date(v.voucher_date) between '$from_date' and '$to_date' and v.cancel=0 $condition order by v.voucher_date, voucher_id)as one  left join(select g.invoice_no,grn_id,g.invoice_date, o.po_code from GRN_master g, purchase_order o where g.po_id=o.po_id)as two on(one.trans_id=two.grn_id) left join(select * from invoices)as three on(one.trans_id=three.invoice_id)");
 	// 		}
 	// 	}
 	// 	return $query->result();
@@ -1314,6 +1315,7 @@ class Accounts_model extends CI_Model
 
 	function get_ledger_report($acc_id, $from_date, $to_date)
 	{
+		log_message('error', 'accid' . $acc_id);
 		if (empty($acc_id) || empty($from_date) || empty($to_date)) {
 			return [];
 		}
@@ -1356,27 +1358,37 @@ class Accounts_model extends CI_Model
             ) AS two ON one.trans_id = two.grn_id
         ", [$acc_id, $from_date, $to_date]);
 		} elseif ($group_no == 30) {
-			// Sundry Debtors
+			// Sundry Debtors  
 			$query = $this->db->query("
-            SELECT one.*, three.invoice_code AS ref_no, three.invoice_date, three.po_number AS po_code
+            SELECT one.*, three.invoice_no AS ref_no, three.invoice_date, three.po_number AS po_code
             FROM ($base_sql) AS one
-            LEFT JOIN invoice_master AS three ON one.trans_id = three.invoice_id
+            LEFT JOIN invoices AS three ON one.trans_id = three.invoice_id
         ", [$acc_id, $from_date, $to_date]);
 		} else {
 			// Others
+			// 	include when purchase module integratetion
+			// 	$query = $this->db->query("
+			//     SELECT one.*, 
+			//            IF(one.voucher_type = 'G', two.invoice_no, three.invoice_no) AS ref_no,
+			//            IF(one.voucher_type = 'G', two.invoice_date, three.invoice_date) AS invoice_date,
+			//            IF(one.voucher_type = 'G', two.po_code, three.po_number) AS po_code
+			//     FROM ($base_sql) AS one
+			//     LEFT JOIN (
+			//         SELECT g.invoice_no, g.grn_id, g.invoice_date, o.po_code
+			//         FROM GRN_master g
+			//         JOIN purchase_order o ON g.po_id = o.po_id
+			//     ) AS two ON one.trans_id = two.grn_id
+			//     LEFT JOIN invoices AS three ON one.trans_id = three.invoice_id
+			// ", [$acc_id, $from_date, $to_date]);
 			$query = $this->db->query("
-            SELECT one.*, 
-                   IF(one.voucher_type = 'G', two.invoice_no, three.invoice_code) AS ref_no,
-                   IF(one.voucher_type = 'G', two.invoice_date, three.invoice_date) AS invoice_date,
-                   IF(one.voucher_type = 'G', two.po_code, three.po_number) AS po_code
-            FROM ($base_sql) AS one
-            LEFT JOIN (
-                SELECT g.invoice_no, g.grn_id, g.invoice_date, o.po_code
-                FROM GRN_master g
-                JOIN purchase_order o ON g.po_id = o.po_id
-            ) AS two ON one.trans_id = two.grn_id
-            LEFT JOIN invoice_master AS three ON one.trans_id = three.invoice_id
-        ", [$acc_id, $from_date, $to_date]);
+					SELECT one.*, 
+						three.invoice_no AS ref_no,
+						three.invoice_date AS invoice_date,
+						three.po_number AS po_code
+					FROM ($base_sql) AS one
+					LEFT JOIN invoices AS three 
+						ON one.trans_id = three.invoice_id
+				", [$acc_id, $from_date, $to_date]);
 		}
 
 		return $query->result();
@@ -1402,7 +1414,7 @@ class Accounts_model extends CI_Model
 	// function get_invoice_list()
 	// {
 
-	// 	$query = $this->db->query("SELECT * FROM invoice_master i JOIN customer_master c ON i.customer_id = c.customer_id JOIN sales_quotation_master sm ON i.customer_id = sm.customer_id;");
+	// 	$query = $this->db->query("SELECT * FROM invoices i JOIN customers c ON i.customer_id = c.customer_id JOIN sales_quotation_master sm ON i.customer_id = sm.customer_id;");
 	// 	return $query->result();
 	// }
 
@@ -1458,7 +1470,7 @@ class Accounts_model extends CI_Model
 
 
 	// 	$query = $this->db->query("select * from (select one.*, (one.amount-coalesce(two.recevied_amt,0))as due_amount from (select v.account_id, trans_id, voucher_code , voucher_date, amount, 
-	// 	cust_name from voucher_transaction v, customer_master c, general_ledger g where v.customer_id=c.customer_id and v.account_id=g.account_id and g.group_no=30 and DATE (voucher_date)<'$voucher_date' and voucher_type ='S' and cancel=0) as one left join(select trans_id, account_id, coalesce(sum(amount),0)as recevied_amt from voucher_transaction where voucher_type ='R' group by trans_id, account_id) as two on(one.trans_id=two.trans_id and one.account_id=two.account_id)) as three where due_amount>0");
+	// 	name from voucher_transaction v, customers c, general_ledger g where v.customer_id=c.customer_id and v.account_id=g.account_id and g.group_no=30 and DATE (voucher_date)<'$voucher_date' and voucher_type ='S' and cancel=0) as one left join(select trans_id, account_id, coalesce(sum(amount),0)as recevied_amt from voucher_transaction where voucher_type ='R' group by trans_id, account_id) as two on(one.trans_id=two.trans_id and one.account_id=two.account_id)) as three where due_amount>0");
 	// 	return $query->result();
 	// }
 
@@ -1475,7 +1487,7 @@ class Accounts_model extends CI_Model
 		$sql = "
         SELECT
             v.account_id,
-            g.account_name AS cust_name,
+            g.account_name AS name,
             v.trans_id,
             v.voucher_code,
             v.voucher_date,
@@ -1653,11 +1665,11 @@ class Accounts_model extends CI_Model
 	//                     v.voucher_code, 
 	//                     v.voucher_date, 
 	//                     v.amount, 
-	//                     c.cust_name 
+	//                     c.name 
 	//                 FROM 
 	//                     voucher_transaction v
 	//                 JOIN 
-	//                     customer_master c ON v.customer_id = c.customer_id
+	//                     customers c ON v.customer_id = c.customer_id
 	//                 JOIN 
 	//                     general_ledger g ON v.account_id = g.account_id
 	//                 WHERE 
@@ -1705,7 +1717,7 @@ class Accounts_model extends CI_Model
                     v.amount,
                     g.group_no,
                     CASE 
-                        WHEN g.group_no = 30 THEN c.cust_name 
+                        WHEN g.group_no = 30 THEN c.name 
                         WHEN g.group_no = 29 THEN s.supplier_name 
                         ELSE 'Unknown' 
                     END AS party_name
@@ -1714,7 +1726,7 @@ class Accounts_model extends CI_Model
                 JOIN 
                     general_ledger g ON v.account_id = g.account_id
                 LEFT JOIN 
-                    customer_master c ON v.customer_id = c.customer_id
+                    customers c ON v.customer_id = c.customer_id
                 LEFT JOIN 
                     supplier_master s ON v.account_id = s.supplier_id
                 WHERE 
@@ -1744,9 +1756,9 @@ class Accounts_model extends CI_Model
 
 
 	// public function get_receipt_header($voucher_code) {
-	//         $this->db->select('vt.*, cm.cust_name as customer_name, gl.account_name as credit_account_name');
+	//         $this->db->select('vt.*, cm.name as customer_name, gl.account_name as credit_account_name');
 	//         $this->db->from('voucher_transaction vt');
-	//         $this->db->join('customer_master cm', 'cm.customer_id = vt.customer_id', 'left');
+	//         $this->db->join('customers cm', 'cm.customer_id = vt.customer_id', 'left');
 	//         $this->db->join('general_ledger gl', 'gl.account_id = vt.account_id', 'left'); // Assuming account_id references credit account
 	//         $this->db->where('vt.voucher_code', $voucher_code);
 	//         $query = $this->db->get();
@@ -1755,13 +1767,15 @@ class Accounts_model extends CI_Model
 	// }
 	public function get_receipt_header($voucher_code)
 	{
+		// log_message('error', 'Voucher Code: ' . $voucher_code);
+
 		$this->db->select('
         vt.voucher_code,
         vt.voucher_date,
         vt.voucher_type,
         SUM(vt.amount) as amount,
         vt.customer_id,
-        cm.cust_name as customer_name,
+        cm.name as customer_name,
         vt.transaction_type,
         vt.transaction_no,
         gl.account_name as credit_account_name,
@@ -1770,7 +1784,7 @@ class Accounts_model extends CI_Model
         GROUP_CONCAT(cr.invoice_amount SEPARATOR ", ") AS invoice_amounts
     ');
 		$this->db->from('voucher_transaction vt');
-		$this->db->join('customer_master cm', 'cm.customer_id = vt.customer_id', 'left');
+		$this->db->join('customers cm', 'cm.customer_id = vt.customer_id', 'left');
 		$this->db->join('general_ledger gl', 'gl.account_id = vt.account_id', 'left');
 
 		// Join subquery to get Cr rows for same voucher_code
@@ -1785,15 +1799,15 @@ class Accounts_model extends CI_Model
 		$this->db->where('vt.voucher_type', 'R');
 		$this->db->where('vt.drcr_type', 'Dr'); // Only fetch main Debit row for header
 
-		$this->db->group_by('vt.voucher_code, vt.voucher_date, vt.voucher_type, vt.customer_id, cm.cust_name, vt.transaction_type, vt.transaction_no, gl.account_name, vt.narration');
+		$this->db->group_by('vt.voucher_code, vt.voucher_date, vt.voucher_type, vt.customer_id, cm.name, vt.transaction_type, vt.transaction_no, gl.account_name, vt.narration');
 		//   echo $this->db->last_query(); exit;
 		return $this->db->get()->row();
 	}
 	public function get_receipt_invoices($voucher_code)
 	{
-		$this->db->select('vt.amount, vt.voucher_code, vt.trans_id, vt.customer_id, cm.cust_name as customer_name');
+		$this->db->select('vt.amount, vt.voucher_code, vt.trans_id, vt.customer_id, cm.name as customer_name');
 		$this->db->from('voucher_transaction vt');
-		$this->db->join('customer_master cm', 'cm.customer_id = vt.customer_id', 'left'); // ensure LEFT JOIN
+		$this->db->join('customers cm', 'cm.customer_id = vt.customer_id', 'left'); // ensure LEFT JOIN
 		$this->db->where('vt.voucher_code', $voucher_code);
 		$this->db->where('vt.voucher_type', 'R');
 		$this->db->where('vt.drcr_type', 'Dr');
@@ -1815,12 +1829,12 @@ class Accounts_model extends CI_Model
 		$this->db->select('
         vt.voucher_code,
         vt.amount,
-        cm.cust_name as customer_name,
-        im.invoice_code
+        cm.name as customer_name,
+        im.invoice_no
     ');
 		$this->db->from('voucher_transaction vt');
-		$this->db->join('customer_master cm', 'cm.customer_id = vt.customer_id', 'left');
-		$this->db->join('invoice_master im', 'im.invoice_id = vt.trans_id', 'left');
+		$this->db->join('customers cm', 'cm.customer_id = vt.customer_id', 'left');
+		$this->db->join('invoices im', 'im.invoice_id = vt.trans_id', 'left');
 		$this->db->where('vt.voucher_code', $voucher_code);
 		$this->db->where('vt.voucher_type', 'R');
 		$this->db->where('vt.cancel', 0);
@@ -1831,7 +1845,7 @@ class Accounts_model extends CI_Model
 
 	function get_receipt_records($id)
 	{
-		$query = $this->db->query("SELECT a.*, c.*, i.invoice_code FROM voucher_transaction a LEFT JOIN customer_master c ON a.customer_id = c.customer_id LEFT JOIN invoice_master i ON a.trans_id = i.invoice_id WHERE a.voucher_code = '$id'; ");
+		$query = $this->db->query("SELECT a.*, c.*, i.invoice_code FROM voucher_transaction a LEFT JOIN customers c ON a.customer_id = c.customer_id LEFT JOIN invoices i ON a.trans_id = i.invoice_id WHERE a.voucher_code = '$id'; ");
 		return $query->result();
 	}
 	// function get_payment_records($id){
@@ -1862,7 +1876,7 @@ class Accounts_model extends CI_Model
         LEFT JOIN supplier_master sm ON sm.supplier_id = vt.customer_id
         LEFT JOIN general_ledger gl_cr ON vt.account_id = gl_cr.account_id
         LEFT JOIN general_ledger gl_dr ON vt.account_id = gl_dr.account_id
-		LEFT JOIN GRN_master gm ON vt.invoice_code = gm.grn_code
+		LEFT JOIN GRN_master gm ON vt.invoice_no = gm.grn_code
         WHERE vt.voucher_code = ? AND vt.voucher_type = 'P'
         ORDER BY vt.drcr_type DESC, vt.voucher_id
     ";
@@ -1878,14 +1892,20 @@ class Accounts_model extends CI_Model
 	{
 		$selected_voucher_ids = $this->input->post('inv_id');
 		$bank_dates = $this->input->post('bank_date');
-		//$deposit_amounts = $this->input->post('deposit_amount'); 
+		$deposit_amounts = $this->input->post('amount');
+
+		$instrument_date = $this->input->post('voucher_date');
+		$instrument_no = $this->input->post('transaction_no');
 
 		if (!empty($selected_voucher_ids)) {
 			foreach ($selected_voucher_ids as $index => $voucher_id) {
 				$voucher_id = intval($voucher_id);
 
 				$bank_date = isset($bank_dates[$index]) ? $bank_dates[$index] : null;
-				$deposit_amount = isset($deposit_amounts[$index]) ? $deposit_amounts[$index] : null;
+				$amount_no = isset($deposit_amounts[$index]) ? $deposit_amounts[$index] : null;
+
+				$instrument_date = isset($instrument_date[$index]) ? $instrument_date[$index] : null;
+				$instrument_no = isset($instrument_no[$index]) ? $instrument_no[$index] : null;
 
 				$data = [
 					'reco' => 1,
@@ -1895,6 +1915,14 @@ class Accounts_model extends CI_Model
 
 				$this->db->where('voucher_id', $voucher_id);
 				$this->db->update('voucher_transaction', $data);
+
+				$databank = [
+					'instrument_no' => $instrument_no,
+					'instrument_date' => $instrument_date,
+					'amount_no' => $amount_no,
+					'instrument_type' => "Dr/Cr",
+				];
+				$this->db->insert('bank_reconciliation', $databank);
 			}
 		}
 

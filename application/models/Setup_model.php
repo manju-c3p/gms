@@ -61,4 +61,20 @@ class Setup_model extends CI_Model
 
 	// ================================users =============================
 
+		function get_next_code($prifix, $column, $table, $sublen)
+	{
+
+		$query = $this->db->query("select max(substr($column,$sublen,5))as count from $table where $column like '%$prifix%'");
+		return $query->row('count');
+	}
+
+	public function get_active_unit_list()
+	{
+		$this->db->select('*');
+		$this->db->from('unit_master');
+		$this->db->where('active', 1);
+		$query = $this->db->get()->result();
+		return $query;
+	}
+
 }

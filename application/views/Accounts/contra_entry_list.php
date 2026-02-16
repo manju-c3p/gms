@@ -2,10 +2,28 @@
 
 <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 <div class="bg-white rounded-xl shadow p-4">
+	<div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+		<h2 class="text-lg font-semibold text-gray-800">Contra Entry</h2>
+
+		<span class="flex gap-2">
+			<a href="<?php echo base_url('index.php/Accounts/add_contra_entry'); ?>"
+				class="inline-flex items-center rounded-full bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1 hover:bg-blue-200 transition"
+				title="Add New Record">
+				Add New Record
+			</a>
+
+			<a href="<?php echo base_url('index.php/Accounts/list_contra_entry'); ?>"
+				class="inline-flex items-center rounded-full bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1 hover:bg-blue-200 transition"
+				title="List Records">
+				List Records
+			</a>
+		</span>
+
+	</div><br>
 	<div class="overflow-x-auto">
 		<table id="datatable"
-			   data-toggle="data-table"
-			   class="min-w-full border border-gray-200 text-sm rounded-lg overflow-hidden">
+			data-toggle="data-table"
+			class="min-w-full border border-gray-200 text-sm rounded-lg overflow-hidden">
 
 			<thead class="bg-gray-100 text-gray-700">
 				<tr>
@@ -26,13 +44,14 @@
 						} ?>>
 
 						<td class="px-3 py-2 border">
-							<?php echo $i; $i++; ?>
+							<?php echo $i;
+							$i++; ?>
 						</td>
 
 						<td class="px-3 py-2 border text-blue-600 hover:underline">
 							<a target="_blank"
-							   href="<?php echo base_url() . 'index.php/Accounts/view_account_transaction_details/' . $row->voucher_id; ?>"
-							   title="details">
+								href="<?php echo base_url() . 'index.php/Accounts/view_account_transaction_details/' . $row->voucher_id; ?>"
+								title="details">
 								<?php echo $row->voucher_code; ?>
 							</a>
 						</td>
@@ -51,16 +70,39 @@
 
 						<td class="px-3 py-2 border">
 							<?php if ($row->cancel == 0) { ?>
-								<a href="javascript:confirmcancel('<?php echo $row->voucher_code; ?>')"
-								   title="Delete"
-								   class="text-red-600 hover:text-red-800"
-								   id="delete">
-									<?php echo $this->session->userdata('delete_icon'); ?>
-								</a>
+
+								<button onclick="confirmcancel('<?php echo $row->voucher_code; ?>')"
+									title="Delete"
+									class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium 
+											text-red-600 bg-red-50 rounded-md 
+											hover:bg-red-100 hover:text-red-700 
+											focus:outline-none focus:ring-2 focus:ring-red-300 
+											transition">
+
+									<!-- Trash Icon -->
+									<svg xmlns="http://www.w3.org/2000/svg"
+										class="w-4 h-4 mr-1"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+										stroke-width="2">
+										<path stroke-linecap="round" stroke-linejoin="round"
+											d="M3 6h18M9 6V4h6v2m-7 0l1 14h8l1-14M10 11v6M14 11v6" />
+									</svg>
+
+
+								</button>
+
 							<?php } else { ?>
-								<span class="text-red-600 font-semibold">Cancelled</span>
+
+								<span class="inline-block px-2 py-1 text-xs font-semibold 
+                     					text-red-700 bg-red-100 rounded-md">
+									Cancelled
+								</span>
+
 							<?php } ?>
 						</td>
+
 
 					</tr>
 				<?php endforeach; ?>
@@ -101,19 +143,23 @@
 	}
 </script>
 <script>
-$(document).ready(function () {
-	$('#datatable').DataTable({
-		pageLength: 10,
-		lengthMenu: [10, 25, 50, 100],
-		order: [[0, 'asc']],   // Sr.no
-		searching: true,
-		paging: true,
-		info: true,
-		autoWidth: false,
-		responsive: true,
-		columnDefs: [
-			{ orderable: false, targets: -1 } // Disable sorting on Action column
-		]
+	$(document).ready(function() {
+		$('#datatable').DataTable({
+			pageLength: 10,
+			lengthMenu: [10, 25, 50, 100],
+			order: [
+				[0, 'asc']
+			], // Sr.no
+			searching: true,
+			paging: true,
+			info: true,
+			autoWidth: false,
+			responsive: true,
+			columnDefs: [{
+					orderable: false,
+					targets: -1
+				} // Disable sorting on Action column
+			]
+		});
 	});
-});
 </script>
