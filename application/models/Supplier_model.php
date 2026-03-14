@@ -62,16 +62,51 @@ class Supplier_model extends CI_Model
 			}
 		}
 
+		if ($supplier_id) {
+
+			$grp_no = 29;
+			$data1 = array(
+				'account_name' => $this->input->post('supplier_name') . ' ' . $this->input->post('supplier_code'),
+				'group_no' => $grp_no,
+				'supplier_id' => $supplier_id,
+				'opening_bal_type' => 'Dr',
+			);
+			$this->db->insert('general_ledger', $data1);
+			$ledger_id = $this->db->insert_id();
+
+			// $user_se_id = $this->session->userdata('user_id');
+			// $page_name = explode('index.php/', $_SERVER['PHP_SELF']);
+			// $ci = get_instance();
+			// $ci->load->helper('log');
+			// $log_msg = add_log_entry($user_se_id, 1, $page_name[1], 'supplier_master', 'supplier_id', $insert_id);
+		}
+
 		return $res;
 	}
 
 	//changed the code 
 
+	// function delete_supplier($id)
+	// {
+
+	// 	$this->db->where('supplier_id', $id);
+	// 	$this->db->delete('supplier_contact_details');
+	// 	$this->db->where('supplier_id', $id);
+	// 	$this->db->delete('supplier_master');
+
+	// 	return ($this->db->affected_rows() > 0);
+	// }
 	function delete_supplier($id)
 	{
-
+		// 1️⃣ Delete supplier contact details
 		$this->db->where('supplier_id', $id);
 		$this->db->delete('supplier_contact_details');
+
+		// 2️⃣ Delete ledger entry linked to supplier
+		$this->db->where('supplier_id', $id);
+		$this->db->delete('general_ledger');
+
+		// 3️⃣ Delete supplier master
 		$this->db->where('supplier_id', $id);
 		$this->db->delete('supplier_master');
 

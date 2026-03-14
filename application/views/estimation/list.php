@@ -151,18 +151,18 @@
 <div id="directInspectionModal"
 	class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
 
-	<div class="bg-white rounded-2xl shadow-xl w-full max-w-xl p-6">
-
+	<!-- <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl p-6"> -->
+	<div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-8">
 		<h2 class="text-xl font-bold mb-4">Direct Estimation</h2>
 
-			<div class="mb-4">
+		<div class="mb-4">
 			<label class="block text-sm font-medium mb-1">
 				Vin No
 			</label>
 
 			<select id="chassisSelect" class="w-full border rounded-lg px-3 py-2">
 				<option value="">-- Select Vin No --</option>
-				<option value="new">➕ New Vehicle / Customer</option>
+				<!-- <option value="new">➕ New Vehicle / Customer</option> -->
 
 				<?php foreach ($vehicles as $v): ?>
 					<option value="<?= $v->chassis_no ?>">
@@ -172,6 +172,25 @@
 				<?php endforeach; ?>
 			</select>
 		</div>
+
+		<div class="mb-4">
+			<label class="block text-sm font-medium mb-1">
+				Plate No
+			</label>
+
+			<select id="plateSelect" class="w-full border rounded-lg px-3 py-2">
+				<option value="">-- Select Plate No --</option>
+				<!-- <option value="new">➕ New Vehicle / Customer</option> -->
+
+				<?php foreach ($vehicles as $v): ?>
+					<option value="<?= $v->registration_no ?>">
+						<?= $v->registration_no ?>
+
+					</option>
+				<?php endforeach; ?>
+			</select>
+		</div>
+
 
 		<!-- CUSTOMER SELECT -->
 		<div class="mb-4">
@@ -190,7 +209,73 @@
 		</div>
 
 		<!-- NEW CUSTOMER FORM -->
-		<div id="newCustomerForm" class="hidden space-y-3 mb-4">
+		<div id="newCustomerForm" class="hidden mb-6">
+
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+				<input type="text" id="cust_name"
+					placeholder="Customer Name"
+					class="w-full border border-gray-300 rounded-xl px-4 py-3">
+
+				<input type="text" id="cust_phone"
+					placeholder="Mobile"
+					class="w-full border border-gray-300 rounded-xl px-4 py-3">
+
+				<input type="email" id="cust_email"
+					placeholder="Email"
+					class="w-full border border-gray-300 rounded-xl px-4 py-3">
+
+				<textarea id="cust_address"
+					placeholder="Address"
+					class="w-full border border-gray-300 rounded-xl px-4 py-3 "></textarea>
+
+			</div>
+
+		</div>
+
+
+		<!-- VEHICLE SECTION -->
+		<div id="vehicleSection" class="hidden mb-6">
+
+			<!-- EXISTING VEHICLE DROPDOWN -->
+			<div id="existingVehicleDiv" class="hidden mb-4">
+				<label class="block text-sm font-medium mb-2">Vehicle</label>
+
+				<select id="vehicleSelect"
+					class="w-full border border-gray-300 rounded-xl px-4 py-3">
+					<option value="">-- Select Vehicle --</option>
+				</select>
+			</div>
+
+			<!-- NEW VEHICLE FORM -->
+			<div id="newVehicleForm" class="hidden">
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+					<input type="text" id="plate_no"
+						placeholder="Plate No"
+						class="w-full border border-gray-300 rounded-xl px-4 py-3">
+
+					<input type="text" id="brand"
+						placeholder="Brand"
+						class="w-full border border-gray-300 rounded-xl px-4 py-3">
+
+					<input type="text" id="model"
+						placeholder="Model"
+						class="w-full border border-gray-300 rounded-xl px-4 py-3">
+
+					<input type="text" id="vin_no"
+						placeholder="VIN No"
+						class="w-full border border-gray-300 rounded-xl px-4 py-3">
+
+				</div>
+
+			</div>
+
+		</div>
+
+		<!-- NEW CUSTOMER FORM -->
+		<!-- <div id="newCustomerForm" class="hidden space-y-3 mb-4">
 
 			<input type="text" id="cust_name"
 				placeholder="Customer Name"
@@ -207,12 +292,12 @@
 			<textarea id="cust_address"
 				placeholder="Address"
 				class="w-full border rounded-lg px-3 py-2"></textarea>
-		</div>
+		</div> -->
 
 		<!-- VEHICLE SECTION -->
-		<div id="vehicleSection" class="hidden mb-4">
+		<!-- <div id="vehicleSection" class="hidden mb-4">
 
-			<!-- EXISTING VEHICLE DROPDOWN -->
+			
 			<div id="existingVehicleDiv" class="hidden mb-3">
 				<label class="block text-sm font-medium mb-1">Vehicle</label>
 
@@ -222,7 +307,7 @@
 				</select>
 			</div>
 
-			<!-- NEW VEHICLE FORM -->
+		
 			<div id="newVehicleForm" class="hidden space-y-3">
 
 				<input type="text" id="plate_no"
@@ -241,7 +326,7 @@
 					placeholder="VIN No"
 					class="w-full border rounded-lg px-3 py-2">
 			</div>
-		</div>
+		</div> -->
 
 		<!-- ACTION BUTTONS -->
 		<div class="flex justify-end gap-3 mt-6">
@@ -265,43 +350,50 @@
 <!-- =============================================== -->
 <script>
 	let fromChassisSelection = false;
-	$(document).ready(function () {
+	$(document).ready(function() {
 
-    // ✅ assign to variable
-    var table = $('#estimationTable').DataTable({
-        pageLength: 10,
-        language: {
-            emptyTable: "No Estimation found"
-        },
-        // order: [[1, 'desc']],
-        columnDefs: [
-            { orderable: false, targets: [0, 6, 7] }
-        ]
-    });
+		// ✅ assign to variable
+		var table = $('#estimationTable').DataTable({
+			pageLength: 10,
+			language: {
+				emptyTable: "No Estimation found"
+			},
+			// order: [[1, 'desc']],
+			columnDefs: [{
+				orderable: false,
+				targets: [0, 6, 7]
+			}]
+		});
 
-    // ✅ SL auto numbering
-    table.on('order.dt search.dt draw.dt', function () {
-        let pageInfo = table.page.info();
+		// ✅ SL auto numbering
+		table.on('order.dt search.dt draw.dt', function() {
+			let pageInfo = table.page.info();
 
-        table.column(0, { search: 'applied', order: 'applied' })
-            .nodes()
-            .each(function (cell, i) {
-                cell.innerHTML = pageInfo.start + i + 1;
-            });
-    });
+			table.column(0, {
+					search: 'applied',
+					order: 'applied'
+				})
+				.nodes()
+				.each(function(cell, i) {
+					cell.innerHTML = pageInfo.start + i + 1;
+				});
+		});
 
-    $('#customerSelect').select2({
-        width: '100%'
-    });
-	$('#chassisSelect').select2({
+		$('#customerSelect').select2({
+			width: '100%'
+		});
+		$('#chassisSelect').select2({
 			width: '100%'
 		});
 		$('#vehicleSelect').select2({
 			width: '100%'
 		});
+		$('#plateSelect').select2({
+			width: '100%'
+		});
 
-});
 
+	});
 </script>
 
 <script>
@@ -340,12 +432,13 @@
 	   CUSTOMER CHANGE
 	   =============================== */
 	$('#customerSelect').on('change', function() {
+		
 
-	// 🔴 Skip reset if coming from chassis
+		// 🔴 Skip reset if coming from chassis
 		if (fromChassisSelection) {
 			return;
 		}
-
+		
 		const customerId = $(this).val();
 
 		// Reset
@@ -369,7 +462,7 @@
 
 			// Load vehicles
 			$.ajax({
-				url: base_url + 'index.php/inspection/get_customer_vehicles',
+				url: base_url + 'index.php/Inspection/get_customer_vehicles',
 				type: 'POST',
 				data: {
 					customer_id: customerId
@@ -387,6 +480,18 @@
                             </option>`;
 						});
 						$('#vehicleSelect').html(vehicleOptions);
+
+						// ✅ AUTO SET FIRST VEHICLE DATA
+						let firstVehicle = res[0];
+
+						$('#chassisSelect')
+							.val(firstVehicle.chassis_no)
+							.trigger('change');
+
+						$('#plateSelect')
+							.val(firstVehicle.registration_no)
+							.trigger('change');
+
 					} else {
 						// No vehicles → show new vehicle form
 						$('#existingVehicleDiv').addClass('hidden');
@@ -471,6 +576,10 @@
 				$('#customerSelect')
 					.val(res.customer_id)
 					.trigger('change.select2');
+				// plateno
+				$('#plateSelect')
+					.val(res.registration_no)
+					.trigger('change.select2');
 
 				// VEHICLE
 				const vehicleSelect = $('#vehicleSelect');
@@ -491,6 +600,68 @@
 				$('#existingVehicleDiv').removeClass('hidden');
 
 				fromChassisSelection = false; // 🔥 RESET FLAG
+			}
+		});
+	});
+
+	$('#plateSelect').on('change', function() {
+
+		const plateno = $(this).val();
+
+		if (!plateno) return;
+
+		// if (plateno === 'new') {
+		// 	$('#newCustomerForm').removeClass('hidden');
+		// 	$('#vehicleSection').removeClass('hidden');
+		// 	$('#newVehicleForm').removeClass('hidden');
+		// 	return;
+		// }
+
+		fromPlateSelection = true; // 🔥 SET FLAG
+
+		$.ajax({
+			url: base_url + 'index.php/Inspection/get_by_plateno',
+			type: 'POST',
+			dataType: 'json',
+			data: {
+				plate_no: plateno
+			},
+			success: function(res) {
+
+				if (!res || !res.vehicle_id) {
+					alert('Vehicle not found');
+					fromPlateSelection = false;
+					return;
+				}
+
+				// CUSTOMER
+				$('#customerSelect')
+					.val(res.customer_id)
+					.trigger('change.select2');
+				// vinnono
+				$('#chassisSelect')
+					.val(res.chassis_no)
+					.trigger('change.select2');
+
+				// VEHICLE
+				const vehicleSelect = $('#vehicleSelect');
+
+				vehicleSelect.empty();
+
+				const option = new Option(
+					`${res.registration_no} - ${res.brand} ${res.model}`,
+					res.vehicle_id,
+					true,
+					true
+				);
+
+				vehicleSelect.append(option);
+				vehicleSelect.val(res.vehicle_id).trigger('change');
+
+				$('#vehicleSection').removeClass('hidden');
+				$('#existingVehicleDiv').removeClass('hidden');
+
+				fromPlateSelection = false; // 🔥 RESET FLAG
 			}
 		});
 	});

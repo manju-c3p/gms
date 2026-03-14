@@ -24,6 +24,18 @@
 			<?php $i = 1;
 			foreach ($invoices as $inv):
 				$balance = $inv->grand_total - $inv->paid_amount;
+
+				// Dynamic status calculation
+				if ($inv->paid_amount <= 0) {
+					$status = 'Unpaid';
+					$status_class = 'bg-red-600';
+				} elseif ($inv->paid_amount < $inv->grand_total) {
+					$status = 'Partially Paid';
+					$status_class = 'bg-yellow-500';
+				} else {
+					$status = 'Paid';
+					$status_class = 'bg-green-600';
+				}
 			?>
 				<tr>
 					<td><?= $i++ ?></td>
@@ -35,9 +47,8 @@
 					<td><?= number_format($inv->paid_amount, 2) ?></td>
 					<td><?= number_format($balance, 2) ?></td>
 					<td>
-						<span class="px-2 py-1 rounded text-white text-xs
-                        <?= $inv->status == 'Paid' ? 'bg-green-600' : ($inv->status == 'Partially Paid' ? 'bg-yellow-500' : 'bg-red-600') ?>">
-							<?= $inv->status ?>
+						<span class="px-2 py-1 rounded text-white text-xs <?= $status_class ?>">
+							<?= $status ?>
 						</span>
 					</td>
 
@@ -53,53 +64,51 @@
 								class="w-5 h-5 text-yellow-700">
 								<path stroke-linecap="round" stroke-linejoin="round"
 									d="M2.25 12s3.75-7.5 9.75-7.5
-                     9.75 7.5 9.75 7.5
-                     -3.75 7.5 -9.75 7.5
-                     S2.25 12 2.25 12z" />
+									9.75 7.5 9.75 7.5
+									-3.75 7.5 -9.75 7.5
+									S2.25 12 2.25 12z" />
 								<path stroke-linecap="round" stroke-linejoin="round"
 									d="M15 12a3 3 0 11-6 0
-                     3 3 0 016 0z" />
+                    				 3 3 0 016 0z" />
 							</svg>
 						</a>
-
-						<!-- EDIT -->
-						<a href="<?= base_url('index.php/invoice/edit/' . $inv->invoice_id) ?>"
-							class="p-2 rounded bg-yellow-100 hover:bg-yellow-200"
-							title="Edit Invoice">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none"
-								viewBox="0 0 24 24" stroke-width="1.5"
-								stroke="currentColor"
-								class="w-5 h-5 text-yellow-700">
-								<path stroke-linecap="round" stroke-linejoin="round"
-									d="M16.862 3.487l3.651 3.651
-                     M17.708 2.64a2.25 2.25 0 113.182 3.182
-                     L7.125 19.586a4.5 4.5 0 01-1.91 1.146
-                     L3 21l.268-2.215
-                     a4.5 4.5 0 011.146-1.91
-                     L17.708 2.64z" />
-							</svg>
-						</a>
-
-						<!-- PAY -->
-						<?php if ($inv->status != 'Paid'): ?>
-							<button onclick="openPaymentModal(
-                <?= $inv->invoice_id ?>,
-                '<?= $inv->invoice_no ?>',
-                <?= $inv->grand_total - $inv->paid_amount ?>
-            )"
-								class="p-2 rounded bg-green-100 hover:bg-green-200"
-								title="Add Payment">
+						<?php if ($username == "Admin") { ?>
+							<!-- EDIT -->
+							<a href="<?= base_url('index.php/invoice/edit/' . $inv->invoice_id) ?>"
+								class="p-2 rounded bg-yellow-100 hover:bg-yellow-200"
+								title="Edit Invoice">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none"
+									viewBox="0 0 24 24" stroke-width="1.5"
+									stroke="currentColor"
+									class="w-5 h-5 text-yellow-700">
+									<path stroke-linecap="round" stroke-linejoin="round"
+										d="M16.862 3.487l3.651 3.651
+									M17.708 2.64a2.25 2.25 0 113.182 3.182
+									L7.125 19.586a4.5 4.5 0 01-1.91 1.146
+									L3 21l.268-2.215
+									a4.5 4.5 0 011.146-1.91
+									L17.708 2.64z" />
+								</svg>
+							</a>
+							<!-- DELETE -->
+							<a href="<?= base_url('index.php/invoice/delete/' . $inv->invoice_id) ?>"
+								onclick="return confirm('Are you sure you want to delete this invoice?')"
+								class="p-2 rounded bg-red-100 hover:bg-red-200"
+								title="Delete Invoice">
 
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none"
 									viewBox="0 0 24 24" stroke-width="1.5"
 									stroke="currentColor"
-									class="w-5 h-5 text-green-700">
+									class="w-5 h-5 text-red-700">
 									<path stroke-linecap="round" stroke-linejoin="round"
-										d="M12 6v12m6-6H6" />
+							
+									d="M6 7.5h12M9.75 7.5V6a2.25 2.25 0 012.25-2.25h0A2.25 2.25 0 0114.25 6v1.5M18 7.5l-.663 9.947
+               							A2.25 2.25 0 0115.092 19.5H8.908a2.25 2.25 0 01-2.245-2.053L6 7.5m3 3v6m6-6v6" />
 								</svg>
-							</button>
-						<?php endif; ?>
 
+							</a>
+
+						<?php } ?>
 					</td>
 
 					<!-- <td class="space-x-1">
@@ -205,7 +214,7 @@
 
 			language: {
 				search: "",
-				searchPlaceholder: "Search customers..."
+				searchPlaceholder: "Search ..."
 			}
 		});
 

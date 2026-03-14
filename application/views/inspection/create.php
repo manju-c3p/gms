@@ -75,7 +75,7 @@ $rightItems = array_slice($items, $half);
 						<?= $appointment->customer_name ?>
 					</td>
 
-					<td class="border p-1 font-bold">Reg. No.</td>
+					<td class="border p-1 font-bold">Plate. No.</td>
 					<td class="border p-1">
 						<?= $appointment->registration_no ?>
 					</td>
@@ -113,7 +113,7 @@ $rightItems = array_slice($items, $half);
 							class="w-full border px-2 py-1">
 					</td>
 
-					<td class="border p-1 font-bold">Model</td>
+					<td class="border p-1 font-bold">Year</td>
 					<td class="border p-1">
 						<?= $appointment->year ?>
 					</td>

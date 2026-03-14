@@ -3,9 +3,21 @@
 
    	<div class="max-w-7xl mx-auto bg-white shadow-md rounded-2xl p-8 mt-6">
 
+
    		<!-- Header -->
-   		<div class="border-b pb-4 mb-8">
+   		<div class="flex items-center justify-between border-b pb-4 mb-8">
+
+   			<!-- Left Caption -->
    			<h2 class="text-2xl font-semibold">Create RFQ</h2>
+
+   			<!-- Right Add Button -->
+   			<a href="<?php echo base_url(); ?>index.php/Purchase/list_direct_rfq"
+   				class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+
+   				+ List
+
+   			</a>
+
    		</div>
 
    		<!-- Top Fields -->
@@ -43,7 +55,7 @@
    					class="col-span-3 border rounded-lg px-4 py-2 item-select2"
    					required>
    					<option value="">Please select name</option>
-   					<option value="1">Supplier 1</option>
+   					<!-- <option value="1">Supplier 1</option> -->
 
    					<?php foreach ($supplier_records as $g) { ?>
    						<option value="<?php echo $g->supplier_id; ?>">
@@ -98,7 +110,7 @@
    					<thead class="bg-gray-100">
    						<tr>
    							<th class="p-3 text-left">Product Code</th>
-   							<th class="p-3 text-left hidden">Brand</th>
+
    							<th class="p-3 text-left">Description</th>
    							<th class="p-3 text-left">Unit</th>
    							<th class="p-3 text-left">Quantity</th>
@@ -126,12 +138,7 @@
    								</select>
    							</td>
 
-   							<td class="p-2 hidden">
-   								<input class="border rounded-lg px-3 py-2 w-full"
-   									type="text"
-   									name="brand[]"
-   									id="brand0">
-   							</td>
+
 
    							<td class="p-2">
    								<input class="border rounded-lg px-3 py-2 w-full"
@@ -140,7 +147,7 @@
    									id="description0">
    							</td>
 
-   						
+
    							<td class="p-2">
    								<input type="text"
    									class="border rounded-lg px-3 py-2 w-full bg-gray-100"
@@ -234,26 +241,39 @@
    			e.preventDefault();
    			const newRow = `
             <tr>
-                <td>
-                    <select class="form-control select2" name="item[]" id="item${rowIndex}" onchange="get_item_by_id(${rowIndex})">
+                <td class="p-2">
+                    <select class="border rounded-lg px-3 py-2 w-full item-select2" name="item[]" id="item${rowIndex}" onchange="get_item_by_id(${rowIndex})">
                         <option value="">Select</option>
-                        <?php foreach ($active_items as $item) { ?>
-                            <option value="<?php echo $item->item_id ?>"><?php echo $item->item_model; ?></option>
-                        <?php } ?>
+                        
+						<?php foreach ($active_items as $item) { ?>
+   										<option value='<?php echo $item->part_id ?>'>
+   											<?php echo $item->part_name ?>
+   										</option>
+   									<?php } ?>
                     </select>
                 </td>
-                 <td><input class="form-control" type="text" name="brand[]" id="brand${rowIndex}"></td>
-                <td><input class="form-control" type="text" name="description[]" id="description${rowIndex}"></td>
-                <td>
-                 <select class="form-control select2" name="unit[]" id='unit${rowIndex}'>
-                        <option value=''>Select</option><?php foreach ($active_units as $unit) { ?><option value='<?php echo $unit->unit_id ?>'><?php echo $unit->unit_name; ?></option><?php } ?>
-                        </select>
-                </td>
-                <td><input class="form-control" type="number" name="quantity[]" id="quantity${rowIndex}"></td>
-                <td>
-                    <button class="addRow"><i class="fa fa-plus"></i></button>
-                    <button class="deleteRow"><i class="fa fa-search-minus"></i></button>                        
-                </td>
+                
+                <td class="p-2"><input  class="border rounded-lg px-3 py-2 w-full" type="text" name="description[]" id="description${rowIndex}"></td>
+                <td class="p-2">
+   								<input type="text"
+   									class="border rounded-lg px-3 py-2 w-full bg-gray-100"
+   									id="purchase_unit_text${rowIndex}"
+   									readonly>
+
+   								<input type="hidden"
+   									name="purchase_unit_id[]"
+   									id="purchase_unit_id${rowIndex}">
+   							</td>
+                <td class="p-2"><input class="border rounded-lg px-3 py-2 w-full" type="number" name="quantity[]" id="quantity${rowIndex}"></td>
+               <td class="p-2 text-center">
+   								<button type="button" class="addRow bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg">
+   									+
+   								</button>
+
+   								<button type="button" class="deleteRow bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg">
+   									-
+   								</button>
+   							</td>
             </tr>`;
 
    			$('#datatable-responsive tbody').append(newRow);
@@ -271,7 +291,7 @@
 
    	function get_item_by_id(row_no) {
    		var item_id = $('#item' + row_no).val();
-		// alert(item_id);
+   		// alert(item_id);
    		if (item_id != '') {
    			$.ajax({
    				url: '<?= base_url("index.php/SpareParts/get_part") ?>', // update with your controller path
@@ -281,31 +301,32 @@
    				},
    				dataType: "json",
    				success: function(response) {
-// alert(response.purchase_unit_name);
+   					// alert(response.purchase_unit_name);
    					// $('#brand' + row_no).val(response.brand_name);
-   					$('#description' + row_no).val(response.item_description);
-   					$('#unit' + row_no).val(response.purchase_unit_name);
+   					$('#purchase_unit_text' + row_no).val(response.purchase_unit_name);
+   					$('#purchase_unit_id' + row_no).val(response.purchase_unit_id);
    					// $('#actual_price' + row_no).val(response.mrp_aed);
    					// $('#unit' + row_no).prop('required', true);
    					// $('#quantity' + row_no).prop('required', true);
    					// $('#actual_price' + row_no).prop('required', true);
    					// $('#quantity' + row_no).prop('required', true);
-   					var nextRow = document.getElementById('addr' + row_no).nextElementSibling;
+   					// var nextRow = document.getElementById('addr' + row_no).nextElementSibling;
 
-   					if (!nextRow)
-   						add_row();
+   					// if (!nextRow)
+   					// 	add_row();
 
    				}
    			});
    		} else {
-   			$('#brand' + row_no).text('');
+   			// $('#brand' + row_no).text('');
    			$('#description' + row_no).text('');
-   			$('#unit' + row_no).val('').change();
-   			$('#actual_price' + row_no).val('');
-   			$('#unit' + row_no).prop('required', false);
-   			$('#quantity' + row_no).prop('required', false);
-   			$('#actual_price' + row_no).prop('required', false);
-   			$('#quantity' + row_no).prop('required', false);
+   			$('#purchase_unit_text' + row_no).text('');
+   			$('#purchase_unit_id' + row_no).text('');
+   			// $('#actual_price' + row_no).val('');
+   			// $('#unit' + row_no).prop('required', false);
+   			// $('#quantity' + row_no).prop('required', false);
+   			// $('#actual_price' + row_no).prop('required', false);
+   			// $('#quantity' + row_no).prop('required', false);
    		}
    	}
    </script>

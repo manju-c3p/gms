@@ -298,4 +298,115 @@ class SpareParts extends CI_Controller
 			'part'   => $part
 		]);
 	}
+
+	public function initialize_opening_stockold()
+	{
+		$this->db->trans_start();
+
+		$parts = $this->db->get('spare_parts')->result();
+
+		foreach ($parts as $part) {
+			$part_id = $part->part_id;
+			$stock_unit_id = $part->stock_unit_id;
+
+			/* 1. stock_in */
+			$this->db->insert('stock_in', [
+				'part_id' => $part_id,
+				'qty' => 1,
+				'date_in' => date('Y-m-d'),
+				'created_at' => date('Y-m-d H:i:s')
+			]);
+
+			$stock_in_id = $this->db->insert_id();
+
+			/* 2. stock_ledger */
+			$this->db->insert('stock_ledger', [
+				'part_id' => $part_id,
+				'txn_type' => 'OPENING',
+				'qty' => 1,
+				'unit_id' => $stock_unit_id,
+				'reference_id' => $stock_in_id,
+				'reference_no' => 'OPENING-STOCK',
+				'remarks' => 'Opening stock initialization',
+				'txn_date' => date('Y-m-d H:i:s'),
+				'created_at' => date('Y-m-d H:i:s'),
+				'created_by' => $this->session->userdata('user_id')
+			]);
+
+			/* 3. stock_summary */
+			$this->db->insert('stock_summary', [
+				'part_id' => $part_id,
+				'current_stock' => 1,
+				'updated_at' => date('Y-m-d H:i:s')
+			]);
+		}
+
+		$this->db->trans_complete();
+
+		return true;
+	}
+	public function initialize_opening_stock()
+	{
+		$this->db->trans_start();
+
+		/* ========= STEP 1: CLEAR OLD STOCK DATA ========= */
+
+		// Disable foreign key checks temporarily (important)
+		$this->db->query('SET FOREIGN_KEY_CHECKS = 0');
+
+		$this->db->truncate('stock_in');
+		$this->db->truncate('stock_out');
+		$this->db->truncate('stock_ledger');
+		$this->db->truncate('stock_summary');
+
+		$this->db->query('SET FOREIGN_KEY_CHECKS = 1');
+
+
+		/* ========= STEP 2: INITIALIZE OPENING STOCK ========= */
+
+		$parts = $this->db->get('spare_parts')->result();
+
+		foreach ($parts as $part) {
+
+			$part_id = $part->part_id;
+			$stock_unit_id = $part->stock_unit_id ?: 1;
+
+			/* stock_in */
+			$this->db->insert('stock_in', [
+				'part_id'    => $part_id,
+				'qty'        => 0,
+				'date_in'    => date('Y-m-d'),
+				'created_at' => date('Y-m-d H:i:s')
+			]);
+
+			$stock_in_id = $this->db->insert_id();
+
+
+			/* stock_ledger */
+			$this->db->insert('stock_ledger', [
+				'part_id'      => $part_id,
+				'txn_type'     => 'OPENING',
+				'qty'          => 0,
+				'unit_id'      => $stock_unit_id,
+				'reference_id' => $stock_in_id,
+				'reference_no' => 'OPENING-STOCK',
+				'remarks'      => 'Opening stock initialization',
+				'txn_date'     => date('Y-m-d H:i:s'),
+				'created_at'   => date('Y-m-d H:i:s'),
+				'created_by'   => $this->session->userdata('user_id')
+			]);
+
+
+			/* stock_summary */
+			$this->db->insert('stock_summary', [
+				'part_id'       => $part_id,
+				'current_stock' => 0,
+				'updated_at'    => date('Y-m-d H:i:s')
+			]);
+		}
+
+		$this->db->trans_complete();
+
+		return $this->db->trans_status();
+	}
 }

@@ -22,49 +22,58 @@ class Dashboard extends CI_Controller
 
 		// Active Job Cards
 		$data['active_job_cards'] = $this->Dashboard_model->get_active_job_cards();
-		$data['pending_job_cards_count'] = $this->Dashboard_model->get_pending_job_cards_count();
+		$data['Scheduled_job_cards_count'] = $this->Dashboard_model->get_Scheduled_job_cards_count();
 		$data['active_job_cards_count'] = $this->Dashboard_model->get_active_job_cards_count();
+		$data['InProgress_job_cards_count'] = $this->Dashboard_model->get_inprogress_job_cards_count();
+		$data['finished_job_cards_count'] = $this->Dashboard_model->get_finished_job_cards_count();
+
+		$data['purchase_order_count'] = $this->Dashboard_model->get_purchase_order_count();
+		$data['grn_count'] = $this->Dashboard_model->get_grn_count();
+		$data['purchase_return_count'] = $this->Dashboard_model->get_purchase_return_count();
+
 		$data['customer_count'] = $this->Dashboard_model->get_customers_count();
-		$data['total_revenue'] = $this->Dashboard_model->get_total_revenue();
+		$data['vehicles_count'] = $this->Dashboard_model->get_vehicles_count();
+
 		$data['recent_estimations'] = $this->Dashboard_model->get_recent_estimations();
 		$data['low_stock_items'] =  $this->Dashboard_model->get_low_stock_items();
 		$data['recent_inspections'] =  $this->Dashboard_model->get_recent_inspections();
 		$data['jobcardProgress'] = $this->Dashboard_model->get_jobcard_job_completion();
+		$data['revenueSummary'] = $this->Dashboard_model->get_revenue_summary();
+		$data['total_revenue'] = $this->Dashboard_model->get_total_revenue();
 
-		
 		// $data['jobcardProgress1'] = $this->Dashboard_model->get_jobcard_job_progress();
 		// $data['jobcardReport'] =  $this->Dashboard_model->get_jobcard_time_report();
-// log_message(
-// 	'error',
-// 	'Jobcard Report: ' . print_r($data['jobcardReport'], true)
-// );
+		// log_message(
+		// 	'error',
+		// 	'Jobcard Report: ' . print_r($data['jobcardReport'], true)
+		// );
 
-$data['jobcardReport'] = [
-	(object)[
-		'jobcard_no'     => 'JC-1001',
-		'employee_name'  => 'Ramesh Kumar',
-		'worked_hours'   => 4.5,
-		'total_jobs'     => 4,
-		'completed_jobs' => 1,
-		'progress'       => 25
-	],
-	(object)[
-		'jobcard_no'     => 'JC-1002',
-		'employee_name'  => 'Suresh Das',
-		'worked_hours'   => 7.25,
-		'total_jobs'     => 5,
-		'completed_jobs' => 3,
-		'progress'       => 60
-	],
-	(object)[
-		'jobcard_no'     => 'JC-1003',
-		'employee_name'  => 'Arun Singh',
-		'worked_hours'   => 10.0,
-		'total_jobs'     => 6,
-		'completed_jobs' => 6,
-		'progress'       => 100
-	],
-];
+		// $data['jobcardReport'] = [
+		// 	(object)[
+		// 		'jobcard_no'     => 'JC-1001',
+		// 		'employee_name'  => 'Ramesh Kumar',
+		// 		'worked_hours'   => 4.5,
+		// 		'total_jobs'     => 4,
+		// 		'completed_jobs' => 1,
+		// 		'progress'       => 25
+		// 	],
+		// 	(object)[
+		// 		'jobcard_no'     => 'JC-1002',
+		// 		'employee_name'  => 'Suresh Das',
+		// 		'worked_hours'   => 7.25,
+		// 		'total_jobs'     => 5,
+		// 		'completed_jobs' => 3,
+		// 		'progress'       => 60
+		// 	],
+		// 	(object)[
+		// 		'jobcard_no'     => 'JC-1003',
+		// 		'employee_name'  => 'Arun Singh',
+		// 		'worked_hours'   => 10.0,
+		// 		'total_jobs'     => 6,
+		// 		'completed_jobs' => 6,
+		// 		'progress'       => 100
+		// 	],
+		// ];
 
 
 		$data['main_content'] = 'dashboard.php';

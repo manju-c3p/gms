@@ -102,6 +102,8 @@ foreach ($receipt_records as $row):
 									echo 'Cash';
 								} elseif ($receipt_type == 'cheque' || $receipt_type == 'Cheque') {
 									echo 'Cheque';
+								} elseif ($receipt_type == 'Cash' || $receipt_type == 'cash') {
+									echo 'Cash';
 								} else {
 									echo 'Other';
 								}

@@ -14,7 +14,7 @@ class Customer_model extends CI_Model
 
 
 		$this->db->insert('customers', $data);
-
+		$customer_id = $this->db->insert_id();
 		$insert_id = $this->db->insert_id();
 
 		$prifix = 'CUST';
@@ -30,8 +30,8 @@ class Customer_model extends CI_Model
 			'opening_bal_type' => 'Dr',
 		);
 		$this->db->insert('general_ledger', $data1);
-		return $this->db->insert_id(); // return customer_id
-
+		// return $this->db->insert_id(); // return customer_id
+		return $customer_id;
 	}
 
 
@@ -100,7 +100,7 @@ class Customer_model extends CI_Model
 	{
 		$this->db->insert('customers', $data);
 
-			$insert_id = $this->db->insert_id();
+		$insert_id = $this->db->insert_id();
 
 		$prifix = 'CUST';
 
@@ -116,14 +116,14 @@ class Customer_model extends CI_Model
 		);
 		$this->db->insert('general_ledger', $data1);
 		return $this->db->insert_id(); // return customer_id
-		
+
 	}
 
 	public function create($data)
 	{
 		$this->db->insert('customers', $data);
 
-			$insert_id = $this->db->insert_id();
+		$insert_id = $this->db->insert_id();
 
 		$prifix = 'CUST';
 
@@ -211,5 +211,69 @@ class Customer_model extends CI_Model
 		}
 
 		return $count;
+	}
+
+	// ======================function to list customers who is not having ledger account ===
+	public function get_customers_without_ledger()
+	{
+		$this->db->select('c.customer_id, c.name, c.phone, c.email, c.trn');
+		$this->db->from('customers c');
+
+		// Join with general_ledger
+		$this->db->join('general_ledger gl', 'gl.customer_id = c.customer_id', 'left');
+
+		// Only customers without ledger account
+		$this->db->where('gl.customer_id IS NULL', null, false);
+
+		return $this->db->get()->result();
+	}
+
+	public function create_missing_customer_ledgers()
+	{
+		$this->db->trans_start();
+
+		// Step 1: Get customers without ledger
+		$this->db->select('c.customer_id, c.name');
+		$this->db->from('customers c');
+		$this->db->join('general_ledger gl', 'gl.customer_id = c.customer_id', 'left');
+		$this->db->where('gl.customer_id IS NULL', null, false);
+
+		$customers = $this->db->get()->result();
+
+		if (empty($customers)) {
+			$this->db->trans_complete();
+			return 0; // No customers missing ledger
+		}
+
+		// Step 2: Insert ledger accounts
+		foreach ($customers as $cust) {
+
+			// 🔒 Prevent duplicate ledger creation
+			$exists = $this->db->where('customer_id', $cust->customer_id)
+				->get('general_ledger')
+				->row();
+
+			if ($exists) {
+				continue;
+			}
+
+			// Generate Code like CUST0001
+			$digit = sprintf("%04d", $cust->customer_id);
+			$code  = 'CUST' . $digit;
+
+			$data = [
+				'account_name'      => $cust->name . ' ' . $code,
+				'group_no'          => 30,
+				'customer_id'       => $cust->customer_id,
+				'opening_balance'   => 0.00,
+				'opening_bal_type'  => 'Dr',
+				'isdeleteable'      => 'N'
+			];
+
+			$this->db->insert('general_ledger', $data);
+		}
+		$this->db->trans_complete();
+
+		return count($customers);
 	}
 }

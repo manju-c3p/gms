@@ -209,6 +209,38 @@
 
 <body onload="window.print()">
 
+	<!-- ACTION BUTTONS (WILL NOT PRINT) -->
+	<div class="hide-on-print" style="
+    margin:10px 0;
+    padding:10px;
+    border-bottom:1px solid #ccc;">
+
+		<button onclick="window.print()" style="
+        padding:8px 18px;
+        background:#2563eb;
+        color:#fff;
+        border:none;
+        border-radius:4px;
+        cursor:pointer;
+        font-size:14px;">
+			🖨 Print
+		</button>
+
+		<a href="<?= base_url('index.php/Quotation/edit/' . $quotation->quotation_id) ?>"
+			style="
+        padding:8px 18px;
+        background:#e5e7eb;
+        color:#000;
+        border-radius:4px;
+        text-decoration:none;
+        margin-left:10px;
+        font-size:14px;
+        display:inline-block;">
+			Cancel
+		</a>
+
+	</div>
+
 	<table class="print-wrapper">
 
 		<!-- ================= REPEATING HEADER ================= -->
@@ -230,7 +262,7 @@
 						</div>
 					</div>
 
-					<div class="est-title-line">
+					<div class="est-title-line mb-4">
 						<span>QTN # : <?= $quotation->quotation_no ?></span>
 						<span class="est-title">QUOTATION</span>
 						<span>Date : <?= date('d/m/Y', strtotime($quotation->quotation_date)) ?></span>
@@ -305,7 +337,7 @@
 									</tr>
 									<tr>
 										<td style="font-weight: bold;">Mileage</td>
-										<td><?= $appointment->mileage ?? '' ?></td>
+										<td><?= $kms ?? '' ?></td>
 									</tr>
 									<tr>
 										<td style="font-weight: bold;">Year</td>
@@ -345,31 +377,43 @@
 								<tr>
 									<th width="5%">#</th>
 									<th>Description</th>
-									<th width="20%">Amount</th>
+									<th width="20%" class="text-right">Amount</th>
 								</tr>
 							</thead>
 
 							<tbody>
 
-								<?php
-								$i = 1;
-								$service_total = 0;
-								$totaldiscount = 0;
+								<?php $i = 1;
 
-								foreach ($services_used as $s):
-									$service_total += $s->total_cost;
-									$totaldiscount += $s->discount_amount;
-								?>
 
+								foreach ($services_used as $s): $service_total += $s->total_cost;
+									$totaldiscount += $s->discount_amount; ?>
 									<tr>
 										<td class="text-center"><?= $i++ ?></td>
 										<td><?= $s->service_name ?></td>
 										<td class="text-right"><?= number_format($s->total_cost, 2) ?></td>
 									</tr>
-
 								<?php endforeach; ?>
-
+								<tr>
+									<td colspan="2" class="text-right"><strong>Total Services</strong></td>
+									<td class="text-right"><strong><?= number_format($service_total, 2) ?></strong></td>
+								</tr>
 							</tbody>
+							<!-- =========================================================== -->
+
+
+
+							<?php $totalvat = ($service_total - $totaldiscount) * 5 / 100; ?>
+
+							<?php $totalservice = ($service_total - $totaldiscount) + $totalvat; ?>
+
+
+
+
+
+
+							<!-- ====================================================================================== -->
+
 						</table>
 
 					<?php } ?>
@@ -389,7 +433,7 @@
 									<th>Unit</th>
 									<th>Qty</th>
 									<th>Dis</th>
-									<th width="20%">Amount</th>
+									<th width="20%" class="text-right">Amount</th>
 								</tr>
 							</thead>
 
@@ -406,11 +450,31 @@
 
 									$parts_total += $p->total_price;
 									$parts_discount_total += $p->dis_amount;
+									if ($p->part_type == "New Parts") {
+										$patype = "Original";
+									} else if ($p->part_type == "Aftermarket Parts") {
+										$patype = "Aftermarket";
+									} else if ($p->part_type == "Used Parts") {
+										$patype = "Used";
+									}
 								?>
 
 									<tr>
 										<td class="text-center"><?= $i++ ?></td>
-										<td><?= $p->part_name ?><br><?= $p->partremarks ?></td>
+										<td>
+
+											<?php
+											if (!empty($p->labeling) && $p->labeling == 1) {
+												echo $p->part_name . ' - ' . $patype;
+											} else {
+												echo $p->part_name;
+											}
+
+											echo "<br>" . $p->partremarks;
+
+											?>
+
+										</td>
 										<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
 										<td class="text-center"><?= $p->qty ?></td>
 										<td class="text-center"><?= $p->dis_amount ?></td>
@@ -418,11 +482,23 @@
 									</tr>
 
 								<?php endforeach; ?>
-<tr>
-					<td colspan="5" class="text-right"><strong>Total Spare Parts</strong></td>
-					<td class="text-right"><strong><?= number_format($parts_total, 2) ?></strong></td>
-				</tr>
+								<tr>
+									<td colspan="5" class="text-right"><strong>Total Spare Parts</strong></td>
+									<td class="text-right"><strong><?= number_format($parts_total, 2) ?></strong></td>
+								</tr>
 							</tbody>
+							<!-- ========================================================================== -->
+
+							<?php $taxamt = $parts_total -  $parts_discount_total; ?>
+
+							<?php $vatamt = $taxamt * 5 / 100;; ?>
+
+							<?php $totalparts = $taxamt + $vatamt; ?>
+
+
+
+							<!-- =============================================================================================== -->
+
 						</table>
 
 					<?php } ?>
@@ -464,50 +540,84 @@
 					<!-- ================= TOTALS ================= -->
 
 					<?php
-					$subtotal = $service_total + $parts_total;
+					$subtotal = $service_total + $parts_total + $jd_total;
+					$taxable_amount = $subtotal - ($parts_discount_total + $totaldiscount);
+
 					$fulldiscount = $parts_discount_total + $totaldiscount;
-					$taxable_amount = $subtotal - $fulldiscount;
-					$vat_amount = round($taxable_amount * .05, 2);
+					$vat_amount = round($taxable_amount * 0.05, 2);
+
 					$grand_total = round($taxable_amount + $vat_amount, 2);
+
+					// ✅ convert calculated amount to words
 					$amount_in_words = number_to_words_aed($grand_total);
 					?>
 
 					<table class="totals">
 						<tr>
-							<td>Subtotal</td>
-							<td class="text-right"><?= number_format($subtotal, 2) ?></td>
+							<td>Subtotal AED</td>
+							<td width="20%" class="text-right"><?= number_format($subtotal, 2) ?></td>
+						</tr>
+
+						<tr>
+							<td>Discount AED</td>
+							<td width="20%" class="text-right"><?= number_format($fulldiscount, 2) ?></td>
 						</tr>
 						<tr>
-							<td>Discount</td>
-							<td class="text-right"><?= number_format($fulldiscount, 2) ?></td>
+							<td>Taxable AED</td>
+							<td width="20%" class="text-right"><?= number_format($taxable_amount, 2) ?></td>
 						</tr>
-						<tr>
-							<td>Taxable</td>
-							<td class="text-right"><?= number_format($taxable_amount, 2) ?></td>
-						</tr>
+
 						<tr>
 							<td>VAT 5%</td>
-							<td class="text-right"><?= number_format($vat_amount, 2) ?></td>
+							<td width="20%" class="text-right"><?= number_format($vat_amount, 2) ?></td>
 						</tr>
+
 						<tr>
 							<td><strong>Net Total AED</strong></td>
-							<td class="text-right"><strong><?= number_format($grand_total, 2) ?></strong></td>
+							<td width="20%" class="text-right">
+								<strong><?= number_format($grand_total, 2) ?></strong>
+							</td>
 						</tr>
 					</table>
 
-
+					<div class="remarks">
+						<strong>Remarks:</strong><br>
+						<?= nl2br($estimation->remarks) ?>
+					</div><br>
 					<!-- ================= FOOTER ================= -->
 
 					<div class="footer">
+
 
 						<strong>Total Amount in Words:</strong><br>
 						<?= $amount_in_words ?>
 
 						<br><br>
 
-						1. Additional repairs will be informed.<br>
-						2. Prices subject to spare parts availability.<br>
-						3. Quotation valid for 15 days.
+						<hr>
+						<strong>Conditions :</strong>
+
+						<ul class="list-disc list-outside pl-5 space-y-1 text-sm text-gray-700">
+							<li>After dismantling, if any additional work or spare parts not covered in this estimate are required, a supplementary estimate will be provided.</li>
+							<li>All deliveries are subject to availability of spare parts.</li>
+							<li>Spare parts prices are subject to change without prior notice. Prices prevailing at the time of actual delivery shall be charged.</li>
+							<li>This estimate is valid for <strong>15 days</strong> from the date of issue.</li>
+							<li>Payment can only be made by cash or card. Cheque payments are not accepted.</li>
+							<li>Used parts are not covered under warranty.</li>
+							<li>Brand new electronic parts are not covered under warranty.</li>
+							<li>The client authorizes Cool Runnings Garage to test drive the serviced vehicle.</li>
+							<li>The company will not be held liable for any missing items inside the client’s vehicle.</li>
+							<li>The client is responsible for removing all personal belongings from the vehicle before service or repair.</li>
+							<li>A minimum of <strong>50%</strong> of the total estimate value is required as a down payment for any service.</li>
+							<li>Once the client approves and confirms the estimate, it cannot be withdrawn.</li>
+							<li>All approved estimates are subject to change or revision as per specialist advice during the course of work.</li>
+							<li>The company will not be responsible for damage to other vehicle parts due to brittleness or friability.</li>
+							<li>Free parking for <strong>7 days</strong> will be provided after completion of repairs. Thereafter, parking will be charged at <strong>AED 100 per day</strong>.</li>
+							<li>The company is not liable for any loss or damage to vehicles parked outside the garage.</li>
+							<li>The vehicle will not be released until full payment is received.</li>
+							<li>Replaced parts must be collected by the client within <strong>2–3 days</strong>, failing which they will be treated as scrap.</li>
+							<li>The company may take photographs of the vehicle and repair process for marketing purposes only.</li>
+						</ul>
 
 						<br><br>
 

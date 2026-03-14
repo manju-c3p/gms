@@ -1,235 +1,348 @@
+<!DOCTYPE html>
 <html>
 
 <head>
-	<title>
-		Goods Received Note
-	</title>
+	<meta charset="utf-8">
+	<title>Goods Received Note</title>
+
 	<style>
-/* Header */
-        .header-row {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-        }
+		/* ===============================
+PAGE SETUP
+=============================== */
 
-        .logo img {
-            max-width: 220px;
-            height: auto;
-        }
+		@page {
+			size: A4;
+			margin: 15mm 12mm;
+		}
 
-        .company {
-            width: 50%;
-            text-align: right;
-            font-size: 11px;
-            line-height: 1.25;
-            color: #333;
-        }
+		body {
+			font-family: Arial, sans-serif;
+			font-size: 12px;
+			margin: 0;
+			padding: 0;
+			color: #111;
+		}
 
-        .company strong {
-            font-size: 13px;
-            color: #111;
-        }
+		/* ===============================
+COMMON CONTAINER
+=============================== */
 
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
+		.container {
+			width: 100%;
+			max-width: 780px;
+			margin: 0 auto;
+			padding: 0 10px;
+			box-sizing: border-box;
+		}
 
-        th, td {
-            padding: 6px;
-        }
+		/* ===============================
+FIXED HEADER
+=============================== */
 
+		.fixed-header {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			background: #fff;
+			z-index: 1000;
+		}
+
+		.header-inner {
+			width: 100%;
+			max-width: 780px;
+			margin: 0 auto;
+			padding: 0 10px;
+			box-sizing: border-box;
+		}
+
+		.header-space {
+			height: 130px;
+		}
+
+		/* ===============================
+HEADER CONTENT
+=============================== */
+
+		.company-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			border-bottom: 2px solid #e5e7eb;
+			padding-bottom: 8px;
+		}
+
+		.logo {
+			height: 60px;
+		}
+
+		.company-info {
+			text-align: right;
+			font-size: 11px;
+			line-height: 1.4;
+		}
+
+		/* ===============================
+TITLE
+=============================== */
+
+		.title {
+			text-align: center;
+			font-size: 20px;
+			font-weight: bold;
+			margin: 10px 0;
+		}
+
+		/* ===============================
+INFO BOX
+=============================== */
+
+		.info-section {
+			display: flex;
+			gap: 10px;
+		}
+
+		.info-box {
+			width: 100%;
+			border: 1px solid #ccc;
+			border-radius: 6px;
+		}
+
+		.info-box td {
+			padding: 6px;
+		}
+
+		/* ===============================
+ITEM TABLE
+=============================== */
+
+		.items {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 15px;
+		}
+
+		.items th {
+			border: 1px solid #ccc;
+			background: #f3f4f6;
+			padding: 8px;
+		}
+
+		.items td {
+			border: 1px solid #ccc;
+			padding: 8px;
+		}
+
+		/* ===============================
+TOTAL ROWS
+=============================== */
+
+		.total-row {
+			font-weight: bold;
+		}
+
+		/* ===============================
+WATERMARK
+=============================== */
+
+		.watermark {
+			position: fixed;
+			top: 40%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			opacity: 0.06;
+			z-index: -1;
+		}
+
+		.watermark img {
+			width: 60%;
+		}
+
+		@media print {
+			.no-print {
+				display: none !important;
+			}
+		}
 	</style>
 </head>
 
-<body style="margin-left: 5px; margin-top:5px; font-family:Arial;font-size: 12px;text-align:center">
-	<!-- HEADER TEMPLATE -->
-<htmlpageheader name="myheader">
-    <div class="header-row">
-        <div class="logo">
-            <img src="<?= base_url() ?>public/header/header.jpg" style="width:300px;height:70px;">
-        </div>
-        <div class="company">
-            <strong style="font-size:13px;"><?= $comp_details['company_name']; ?></strong><br>
-            <?= nl2br($comp_details['company_address']); ?><br>
-            <?= $comp_details['company_city']; ?>, <?= $comp_details['company_state']; ?><br>
-            <?= $comp_details['company_country']; ?><br/><?= $comp_details['company_po']; ?>
-            <?= $comp_details['company_trn']; ?>
-        </div>
-    </div>
+<body>
 
-</htmlpageheader>
-    <!-- Watermark -->
-    <div style="position: fixed;top: 45%;left: 50%;transform: translate(-50%, -50%); opacity: 0.06; z-index: 0; pointer-events: none;">
-        <img src="<?= base_url() ?>public/header/header.jpg" style="width: 60%; height: auto;">
-    </div>
-	<table width=100% style='border: 0'>
+	<!-- WATERMARK -->
+	<div class="watermark">
+		<img src="<?= base_url() ?>public/header/header.jpg">
+	</div>
+
 		
-		<tbody id="table-body">
-			<tr class='calc'>
-				<td>
-					<table cellpadding=5 width=95% style='font-size: 20px;border:0;text-align:center'>
-						<tr height='22px'>
-							<td width=100% style="color:e8b41a">Goods Received Note</td>
-						</tr>
-					</table>
-				</td>
-			</tr>
-			<tr class='calc'>
-				<td>
-					<table width="98%" cellpadding="6"
-						style="font-size: 12px;">
-						<tr>
-							<!-- Left Section -->
-							<td width="60%" style="border: 1px solid black; vertical-align: top; padding: 8px;">
-								<table width="100%" style="border-collapse: collapse; font-size: 12px;">
-									<tr>
-										<td width="30%" style=" padding: 6px;">Name</td>
-										<!-- <td style="border: 1px solid black; padding: 6px;">:</td> -->
-										<td width="70%" style=" padding: 6px;">
-											<?php echo $grn[0]->supplier_name; ?>
-										</td>
-									</tr>
-									<tr>
-										<td style=" padding: 6px;">Address</td>
-										<!-- <td style="border: 1px solid black; padding: 6px;">:</td> -->
-										<td style=" padding: 6px;">
-											<?php echo $grn[0]->billing_address; ?>
-										</td>
-									</tr>
-									<tr>
-										<td style=" padding: 6px;">Contact No</td>
-										<!-- <td style="border: 1px solid black; padding: 6px;">:</td> -->
-										<td style=" padding: 6px;">
-											<?php echo $grn[0]->contact_number; ?>
-										</td>
-									</tr>
-									<tr>
-										<td style=" padding: 6px;">Email</td>
-										<!-- <td style="border: 1px solid black; padding: 6px;">:</td> -->
-										<td style=" padding: 6px;">
-											<?php echo $grn[0]->supplier_email; ?>
-										</td>
-									</tr>
-								</table>
-							</td>
 
-							<!-- Right Section -->
-							<td width="40%" style="border: 1px solid black; vertical-align: top; padding: 8px;">
-								<table width="100%" style="border-collapse: collapse; font-size: 12px;">
-									<tr>
-										<td width="30%" style=" padding: 6px;">Date</td>
-										<!-- <td style="border: 1px solid black; padding: 6px;">:</td> -->
-										<td width="70%" style=" padding: 6px;">
-											<?php echo $grn[0]->grn_date; ?>
-										</td>
-									</tr>
-									<tr>
-										<td style="padding: 6px;">Doc No</td>
-										<!-- <td style="border: 1px solid black; padding: 6px;">:</td> -->
-										<td style=" padding: 6px;">
-											<?php echo $grn[0]->grn_code; ?>
-										</td>
-									</tr>
-									<tr>
-										<td style=" padding: 6px;">Supplier ID</td>
-										<!-- <td style="border: 1px solid black; padding: 6px;">:</td> -->
-										<td style=" padding: 6px;">
-											<?php echo $grn[0]->supplier_name; ?>
-										</td>
-									</tr>
-								</table>
-							</td>
-						</tr>
-					</table>
+	<!-- FIXED HEADER -->
+	<div class="fixed-header">
+		<div class="no-print">
+		<button onclick="window.print()"
+			class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded">
+			🖨 Print
+		</button>
+		<a href="<?= base_url('index.php/Purchase/purchase_grn_list'); ?>"
+			class="w-full sm:w-auto  ml-3 px-6 py-2 bg-gray-300 rounded print:hidden">Cancel</a>
 
 
-				</td>
-			</tr>
-			
-		
-			<tr>
-				<td>
-					<table cellpadding="8" width="100%" border="1" style="font-size: 12px;border-collapse:collapse">
-						<thead>
-							<tr style="background-color: #f9f9f9; color: black; border: 1px solid black; text-align: center;">
-								<th style="width: 2%; ">Sl No</th>
-								<th style="width: 10%; ">Model</th>
-								<th style="width: 18%; ">Description</th>
-								<th style="width: 5%; ">Qty</th>
-								<th style="width: 5%; ">Unit</th>
-								<th style="width: 5%; ">Price</th>
-								<th style="width: 5%; ">Total</th>
-							</tr>
-						</thead>
-						<tbody>
-							<?php
-							$sl_no = 1;
-							$total_before_vat = $grn[0]->sub_total ?? 0;
-							 $discount = $grn[0]->discount ?? 0;
-							$vat_amount = $grn[0]->vat_amt ?? 0;
-							$grand_total = $grn[0]->grand_total;
+	</div>
 
-							// foreach ($grn_tr as $detail):
-							// 	$total_before_vat += $detail->price * $detail->rec_quantity;
-							// 	$grand_total += $detail->total;
-							// endforeach;
+		<div class="header-inner">
 
-							//$vat_amount = $grand_total - ($total_before_vat - $total_discount);
+			<div class="company-header">
 
-							foreach ($grn_tr as $detail): ?>
-								<tr valign="top">
-									<td style=" text-align: center;"><?php echo $sl_no++; ?></td>
-									<td style=" padding: 6px;"><?php echo $detail->item_model; ?></td>
-									<td style=" padding: 6px;"><?php echo $detail->item_description; ?></td>
-									<td style=" text-align: center;"><?php echo $detail->rec_quantity; ?></td>
-									<td style=" text-align: center;"><?php echo $detail->unit_name; ?></td>
-									<td style=" text-align: right;"><?php echo number_format($detail->price, 2); ?></td>
-									<td style=" text-align: right;"><?php echo number_format($detail->total, 2); ?></td>
-								</tr>
-							<?php endforeach; ?>
+				<img src="<?= base_url('public/images/logocooling.png') ?>" class="logo">
 
-							<!-- Totals Rows -->
-							<tr style="font-weight: bold;">
-								<td colspan="6" align="right" style="border: 1px solid black; padding: 6px;">Total Before VAT</td>
-								<td style="border: 1px solid black; text-align: right;"><?php echo number_format($total_before_vat, 2); ?></td>
-							</tr>
-							<tr style="font-weight: bold;">
-								<td colspan="6" align="right" style="border: 1px solid black; padding: 6px;">Discount Amount</td>
-								<td style="border: 1px solid black; text-align: right;"><?php echo number_format($discount, 2); ?></td>
-							</tr>
-							<tr style="font-weight: bold;">
-								<td colspan="6" align="right" style="border: 1px solid black; padding: 6px;">VAT Amount</td>
-								<td style="border: 1px solid black; text-align: right;"><?php echo number_format($vat_amount, 2); ?></td>
-							</tr>
-							<tr style="font-weight: bold;">
-								<td colspan="6" align="right" style="border: 1px solid black; padding: 6px;">Total Amount</td>
-								<td style="border: 1px solid black; text-align: right;"><?php echo number_format($grand_total, 2); ?></td>
-							</tr>
-						</tbody>
-					</table>
+				<div class="company-info">
+					Cool Runnings Garage Co LLC<br>
+					7 St, Al Quoz 3, Dubai, UAE<br>
+					www.coolrunningsgarage.com<br>
+					info@coolrunningsgarage.com<br>
+					Tel: +971 4 265 4887<br>
+					TRN: 104026094300003
+				</div>
 
-				</td>
-			</tr>
-			<tr class='calc'>
-				<td>
-					<table cellpadding=5 border=0 width=95% style='font-size: 12px; border-collapse: collapse;border:0'>
-						<tr>
-							<td>Prepared by:<?php echo $grn[0]->user_name; ?></td>
-							<td></td>
-							
-						</tr>
-					</table>
-				</td>
+			</div>
 
-			</tr>
+		</div>
+	</div>
 
 
+	<!-- PAGE CONTAINER -->
+	<div class="container">
 
 
-		</tbody>
+		<div class="header-space"></div>
 
-	</table>
+		<div class="title">GOODS RECEIVED NOTE</div>
+
+
+		<!-- INFO SECTION -->
+		<div class="info-section">
+
+			<table class="info-box">
+				<tr>
+					<td width="35%"><b>Name</b></td>
+					<td><?= $grn[0]->supplier_name ?></td>
+				</tr>
+
+				<tr>
+					<td><b>Address</b></td>
+					<td><?= $grn[0]->billing_address ?></td>
+				</tr>
+
+				<tr>
+					<td><b>Contact</b></td>
+					<td><?= $grn[0]->contact_no ?></td>
+				</tr>
+
+				<tr>
+					<td><b>Email</b></td>
+					<td><?= $grn[0]->email_id ?></td>
+				</tr>
+
+			</table>
+
+
+			<table class="info-box">
+
+				<tr>
+					<td width="35%"><b>Date</b></td>
+					<td><?= $grn[0]->grn_date ?></td>
+				</tr>
+
+				<tr>
+					<td><b>Doc No</b></td>
+					<td><?= $grn[0]->grn_code ?></td>
+				</tr>
+
+				<tr>
+					<td><b>Supplier</b></td>
+					<td><?= $grn[0]->supplier_name ?></td>
+				</tr>
+
+			</table>
+
+		</div>
+
+
+		<!-- ITEMS TABLE -->
+		<table class="items">
+
+			<thead>
+
+				<tr>
+					<th>Sl No</th>
+					<th>Model</th>
+					<th>Description</th>
+					<th>Qty</th>
+					<th>Unit</th>
+					<th style="text-align:right;">Price</th>
+					<th style="text-align:right;">Total</th>
+				</tr>
+
+			</thead>
+
+			<tbody>
+
+				<?php
+				$sl = 1;
+				foreach ($grn_tr as $row):
+				?>
+
+					<tr>
+
+						<td align="center"><?= $sl++ ?></td>
+
+						<td><?= $row->part_code ?></td>
+
+						<td><?= $row->part_name ?></td>
+
+						<td align="center"><?= $row->rec_quantity ?></td>
+
+						<td align="center"><?= $row->unit_name ?></td>
+
+						<td align="right"><?= number_format($row->price, 2) ?></td>
+
+						<td align="right"><?= number_format($row->total, 2) ?></td>
+
+					</tr>
+
+				<?php endforeach; ?>
+
+
+				<tr class="total-row">
+					<td colspan="6" align="right">Total Before VAT</td>
+					<td align="right"><?= number_format($grn[0]->sub_total, 2) ?></td>
+				</tr>
+
+				<tr class="total-row">
+					<td colspan="6" align="right">Discount</td>
+					<td align="right"><?= number_format($grn[0]->discount, 2) ?></td>
+				</tr>
+
+				<tr class="total-row">
+					<td colspan="6" align="right">VAT</td>
+					<td align="right"><?= number_format($grn[0]->vat_amt, 2) ?></td>
+				</tr>
+
+				<tr class="total-row">
+					<td colspan="6" align="right">Grand Total</td>
+					<td align="right"><?= number_format($grn[0]->grand_total, 2) ?></td>
+				</tr>
+
+			</tbody>
+
+		</table>
+
+
+		<br><br>
+
+		Prepared By: <?= $grn[0]->username ?>
+
+
+	</div>
 
 </body>
 

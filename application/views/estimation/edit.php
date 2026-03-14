@@ -60,9 +60,31 @@
 			<!-- Action Buttons -->
 			<div class="flex flex-col sm:flex-row sm:flex-wrap gap-2 justify-center lg:justify-end">
 
-				<button type="submit"
+				<!-- <button type="submit"
 					class="w-full sm:w-auto px-6 py-2 bg-blue-600 text-white rounded">
 					Update
+				</button> -->
+
+				<!-- EDIT BUTTON -->
+				<button type="button"
+					id="editBtn"
+					onclick="enableEditMode()"
+					class="w-full sm:w-auto px-6 py-2 bg-blue-600 text-white rounded">
+					Edit
+				</button>
+
+				<!-- UPDATE BUTTON (hidden initially) -->
+				<button type="submit"
+					id="updateBtn"
+					class="hidden w-full sm:w-auto px-6 py-2 bg-green-600 text-white rounded">
+					Update
+				</button>
+				<!-- CANCEL EDIT BUTTON -->
+				<button type="button"
+					id="cancelEditBtn"
+					onclick="cancelEditMode()"
+					class="hidden px-6 py-2 bg-gray-500 text-white rounded">
+					Cancel Edit
 				</button>
 
 				<a href="<?= base_url('index.php/Estimation/view/' . $estimation_id) ?>"
@@ -84,7 +106,47 @@
 		</div>
 
 		<hr class="border-gray-300 mb-6">
+		<!-- REVISION OPTION -->
+		<div id="revisionWrap"
+			class="hidden mt-3 px-4 py-3 
+           bg-yellow-50 border border-yellow-400 rounded-lg
+           text-yellow-800 font-semibold shadow-sm
+           flex flex-wrap items-center gap-4">
 
+			<!-- Checkbox -->
+			<label class="flex items-center gap-2 cursor-pointer">
+				<input type="checkbox"
+					name="create_revision"
+					value="1"
+					class="w-5 h-5 accent-yellow-600">
+
+				Create Revision
+			</label>
+
+			<!-- Last Revision -->
+			<div class="flex items-center gap-2">
+				<span class="text-sm">Last Rev:</span>
+
+				<input type="text"
+					value="<?= isset($estimation->revision_no) ? $estimation->revision_no : 1 ?>"
+					readonly
+					class="w-16 px-2 py-1 text-center font-bold
+                   bg-gray-100 border border-gray-400 rounded">
+			</div>
+
+			<!-- Next Revision -->
+			<div class="flex items-center gap-2">
+				<span class="text-sm">Next Rev:</span>
+
+				<input type="text"
+					name="revision_no"
+					value="<?= isset($estimation->revision_no) ? $estimation->revision_no + 1 : 1 ?>"
+					readonly
+					class="w-16 px-2 py-1 text-center font-bold
+                   bg-yellow-100 border border-yellow-500 rounded">
+			</div>
+
+		</div>
 
 		<!-- ============================================= -->
 
@@ -128,19 +190,19 @@
 						<tr>
 							<td class="border p-2 font-medium">Customer Name</td>
 							<td class="border p-2">
-								<input type="text" class="w-full border rounded px-2 py-1"
+								<input type="text" class="editable w-full border rounded px-2 py-1"
 									value="<?= $appointment->customer_name ?? $customer->name ?>">
 							</td>
 
 							<td class="border p-2 font-medium">Contact No</td>
 							<td class="border p-2">
-								<input type="text" class="w-full border rounded px-2 py-1"
+								<input type="text" class="editable w-full border rounded px-2 py-1"
 									value="<?= $appointment->phone ?? $customer->phone ?>">
 							</td>
 
 							<td class="border p-2 font-medium">Email</td>
 							<td class="border p-2">
-								<input type="email" class="w-full border rounded px-2 py-1"
+								<input type="email" class="editable w-full border rounded px-2 py-1"
 									value="<?= $appointment->email ?? $customer->email ?>">
 							</td>
 						</tr>
@@ -153,7 +215,7 @@
 									value="<?= $appointment->model ?? $vehicle->model ?>" readonly>
 							</td>
 
-							<td class="border p-2 font-medium">Registration No</td>
+							<td class="border p-2 font-medium">Plate No</td>
 							<td class="border p-2">
 								<input type="text" class="w-full border rounded px-2 py-1 bg-gray-100"
 									value="<?= $appointment->registration_no ?? $vehicle->registration_no ?>" readonly>
@@ -175,16 +237,16 @@
 
 							<td class="border p-2 font-medium">KM In</td>
 							<td class="border p-2">
-								<input type="number" name="kmin" class="w-full border rounded px-2 py-1" value="<?= $kms ?>">
+								<input type="number" name="kmin" class="editable w-full border rounded px-2 py-1" value="<?= $kms ?>">
 							</td>
 
 							<td class="border p-2 font-medium">Customer Approval</td>
 							<td class="border p-2">
-								<select class="w-full border rounded px-2 py-1" name="custapproval">
+								<select class="editable w-full border rounded px-2 py-1" name="custapproval">
 									<option value="">-- Select --</option>
-									<option value="APPROVED" selected>Approved</option>
-									<option value="PENDING">Pending</option>
-									<option value="REJECTED">Rejected</option>
+									<option value="APPROVED" <?php if($estimation->customer_approval=="APPROVED"){?> selected <?php } ?>>Approved</option>
+									<option value="PENDING" <?php if($estimation->customer_approval=="PENDING"){?> selected <?php } ?>>Pending</option>
+									<option value="REJECTED" <?php if($estimation->customer_approval=="REJECTED"){?> selected <?php } ?>>Rejected</option>
 								</select>
 							</td>
 
@@ -192,7 +254,7 @@
 							<td class="border p-2">
 								<input type="number"
 									step="0.01"
-									class="w-full border rounded px-2 py-1"
+									class="editable w-full border rounded px-2 py-1"
 									name="estimatedprice"
 									value="<?= $estimation->customer_estimated_price ?? '' ?>">
 							</td>
@@ -204,17 +266,17 @@
 
 							<td class="border p-2 font-medium">Estimated Delivery Date</td>
 							<td class="border p-2">
-								<input type="date" class="w-full border rounded px-2 py-1" name="estdeldate" value="<?= $estimation->est_delivery_date ?? '' ?>">
+								<input type="date" class="editable w-full border rounded px-2 py-1" name="estdeldate" value="<?= $estimation->est_delivery_date ?? '' ?>">
 							</td>
 
 							<td class="border p-2 font-medium">Completion Time</td>
 							<td class="border p-2">
-								<input type="time" class="w-full border rounded px-2 py-1" name="completiontime" value="<?= $estimation->est_completion_time ?? '' ?>">
+								<input type="time" class="editable w-full border rounded px-2 py-1" name="completiontime" value="<?= $estimation->est_completion_time ?? '' ?>">
 							</td>
 
 							<td class="border p-2 font-medium">Remark</td>
 							<td class="border p-2" colspan="5">
-								<textarea class="w-full border rounded px-2 py-1 h-20" name="remarks"><?= $estimation->remarks ?? '' ?></textarea>
+								<textarea class="editable w-full border rounded px-2 py-1 h-20" name="remarks"><?= $estimation->remarks ?? '' ?></textarea>
 							</td>
 						</tr>
 
@@ -239,8 +301,7 @@
 		</div>
 
 		<!-- Table -->
-		<!-- <div class="relative w-full overflow-x-auto overflow-y-visible">
- -->
+		<!-- <div class="relative w-full overflow-x-auto overflow-y-visible"> -->
 		<div>
 			<table class="w-full border-collapse text-sm" id="serviceTable">
 
@@ -267,7 +328,7 @@
 								<!-- Service -->
 								<td class="border px-2 py-2">
 									<select name="service_id[]" id="serviceSelect"
-										class="serviceSelect w-full border rounded-lg px-2 py-1 focus:ring-2 focus:ring-blue-300">
+										class="editable serviceSelect w-full border rounded-lg px-2 py-1 focus:ring-2 focus:ring-blue-300">
 										<option value="">-- Select Service --</option>
 										<?php foreach ($services_master as $sm): ?>
 											<option value="<?= $sm->master_service_id ?>"
@@ -282,7 +343,7 @@
 								<td class="border px-2 py-2 text-center">
 									<input type="number" step="0.1"
 										name="service_time[]"
-										class="serviceTime w-20 border rounded-lg px-2 py-1 text-center"
+										class="editable serviceTime w-20 border rounded-lg px-2 py-1 text-center"
 										value="<?= $s->estimated_time ?>">
 								</td>
 
@@ -290,7 +351,7 @@
 								<td class="border px-2 py-2 text-right">
 									<input type="number" step="0.01"
 										name="service_cost[]"
-										class="serviceCost w-full border rounded-lg px-2 py-1 text-right"
+										class="editable serviceCost w-full border rounded-lg px-2 py-1 text-right"
 										value="<?= $s->estimated_cost ?>">
 								</td>
 
@@ -298,14 +359,14 @@
 								<td class="border px-2 py-2 text-right">
 									<input type="number" step="0.01"
 										name="total_cost[]"
-										class="totalCost w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
+										class="editable totalCost w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
 										value="<?= $s->total_cost ?>" readonly>
 								</td>
 
 								<!-- Action -->
 								<td class="border px-2 py-2 text-center">
 									<button type="button"
-										class="remove-row inline-flex items-center justify-center
+										class="editable remove-row inline-flex items-center justify-center
                                        bg-red-100 text-red-600
                                        hover:bg-red-500 hover:text-white
                                        px-3 py-1 rounded-lg transition">
@@ -334,7 +395,7 @@
 						<td class="px-3 py-2 text-right">
 							<input type="text"
 								id="service_discount" name="service_discount" value="<?= $service_discount ?>"
-								class="w-full text-right bg-gray-100">
+								class="editable w-full text-right bg-gray-100">
 						</td>
 						<td></td>
 					</tr>
@@ -399,10 +460,7 @@
 			<h4 class="text-lg font-semibold text-blue-700 mb-3">
 				Original Parts / Consumables
 			</h4>
-			<button type="button" id="addNewPart"
-				class="mb-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-				+ Add Original Part
-			</button>
+
 
 			<div class="relative w-full overflow-x-auto overflow-y-visible">
 
@@ -460,7 +518,7 @@
 									<!-- Part -->
 									<td class="border px-2 py-2">
 										<select name="part_id[]"
-											class="partSelect w-full border rounded-lg px-2 py-1">
+											class="editable partSelect w-full border rounded-lg px-2 py-1">
 											<!-- <option value="">-- Select Brand First --</option> -->
 											<option value="<?= $p->part_id ?>"><?= $p->part_name ?></option>
 										</select>
@@ -471,28 +529,28 @@
 									<!-- Qty -->
 									<td class="border px-2 py-2 text-center">
 										<input type="number" name="part_qty[]"
-											class="partQty w-20 border rounded-lg px-2 py-1 text-center"
+											class="editable partQty w-20 border rounded-lg px-2 py-1 text-center"
 											value="<?= $p->qty ?>">
 									</td>
 
 									<!-- Unit Price -->
 									<td class="border px-2 py-2 text-right">
 										<input type="number" step="0.01" name="unit_price[]"
-											class="unitPrice w-full border rounded-lg px-2 py-1 text-right"
+											class="editable unitPrice w-full border rounded-lg px-2 py-1 text-right"
 											value="<?= $p->unit_price ?>">
 									</td>
 
 									<!-- Markup % -->
 									<td class="border px-2 py-2 text-center">
 										<input type="number" step="0.01" name="markup[]"
-											class="markup w-20 border rounded-lg px-2 py-1 text-center"
+											class="editable markup w-20 border rounded-lg px-2 py-1 text-center"
 											value="<?= $p->markup_percentage ?? 0 ?>" oninput="calculateSellingPrice(this)">
 									</td>
 
 									<!-- Selling Price -->
 									<td class="border px-2 py-2 text-right">
 										<input type="number" step="0.01" name="selling_price[]"
-											class="sellPrice w-full border rounded-lg px-2 py-1 text-right"
+											class="editable sellPrice w-full border rounded-lg px-2 py-1 text-right"
 											value="<?= $p->selling_price ?>">
 									</td>
 
@@ -501,27 +559,27 @@
 										<input type="text" name="discount[]"
 											onkeydown="allowNumberAndPercent(event)"
 											oninput="this.value = this.value.replace(/[^0-9%]/g, ''); calculateDiscount(this);"
-											class="discount w-20 border rounded-lg px-2 py-1 text-right"
+											class="editable discount w-20 border rounded-lg px-2 py-1 text-right"
 											value="<?= $p->discount ?? 0 ?>">
 									</td>
 									<!-- Discount amt-->
 									<td class="border px-2 py-2 text-center">
 										<input type="text" step="0.01" name="discountamt[]"
-											class="discountamt w-20 border rounded-lg px-2 py-1 text-right bg-gray-100"
+											class="editable discountamt w-20 border rounded-lg px-2 py-1 text-right bg-gray-100"
 											value="<?= $p->dis_amount ?? 0 ?>" readonly>
 									</td>
 
 									<!-- Total -->
 									<td class="border px-2 py-2 text-right">
 										<input type="number" step="0.01" name="total_price[]"
-											class="rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
+											class="editable rowTotal w-full border rounded-lg px-2 py-1 text-right bg-gray-100"
 											value="<?= $p->total_price ?>" readonly>
 									</td>
 
 									<!-- Action -->
 									<td class="border px-2 py-2 text-center">
 										<button type="button"
-											class="remove-row inline-flex items-center justify-center
+											class="editable remove-row inline-flex items-center justify-center
                                        bg-red-100 text-red-600
                                        hover:bg-red-500 hover:text-white
                                        px-3 py-1 rounded-lg transition">
@@ -608,6 +666,11 @@
 
 				</table>
 			</div>
+
+			<button type="button" id="addNewPart"
+				class="mb-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+				+ Add Original Part
+			</button>
 		</div>
 		<hr class="border-gray-300 mb-6">
 		<!-- Aftermarket Parts -->
@@ -615,10 +678,7 @@
 			<h4 class="text-lg font-semibold text-green-700 mb-3">
 				Aftermarket Parts
 			</h4>
-			<button type="button" id="addAftermarketPart"
-				class="mb-3 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-				+ Add Aftermarket Part
-			</button>
+
 
 			<div class="relative w-full overflow-x-auto overflow-y-visible">
 
@@ -675,7 +735,7 @@
 									<!-- Part -->
 									<td class="border px-2 py-2">
 										<select name="part_id[]"
-											class="partSelect w-full border rounded-lg px-2 py-1">
+											class="editable partSelect w-full border rounded-lg px-2 py-1">
 											<option value="<?= $p->part_id ?>"><?= $p->part_name ?></option>
 										</select>
 										<textarea name="part_warrenty[]" rows="3" class="partWarrenty w-full border rounded-lg px-2 py-1"><?= $p->partremarks ?? null ?></textarea>
@@ -685,28 +745,28 @@
 									<!-- Qty -->
 									<td class="border px-2 py-2 text-center">
 										<input type="number" name="part_qty[]"
-											class="partQty w-20 border rounded-lg px-2 py-1 text-center"
+											class="editable partQty w-20 border rounded-lg px-2 py-1 text-center"
 											value="<?= $p->qty ?>">
 									</td>
 
 									<!-- Unit Price -->
 									<td class="border px-2 py-2 text-right">
 										<input type="number" step="0.01" name="unit_price[]"
-											class="unitPrice w-full border rounded-lg px-2 py-1 text-right"
+											class="editable unitPrice w-full border rounded-lg px-2 py-1 text-right"
 											value="<?= $p->unit_price ?>">
 									</td>
 
 									<!-- Markup % -->
 									<td class="border px-2 py-2 text-center">
 										<input type="number" step="0.01" name="markup[]"
-											class="markup w-20 border rounded-lg px-2 py-1 text-center"
+											class="editable markup w-20 border rounded-lg px-2 py-1 text-center"
 											value="<?= $p->markup_percentage ?? 0 ?>" oninput="calculateSellingPrice(this)">
 									</td>
 
 									<!-- Selling Price -->
 									<td class="border px-2 py-2 text-right">
 										<input type="number" step="0.01" name="selling_price[]"
-											class="sellPrice w-full border rounded-lg px-2 py-1 text-right"
+											class="editable sellPrice w-full border rounded-lg px-2 py-1 text-right"
 											value="<?= $p->selling_price ?>">
 									</td>
 
@@ -715,7 +775,7 @@
 										<input type="text" name="discount[]"
 											onkeydown="allowNumberAndPercent(event)"
 											oninput="this.value = this.value.replace(/[^0-9%]/g, ''); calculateDiscount(this);"
-											class="discount w-20 border rounded-lg px-2 py-1 text-right"
+											class="editable discount w-20 border rounded-lg px-2 py-1 text-right"
 											value="<?= $p->discount ?? 0 ?>">
 									</td>
 									<!-- Discount amt-->
@@ -821,6 +881,11 @@
 
 				</table>
 			</div>
+
+			<button type="button" id="addAftermarketPart"
+				class="mb-3 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+				+ Add Aftermarket Part
+			</button>
 		</div>
 		<hr class="border-gray-300 mb-6">
 		<!-- Used Parts -->
@@ -828,10 +893,6 @@
 			<h4 class="text-lg font-semibold text-orange-700 mb-3">
 				Used Parts
 			</h4>
-			<button type="button" id="addUsedPart"
-				class="mb-3 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
-				+ Add Used Part
-			</button>
 
 			<div class="relative w-full overflow-x-auto overflow-y-visible">
 
@@ -888,38 +949,38 @@
 									<!-- Part -->
 									<td class="border px-2 py-2">
 										<select name="part_id[]"
-											class="partSelect w-full border rounded-lg px-2 py-1">
+											class="editable partSelect w-full border rounded-lg px-2 py-1">
 											<option value="<?= $p->part_id ?>"><?= $p->part_name ?></option>
 										</select>
-										<textarea name="part_warrenty[]" rows="3" class="partWarrenty w-full border rounded-lg px-2 py-1"><?= $p->partremarks ?? null ?></textarea>
+										<textarea name="part_warrenty[]" rows="3" class="editable partWarrenty w-full border rounded-lg px-2 py-1"><?= $p->partremarks ?? null ?></textarea>
 
 									</td>
 
 									<!-- Qty -->
 									<td class="border px-2 py-2 text-center">
 										<input type="number" name="part_qty[]"
-											class="partQty w-20 border rounded-lg px-2 py-1 text-center"
+											class="editable partQty w-20 border rounded-lg px-2 py-1 text-center"
 											value="<?= $p->qty ?>">
 									</td>
 
 									<!-- Unit Price -->
 									<td class="border px-2 py-2 text-right">
 										<input type="number" step="0.01" name="unit_price[]"
-											class="unitPrice w-full border rounded-lg px-2 py-1 text-right"
+											class="editable unitPrice w-full border rounded-lg px-2 py-1 text-right"
 											value="<?= $p->unit_price ?>">
 									</td>
 
 									<!-- Markup % -->
 									<td class="border px-2 py-2 text-center">
 										<input type="number" step="0.01" name="markup[]"
-											class="markup w-20 border rounded-lg px-2 py-1 text-center"
+											class="editable markup w-20 border rounded-lg px-2 py-1 text-center"
 											value="<?= $p->markup_percentage ?? 0 ?>" oninput="calculateSellingPrice(this)">
 									</td>
 
 									<!-- Selling Price -->
 									<td class="border px-2 py-2 text-right">
 										<input type="number" step="0.01" name="selling_price[]"
-											class="sellPrice w-full border rounded-lg px-2 py-1 text-right"
+											class="editable sellPrice w-full border rounded-lg px-2 py-1 text-right"
 											value="<?= $p->selling_price ?>">
 									</td>
 
@@ -928,7 +989,7 @@
 										<input type="text" name="discount[]"
 											onkeydown="allowNumberAndPercent(event)"
 											oninput="this.value = this.value.replace(/[^0-9%]/g, ''); calculateDiscount(this);"
-											class="discount w-20 border rounded-lg px-2 py-1 text-right"
+											class="editable discount w-20 border rounded-lg px-2 py-1 text-right"
 											value="<?= $p->discount ?? 0 ?>">
 									</td>
 									<!-- Discount amt-->
@@ -1033,6 +1094,12 @@
 					</tfoot>
 				</table>
 			</div>
+			<button type="button" id="addUsedPart"
+				class="mb-3 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+				+ Add Used Part
+			</button>
+
+
 		</div>
 
 		<p class="text-xs text-gray-500 mt-6">
@@ -1086,15 +1153,15 @@
 										name="job_description[]"
 										value="<?= $j->description ?>"
 										placeholder="Enter job description..."
-										class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:outline-none">
+										class="editable w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:outline-none">
 								</td>
 
 								<td class="border px-3 py-2">
-									<input type="text"
+									<input type="number"
 										name="job_amount[]"
 										value="<?= $j->amount ?>"
-										placeholder="Enter job description..."
-										class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:outline-none jobAmount">
+										placeholder="Enter job description..." step="0.01"
+										class="editable w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:outline-none jobAmount">
 								</td>
 
 
@@ -1126,6 +1193,19 @@
 						</td>
 						<td></td>
 					</tr>
+					<!-- =================================================== -->
+					<tr class="bg-gray-50">
+						<td colspan="2" class="text-right px-3 py-2">Discount Amount</td>
+						<td class="px-3 py-2 text-right">
+							<input type="text"
+								id="sublet_discount" name="sublet_discount" value="<?= $sublet_discount ?>"
+								class="editable w-full text-right bg-gray-100">
+						</td>
+						<td></td>
+					</tr>
+
+
+					<!-- =============================================================== -->
 
 					<!-- Taxable Amount (same as subtotal, no discount here) -->
 					<tr class="bg-gray-50">
@@ -1306,12 +1386,12 @@
 	</div>
 </div>
 <!-- Add Part Modal -->
-<div id="addPartModal"
+<!-- <div id="addPartModal"
 	class="fixed inset-0 z-50 hidden bg-black/40 flex items-center justify-center">
 
 	<div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
 
-		<!-- Header -->
+		
 		<div class="flex justify-between items-center mb-4">
 			<h2 id="addPartModalTitle"
 				class="text-lg font-semibold text-gray-800">
@@ -1324,10 +1404,10 @@
 			</button>
 		</div>
 
-		<!-- Body -->
+		
 		<div class="space-y-4">
 
-			<!-- Part Name -->
+		
 			<div>
 				<label class="block text-sm font-medium mb-1">
 					Part Name <span class="text-red-500">*</span>
@@ -1338,7 +1418,7 @@
 					placeholder="Enter part name">
 			</div>
 
-			<!-- Unit Price -->
+			
 			<div>
 				<label class="block text-sm font-medium mb-1">
 					Unit Price
@@ -1350,7 +1430,7 @@
 					placeholder="0.00">
 			</div>
 
-			<!-- Labeling -->
+			
 			<div class="flex items-center gap-2">
 				<input
 					type="checkbox"
@@ -1364,11 +1444,139 @@
 				</label>
 			</div>
 
-			<!-- Hidden Part Type -->
+		
 			<input type="hidden" id="new_part_type">
 		</div>
 
-		<!-- Footer -->
+		
+		<div class="flex justify-end gap-3 mt-6">
+			<button type="button"
+				onclick="closeAddPartModal()"
+				class="px-4 py-2 rounded-lg border text-gray-600 hover:bg-gray-100">
+				Cancel
+			</button>
+
+			<button type="button"
+				onclick="submitAddPart()"
+				class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">
+				Save Part
+			</button>
+		</div>
+	</div>
+</div> -->
+<!-- Body -->
+
+<div id="addPartModal"
+	class="fixed inset-0 z-50 hidden bg-black/40 flex items-center justify-center">
+
+	<div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl p-6">
+
+		<div class="flex justify-between items-center mb-4">
+			<h2 id="addPartModalTitle"
+				class="text-lg font-semibold text-gray-800">
+				Add New Part
+			</h2>
+			<button type="button"
+				onclick="closeAddPartModal()"
+				class="text-gray-500 hover:text-red-600 text-xl">
+				✕
+			</button>
+		</div>
+
+
+		<div class="space-y-4">
+
+
+			<div>
+				<label class="block text-sm font-medium mb-1">
+					Part Name <span class="text-red-500">*</span>
+				</label>
+				<input type="text"
+					id="new_part_name"
+					class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-green-300"
+					placeholder="Enter part name">
+			</div>
+
+
+			<div>
+				<label class="block text-sm font-medium mb-1">
+					Unit Price
+				</label>
+				<input type="number"
+					step="0.01"
+					id="new_part_price"
+					class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-green-300"
+					placeholder="0.00">
+			</div>
+			<!-- Units Row -->
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+				<!-- Purchase Unit -->
+				<div>
+					<label class="block text-sm font-medium mb-1">
+						Purchase Unit
+					</label>
+					<select id="purchase_unit"
+						class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-green-300">
+						<option value="">Select Unit</option>
+						<?php foreach ($unit_records as $unit): ?>
+							<option value="<?= $unit->unit_id ?>">
+								<?= $unit->unit_name ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+				</div>
+
+				<!-- Stock Unit -->
+				<div>
+					<label class="block text-sm font-medium mb-1">
+						Stock Unit
+					</label>
+					<select id="stock_unit"
+						class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-green-300">
+						<option value="">Select Unit</option>
+						<?php foreach ($unit_records as $unit): ?>
+							<option value="<?= $unit->unit_id ?>">
+								<?= $unit->unit_name ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+				</div>
+
+				<!-- Qty Per Purchase Unit -->
+				<div>
+					<label class="block text-sm font-medium mb-1">
+						Qty Per Purchase Unit
+					</label>
+					<input type="number"
+						step="0.01"
+						id="qty_per_purchase_unit"
+						class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-green-300"
+						placeholder="Example: 10">
+				</div>
+
+			</div>
+
+
+
+			<div class="flex items-center gap-2">
+				<input
+					type="checkbox"
+					id="labeling"
+					name="labeling"
+					value="1"
+					class="w-4 h-4 border rounded"
+					checked>
+				<label for="labeling" class="font-medium cursor-pointer">
+					Labeled Part
+				</label>
+			</div>
+
+
+			<input type="hidden" id="new_part_type">
+		</div>
+
+
 		<div class="flex justify-end gap-3 mt-6">
 			<button type="button"
 				onclick="closeAddPartModal()"
@@ -1500,7 +1708,7 @@
 									<input type="number"
 										name="job_amount[]"
 										value=""
-										placeholder="Enter job amount..."
+										placeholder="Enter job amount..." step="0.01"
 										class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:outline-none jobAmount">
 								</td>
 
@@ -1724,22 +1932,22 @@
 		}
 
 
-		function calculateJobTotals() {
+// 		function calculateJobTotals() {
+// 1
+// 			let subtotal = 0;
 
-			let subtotal = 0;
+// 			document.querySelectorAll("#jobDescTable .jobAmount").forEach(el => {
+// 				subtotal += num(el.value);
+// 			});
 
-			document.querySelectorAll("#jobDescTable .jobAmount").forEach(el => {
-				subtotal += num(el.value);
-			});
+// 			const vat = subtotal * 0.05;
+// 			const totalWithVat = subtotal + vat;
 
-			const vat = subtotal * 0.05;
-			const totalWithVat = subtotal + vat;
-
-			document.getElementById("job_subtotal").value = subtotal.toFixed(2);
-			document.getElementById("job_taxable").value = subtotal.toFixed(2);
-			document.getElementById("job_vat").value = vat.toFixed(2);
-			document.getElementById("job_total").value = totalWithVat.toFixed(2);
-		}
+// 			document.getElementById("job_subtotal").value = subtotal.toFixed(2);
+// 			document.getElementById("job_taxable").value = subtotal.toFixed(2);
+// 			document.getElementById("job_vat").value = vat.toFixed(2);
+// 			document.getElementById("job_total").value = totalWithVat.toFixed(2);
+// 		}
 
 		/* ===============================
 		   BRAND CHANGE → LOAD PARTS
@@ -2328,30 +2536,22 @@
 		document.querySelectorAll("#jobDescTable .jobAmount").forEach(el => {
 			subtotal += num(el.value);
 		});
+		const subletdistotal = document.getElementById("sublet_discount").value;
+		const sublettaxablevalue = subtotal - subletdistotal;
+		const vat = sublettaxablevalue * 0.05;
+		
+		const sublettotalWithVat = sublettaxablevalue + vat;
 
-		const vat = subtotal * 0.05;
+		// const vat = subtotal * 0.05;
 
 		document.getElementById("job_subtotal").value = subtotal.toFixed(2);
-		document.getElementById("job_taxable").value = subtotal.toFixed(2);
+		document.getElementById("job_taxable").value = sublettaxablevalue.toFixed(2);
 		document.getElementById("job_vat").value = vat.toFixed(2);
-		document.getElementById("job_total").value = (subtotal + vat).toFixed(2);
+		document.getElementById("job_total").value = sublettotalWithVat.toFixed(2);
 	}
 	// ============================== service total calculations===========================
 
-	// function calculateServiceTotals() {
-
-	// 	let subtotal = 0;
-	// 	document.querySelectorAll("#serviceTable .totalCost").forEach(el => {
-	// 		subtotal += num(el.value);
-	// 	});
-
-	// 	const vat = subtotal * 0.05;
-
-	// 	document.getElementById("service_total").value = subtotal.toFixed(2);
-	// 	document.getElementById("service_taxable_amt").value = subtotal.toFixed(2);
-	// 	document.getElementById("service_vat").value = vat.toFixed(2);
-	// 	document.getElementById("service_total_with_vat").value = (subtotal + vat).toFixed(2);
-	// }
+	
 	function calculateServiceTotals() {
 
 		let serviceSubtotal = 0;
@@ -2433,14 +2633,23 @@
 	document.addEventListener("DOMContentLoaded", function() {
 
 
-	 const discountInput = document.getElementById("service_discount");
+		const discountInput = document.getElementById("service_discount");
 
-    if (discountInput) {
-        discountInput.addEventListener("input", function () {
-            calculateServiceTotals();
-			calculateGrandTotal();
-        });
-    }
+		if (discountInput) {
+			discountInput.addEventListener("input", function() {
+				calculateServiceTotals();
+				calculateGrandTotal();
+			});
+		}
+
+		const subletdiscountInput = document.getElementById("sublet_discount");
+
+		if (subletdiscountInput) {
+			subletdiscountInput.addEventListener("input", function() {
+				calculateJobTotals();
+				calculateGrandTotal();
+			});
+		}
 
 		// Job totals
 		calculateJobTotals();
@@ -2590,20 +2799,20 @@
 	}
 
 
-	function calculateJobTotals() {
+// 	function calculateJobTotals() {
+// 3
+// 		let subtotal = 0;
+// 		document.querySelectorAll("#jobDescTable .jobAmount").forEach(el => {
+// 			subtotal += num(el.value);
+// 		});
 
-		let subtotal = 0;
-		document.querySelectorAll("#jobDescTable .jobAmount").forEach(el => {
-			subtotal += num(el.value);
-		});
+// 		const vat = subtotal * 0.05;
 
-		const vat = subtotal * 0.05;
-
-		document.getElementById("job_subtotal").value = subtotal.toFixed(2);
-		document.getElementById("job_taxable").value = subtotal.toFixed(2);
-		document.getElementById("job_vat").value = vat.toFixed(2);
-		document.getElementById("job_total").value = (subtotal + vat).toFixed(2);
-	}
+// 		document.getElementById("job_subtotal").value = subtotal.toFixed(2);
+// 		document.getElementById("job_taxable").value = subtotal.toFixed(2);
+// 		document.getElementById("job_vat").value = vat.toFixed(2);
+// 		document.getElementById("job_total").value = (subtotal + vat).toFixed(2);
+// 	}
 	// ==============================================
 
 
@@ -2936,4 +3145,64 @@
 
 	// Run once on page load
 	window.addEventListener('load', calculateCostSummary);
+</script>
+<script>
+	let originalFormData = {};
+
+	document.addEventListener("DOMContentLoaded", function() {
+		storeOriginalValues();
+		disableEditMode();
+	});
+
+
+
+	/* STORE ORIGINAL VALUES */
+	function storeOriginalValues() {
+		document.querySelectorAll('.editable').forEach((el, index) => {
+			originalFormData[index] = el.value;
+		});
+	}
+
+
+
+	function enableEditMode() {
+		document.querySelectorAll('.editable').forEach(el => {
+			el.disabled = false;
+		});
+
+		document.getElementById('editBtn').classList.add('hidden');
+		document.getElementById('updateBtn').classList.remove('hidden');
+		document.getElementById('cancelEditBtn').classList.remove('hidden');
+
+		// SHOW revision option
+		document.getElementById('revisionWrap').classList.remove('hidden');
+	}
+
+
+	function disableEditMode() {
+		document.querySelectorAll('.editable').forEach(el => {
+			el.disabled = true;
+		});
+
+		document.getElementById('editBtn').classList.remove('hidden');
+		document.getElementById('updateBtn').classList.add('hidden');
+		document.getElementById('cancelEditBtn').classList.add('hidden');
+
+		// HIDE revision option
+		document.getElementById('revisionWrap').classList.add('hidden');
+	}
+
+
+	function cancelEditMode() {
+		if (!confirm("Discard changes?")) return;
+
+		document.querySelectorAll('.editable').forEach((el, index) => {
+			el.value = originalFormData[index];
+		});
+
+		disableEditMode();
+
+		// uncheck revision checkbox
+		document.querySelector('[name="create_revision"]').checked = false;
+	}
 </script>

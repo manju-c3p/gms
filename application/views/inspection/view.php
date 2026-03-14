@@ -282,17 +282,18 @@ $rightItems = array_slice($items, $half);
 
 
 
-	<!-- <div class="page-break"></div> -->
+	
 
 	<!-- INVENTORY STATUS -->
-	<h4 class="font-bold mb-1">INVENTORY STATUS</h4>
-	<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+	<h4 class="font-bold mb-1 mt-4">INVENTORY STATUS</h4>
+	<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 p-4 mt-1">
+		
 
 		<?php foreach ($inventory as $inv): ?>
 			<label><input type="checkbox" name="inventory_status[]" value="<?= $inv->inventory_status_id ?>" <?= in_array($inv->inventory_status_id, $selected_inventory) ? 'checked' : '' ?>> <?= $inv->status_name ?></label>
 		<?php endforeach; ?>
 	</div>
-
+<div class="page-break"></div>
 	<!-- FOOTER DETAILS -->
 	<div class="border mt-6 p-3 text-sm">
 
@@ -398,80 +399,7 @@ $rightItems = array_slice($items, $half);
 </div>
 
 
-<style>
-	/* input, select, textarea, table {
-		max-width: 100%;
-	} */
-</style>
-<script>
-	// const container = document.getElementById('damageContainer');
-	// const inspectionId = <?= $inspection_id ?>;
 
-	// ADD DAMAGE MARK
-	// container.addEventListener('click', function(e) {
-
-	// 	// Prevent adding when clicking existing mark
-	// 	if (e.target.classList.contains('damage-mark')) return;
-
-	// 	const rect = container.getBoundingClientRect();
-	// 	const x = Math.round(e.clientX - rect.left);
-	// 	const y = Math.round(e.clientY - rect.top);
-
-	// 	// Create mark visually
-	// 	const mark = document.createElement('span');
-	// 	mark.innerHTML = '✖';
-	// 	mark.className = 'damage-mark absolute text-red-600 font-bold text-lg cursor-pointer';
-	// 	mark.style.left = x + 'px';
-	// 	mark.style.top = y + 'px';
-
-	// 	container.appendChild(mark);
-
-	// 	// Save to DB
-	// 	fetch("<?= base_url('index.php/inspection/saveDamageMark'); ?>", {
-	// 			method: 'POST',
-	// 			headers: {
-	// 				'Content-Type': 'application/json'
-	// 			},
-	// 			body: JSON.stringify({
-	// 				inspection_id: inspectionId,
-	// 				x: x,
-	// 				y: y
-	// 			})
-	// 		})
-	// 		.then(res => res.json())
-	// 		.then(resp => {
-	// 			if (resp.id) {
-	// 				mark.dataset.id = resp.id;
-	// 			}
-	// 		});
-	// });
-
-	// REMOVE DAMAGE MARK
-	// document.addEventListener('click', function(e) {
-	// 	if (!e.target.classList.contains('damage-mark')) return;
-
-	// 	const markId = e.target.dataset.id;
-	// 	e.stopPropagation();
-
-	// 	if (!markId) return;
-
-	// 	fetch("<?= base_url('index.php/inspection/deleteDamageMark'); ?>", {
-	// 			method: 'POST',
-	// 			headers: {
-	// 				'Content-Type': 'application/json'
-	// 			},
-	// 			body: JSON.stringify({
-	// 				id: markId
-	// 			})
-	// 		})
-	// 		.then(res => res.json())
-	// 		.then(resp => {
-	// 			if (resp.success) {
-	// 				e.target.remove();
-	// 			}
-	// 		});
-	// });
-</script>
 
 <style>
 	@media print {
@@ -534,3 +462,55 @@ $rightItems = array_slice($items, $half);
 		}
 	}
 </style>
+<style>
+@media print {
+
+    /* Reduce overall font size */
+    body {
+        font-size: 10px !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Reduce heading sizes */
+    h1 { font-size: 16px !important; }
+    h2 { font-size: 14px !important; }
+    h3 { font-size: 12px !important; }
+    h4 { font-size: 11px !important; }
+
+    /* Reduce table font and padding */
+    table {
+        font-size: 10px !important;
+    }
+
+    th, td {
+        padding: 2px 4px !important;
+    }
+
+    /* Reduce section spacing */
+    .mb-4 { margin-bottom: 6px !important; }
+    .mb-3 { margin-bottom: 4px !important; }
+    .mt-6 { margin-top: 6px !important; }
+    .p-4  { padding: 6px !important; }
+    .p-3  { padding: 4px !important; }
+    .p-2  { padding: 2px !important; }
+    .p-1  { padding: 1px !important; }
+
+    /* Reduce grid gaps */
+    .gap-6 { gap: 6px !important; }
+    .gap-3 { gap: 4px !important; }
+    .gap-2 { gap: 3px !important; }
+
+    /* Reduce logo size */
+    /* img {
+        max-height: 55px !important;
+    } */
+
+    /* Reduce page margins */
+    @page {
+        size: A4;
+        margin: 8mm !important;
+    }
+
+}
+</style>
+

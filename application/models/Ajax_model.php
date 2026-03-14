@@ -213,4 +213,11 @@ class Ajax_model extends CI_Model
 		$query = $this->db->query("SELECT COUNT(*) as tcnt FROM $table_name WHERE $attribute1 = $id1");
 		return $query->row('tcnt');
 	}
+
+		function get_paid_leave_type_days($employee_id,$ltype_id)
+	{
+		$query = $this->db->query("SELECT * FROM paid_leave_master g JOIN paid_leave_transaction s ON g.paid_id = s.paid_id_master  WHERE g.emp_id = '$employee_id' and s.leave_type_id= '$ltype_id' ");
+
+		return $query->result();
+	}
 }

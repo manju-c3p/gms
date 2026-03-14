@@ -1,5 +1,5 @@
 <link rel="stylesheet"
-      href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+	href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <div class="bg-white rounded-2xl shadow p-6">
@@ -80,63 +80,15 @@
 							</td>
 
 							<!-- Material Issue -->
-<td class="border px-3 py-2 text-center">
+							<td class="border px-3 py-2 text-center">
 
-    <?php if ((int)$jc->total_parts === 0): ?>
+								<?php if ((int)$jc->total_parts === 0): ?>
 
-        <span class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700">
-            No Spare Parts
-        </span>
+									<span class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700">
+										No Spare Parts
+									</span>
 
-    <?php elseif ((int)$jc->fully_issued_parts === 0): ?>
-
-        <span class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700">
-            Not Issued
-        </span>
-        <br>
-        <a href="<?= base_url('index.php/MaterialIssue/create/' . $jc->jobcard_id); ?>"
-           class="mt-1 inline-block px-3 py-1 text-xs bg-indigo-600 text-white rounded">
-            Issue Spareparts
-        </a>
-
-    <?php elseif ((int)$jc->fully_issued_parts < (int)$jc->total_parts): ?>
-
-        <span class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700">
-            Partially Issued (<?= $jc->fully_issued_parts ?>)
-        </span>
-        <br>
-        <a href="<?= base_url('index.php/MaterialIssue/create/' . $jc->jobcard_id); ?>"
-           class="mt-1 inline-block px-3 py-1 text-xs bg-indigo-600 text-white rounded">
-            Issue More
-        </a>
-
-    <?php else: ?>
-
-        <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">
-            Fully Issued
-        </span>
-        <br>
-        <a href="<?= base_url('index.php/MaterialIssue/create/' . $jc->jobcard_id); ?>"
-           class="mt-1 inline-block px-3 py-1 text-xs bg-blue-600 text-white rounded">
-            View Issues
-        </a>
-
-    <?php endif; ?>
-
-    <br>
-
-    <a href="<?= base_url('index.php/Jobcard/timesheet/' . $jc->jobcard_id); ?>"
-       class="mt-1 inline-block px-3 py-1 text-xs bg-blue-300 text-white rounded">
-        Time Sheet
-    </a>
-
-</td>
-
-
-
-							<!-- <td class="border px-3 py-2 text-center">
-
-								<?php echo $jc->issue_count; if ($jc->issue_count == 0): ?>
+								<?php elseif ((int)$jc->fully_issued_parts === 0): ?>
 
 									<span class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700">
 										Not Issued
@@ -147,10 +99,10 @@
 										Issue Spareparts
 									</a>
 
-								<?php elseif ($jc->status != 'Finished'): ?>
+								<?php elseif ((int)$jc->fully_issued_parts < (int)$jc->total_parts): ?>
 
 									<span class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700">
-										Partially Issued (<?= $jc->issue_count ?>)
+										Partially Issued (<?= $jc->fully_issued_parts ?>)
 									</span>
 									<br>
 									<a href="<?= base_url('index.php/MaterialIssue/create/' . $jc->jobcard_id); ?>"
@@ -170,7 +122,7 @@
 									</a>
 
 								<?php endif; ?>
-								
+
 								<br>
 
 								<a href="<?= base_url('index.php/Jobcard/timesheet/' . $jc->jobcard_id); ?>"
@@ -178,7 +130,10 @@
 									Time Sheet
 								</a>
 
-							</td> -->
+							</td>
+
+
+
 
 
 							<!-- Actions -->
@@ -220,11 +175,11 @@
 	$(document).ready(function() {
 		$('#jobcardTable').DataTable({
 			pageLength: 10,
-				language: {
+			language: {
 				emptyTable: "No Jobcard found"
 			},
 			order: [
-				[1, 'desc']
+				[0, 'asc']
 			],
 			columnDefs: [{
 				orderable: false,

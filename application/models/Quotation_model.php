@@ -17,6 +17,37 @@ class Quotation_model extends CI_Model
 			return false;
 		}
 
+		// =====check whether the estimation has a parent estimation id.
+		// if exist, check quotation with that estimation id and create a revision of that quotation.
+		// If not exist, crete a new quotation==================
+
+		$parent_estid = $est->parent_estimation_id;
+		log_message('error', $parent_estid);
+
+		// 2. Check if quotation already exists with parent_estimation_id
+		$quotation_parent = $this->db
+			->where('estimation_id', $parent_estid)
+			->get('quotations')
+			->row();
+		if ($quotation_parent) {
+			log_message('error', 'quote parent');
+			$quotation_no_parent = $quotation_parent->quotation_no;
+			$quotation_revision_no =  $quotation_parent->revision_no;
+			$revisionNo = $quotation_revision_no + 1;
+			$parent_quotation_id = $quotation_parent->quotation_id;
+			// $new_quoteno = $quotation_no_parent . "-REV-" . $revisionNo;
+			// Remove existing REV part if exists
+			$base_no = preg_replace('/-REV-\d+$/', '', $quotation_no_parent);
+
+			$new_quoteno = $base_no . "-REV-" . $revisionNo;
+		} else {
+			log_message('error', 'quote new');
+			// 3. Generate quotation number
+			$new_quoteno = $this->generate_quotation_no();
+			$revisionNo = 0;
+			$quotation_no_parent = "";
+		}
+
 		// 2. Prevent duplicate quotation creation
 		$exists = $this->db
 			->where('estimation_id', $estimation_id)
@@ -28,12 +59,11 @@ class Quotation_model extends CI_Model
 			return $exists->quotation_id;
 		}
 
-		// 3. Generate quotation number
-		$quotation_no = $this->generate_quotation_no();
+
 
 		// 4. Insert quotation (REVISION 1)
 		$this->db->insert('quotations', [
-			'quotation_no'            => $quotation_no,
+			'quotation_no'            => $new_quoteno,
 			'quotation_date'          => date('Y-m-d'),
 			'estimation_id'           => $est->estimation_id,
 			'appointment_id'          => $est->appointment_id,
@@ -49,11 +79,13 @@ class Quotation_model extends CI_Model
 			'est_completion_time'     => $est->est_completion_time,
 			'customer_approval'       => $est->customer_approval,
 			'customer_estimated_price' => $est->customer_estimated_price,
-			'revision_no'             => 1,
-			'parent_quotation_id'     => null,
+			'revision_no'             => $revisionNo,
+			'parent_quotation_id'     => $parent_quotation_id,
 			'status'                  => 'Draft',
 			'remarks'                 => $est->remarks,
-			'created_at'              => date('Y-m-d H:i:s')
+			'created_at'              => date('Y-m-d H:i:s'),
+			'srvice_discount'                 => $est->service_discount,
+			'sublet_discount'                 => $est->sublet_discount,
 		]);
 
 		$quotation_id = $this->db->insert_id();
@@ -89,14 +121,17 @@ class Quotation_model extends CI_Model
            =============================== */
 		$this->db->query("
             INSERT INTO quotation_services
-            (quotation_id, service_id, estimated_time, estimated_cost, total_cost, created_at)
+            (quotation_id, service_id, estimated_time, estimated_cost, total_cost, created_at,discount_percentage,discount_amount,taxable_amount)
             SELECT
                 {$quotation_id},
                 service_id,
                 estimated_time,
                 estimated_cost,
                 total_cost,
-                NOW()
+                NOW(),
+				discount_percentage,
+				discount_amount,
+				taxable_amount
             FROM estimation_services
             WHERE estimation_id = {$estimation_id}
         ");
@@ -105,13 +140,17 @@ class Quotation_model extends CI_Model
            =============================== */
 		$this->db->query("
 				INSERT INTO quotation_job_descriptions
-				(quotation_id, description, employee_id, created_at,amount)
+				(quotation_id, description, employee_id, created_at,amount,discount_percentage,discount_amount,taxable_amount)
 				SELECT
 					{$quotation_id},
 					description,
 					employee_id,
 					NOW(),
-					amount
+					amount,
+					discount_percentage,
+					discount_amount,
+					taxable_amount
+
 				FROM estimation_job_descriptions
 				WHERE estimation_id = {$estimation_id}
 			");
@@ -179,7 +218,7 @@ class Quotation_model extends CI_Model
 	/* =====================================================
        QUOTATION NUMBER GENERATOR
        ===================================================== */
-	private function generate_quotation_no()
+	private function generate_quotation_no12333()
 	{
 		$year = date('Y');
 
@@ -198,6 +237,55 @@ class Quotation_model extends CI_Model
 		}
 
 		return "QT-$year-$new_no";
+	}
+	private function generate_quotation_no($parent_id = null)
+	{
+		$year = date('Y');
+
+		// NEW QUOTATION
+		if ($parent_id == null) {
+
+			$this->db->like('quotation_no', "QT-$year-", 'after');
+			$this->db->not_like('quotation_no', 'REV');
+			$this->db->order_by('quotation_id', 'DESC');
+			$this->db->limit(1);
+
+			$last = $this->db->get('quotations')->row();
+
+			if ($last) {
+				$parts = explode('-', $last->quotation_no);
+				$last_no = intval($parts[2]);
+				$new_no = str_pad($last_no + 1, 4, '0', STR_PAD_LEFT);
+			} else {
+				$new_no = '0001';
+			}
+
+			return "QT-$year-$new_no";
+		}
+
+		// REVISION
+		else {
+
+			// get parent quotation
+			$parent = $this->db
+				->where('quotation_id', $parent_id)
+				->get('quotations')
+				->row();
+
+			// remove revision part if exists
+			$base_qt = preg_replace('/-REV-\d+$/', '', $parent->quotation_no);
+
+			// find last revision
+			$this->db->where('parent_quotation_id', $parent_id);
+			$this->db->order_by('revision_no', 'DESC');
+			$this->db->limit(1);
+
+			$last = $this->db->get('quotations')->row();
+
+			$rev = $last ? $last->revision_no + 1 : 1;
+
+			return $base_qt . "-REV-" . $rev;
+		}
 	}
 
 	public function get_quotation($quotation_id)
@@ -225,6 +313,14 @@ class Quotation_model extends CI_Model
 		return $this->db
 			->where('quotation_id', $quotation_id)
 			->get('quotation_parts')
+			->result();
+	}
+
+	public function get_job_descriptions($quotation_id)
+	{
+		return $this->db
+			->where('quotation_id', $quotation_id)
+			->get('quotation_job_descriptions')
 			->result();
 	}
 
@@ -415,28 +511,79 @@ class Quotation_model extends CI_Model
 			}
 		}
 
+			/* ===============================
+       4. UPDATE sublet SERVICES (OPTIONAL)
+       =============================== */
 
-		// if (isset($data['service_id']) && is_array($data['service_id'])) {
+		if (isset($data['job_description']) && is_array($data['job_description'])) {
 
-		// 	$this->db->where('quotation_id', $quotation_id)
-		// 		->delete('quotation_services');
+			$this->db->where('quotation_id', $quotation_id)
+				->delete('quotation_job_descriptions');
+
+			// ✅ STEP 1 — Calculate subtotal
+			$jsubtotal = 0;
+
+			foreach ($data['job_amount'] as $t) {
+				$jsubtotal += (float)$t;
+			}
+
+			if ($jsubtotal <= 0) {
+				$jsubtotal = 1; // prevent division error
+			}
+
+			// ✅ Total service discount from quotation header
+			$total_jdiscount = isset($data['sublet_discount'])
+				? (float)$data['sublet_discount']
+				: 0;
+
+			$distributed_jdiscount = 0;
+			$last_jindex = array_key_last($data['job_description']);
+
+			foreach ($data['job_description'] as $i => $sid) {
+
+				if (!$sid) continue;
+
+				$service_jtotal = (float)($data['job_amount'][$i] ?? 0);
+
+				// ✅ Proportional discount
+				if ($i == $last_jindex) {
+
+					// Fix rounding mismatch
+					$service_jdiscount = round($total_jdiscount - $distributed_jdiscount, 2);
+				} else {
+
+					$service_jdiscount = round(
+						($service_jtotal / $jsubtotal) * $total_discount,
+						2
+					);
+
+					$distributed_jdiscount += $service_jdiscount;
+				}
+
+				// ✅ Discount %
+				$discount_jpercentage = ($service_jtotal > 0)
+					? round(($service_jdiscount / $service_jtotal) * 100, 2)
+					: 0;
+
+				// ✅ Taxable
+				$taxable_jamount = round($service_jtotal - $service_jdiscount, 2);
+
+				// ✅ Insert
+				$this->db->insert('quotation_job_descriptions', [
+					'quotation_id'        => $quotation_id,
+					'description'          => $sid,
+					'amount'      => $data['job_amount'][$i] ?? 1,
+					'created_at' => date('Y-m-d H:i:s'),
+					
+					'discount_amount'     => $service_jdiscount,
+					'discount_percentage' => $discount_jpercentage,
+					'taxable_amount'      => $taxable_jamount
+				]);
+			}
+		}
 
 
-
-
-		// 	foreach ($data['service_id'] as $i => $sid) {
-
-		// 		if (!$sid) continue;
-
-		// 		$this->db->insert('quotation_services', [
-		// 			'quotation_id'  => $quotation_id,
-		// 			'service_id'    => $sid,
-		// 			'estimated_time' => $data['service_time'][$i] ?? 1,
-		// 			'estimated_cost' => $data['service_cost'][$i] ?? 0,
-		// 			'total_cost'    => $data['total_cost'][$i]   ?? 0
-		// 		]);
-		// 	}
-		// }
+		
 
 		return true;
 	}
@@ -497,7 +644,7 @@ class Quotation_model extends CI_Model
 			->from('quotations q')
 			->join('customers c', 'c.customer_id = q.customer_id')
 			->join('vehicles v', 'v.vehicle_id = q.vehicle_id')
-			
+
 			->order_by('q.quotation_id ', 'DESC')
 			->get()
 			->result();
@@ -527,6 +674,8 @@ class Quotation_model extends CI_Model
 			return false;
 		}
 
+		$this->load->model('Jobcard_model');
+		$jobcard_no = $this->Jobcard_model->generate_jobcard_no_from_model();
 		// Insert jobcard
 		$this->db->insert('job_cards', [
 			'quotation_id'    => $q->quotation_id,
@@ -537,7 +686,8 @@ class Quotation_model extends CI_Model
 			'jobcard_date'   => date('Y-m-d'),
 			'status'         => 'Pending',
 			'created_by'     => $this->session->userdata('user_id') ?? null,
-			'created_at'     => date('Y-m-d H:i:s')
+			'created_at'     => date('Y-m-d H:i:s'),
+			'jobcard_no' => $jobcard_no
 		]);
 
 		return $this->db->insert_id();
@@ -572,4 +722,18 @@ class Quotation_model extends CI_Model
 
 		return $this->db->trans_status();
 	}
+
+	// ===================================
+
+
+public function get_by_quotation_parentid($quotation_id)
+{
+    $row = $this->db
+        ->select('parent_quotation_id')
+        ->where('quotation_id', $quotation_id)
+        ->get('quotations')
+        ->row();
+
+    return $row ? $row->parent_quotation_id : null;
+}
 }

@@ -295,6 +295,52 @@ class Customer_vehicle_import extends CI_Controller
 		echo "</ul>";
 	}
 
+	public function import_history()
+	{
+		// $this->load->model('Import_model');
+
+		/* ========= CHECK FILE SELECTED ========= */
+		if (empty($_FILES['csv_file2']['name'])) {
+			echo "Please select a CSV file.";
+			return;
+		}
+
+		/* ========= UPLOAD CONFIG ========= */
+		$config['upload_path']   = FCPATH . 'uploads/csv/';
+		$config['allowed_types'] = 'csv';
+		$config['max_size']      = 10240; // 10MB
+		$config['file_name']     = 'history_' . time();
+
+		// Create folder if not exists
+		if (!is_dir($config['upload_path'])) {
+			mkdir($config['upload_path'], 0777, true);
+		}
+
+		$this->load->library('upload', $config);
+
+		/* ========= UPLOAD FILE ========= */
+		if (!$this->upload->do_upload('csv_file2')) {
+
+			echo $this->upload->display_errors();
+			return;
+		}
+
+		$upload_data = $this->upload->data();
+
+		$file_path = $upload_data['full_path'];
+
+		/* ========= CALL MODEL FUNCTION ========= */
+		$result = $this->Customer_vehicle_import_model
+			->import_customers_and_vehicles_from_csv($file_path);
+
+		/* ========= OUTPUT ========= */
+		echo "<h3>Import Result</h3>";
+
+		echo "Customers added: " . $result['customers_added'] . "<br>";
+		echo "Vehicles added: " . $result['vehicles_added'] . "<br>";
+	}
+
+
 
 	public function map_invoice_customers()
 	{
@@ -401,19 +447,19 @@ class Customer_vehicle_import extends CI_Controller
 
 
 
-	  public function map_brand_model_ids()
-    {
-        log_message('error', 'Entered map_brand_model_ids');
+	public function map_brand_model_ids()
+	{
+		log_message('error', 'Entered map_brand_model_ids');
 
-        $updated = $this->Vehicle_master_fix_model
-                        ->update_vehicle_brand_model_ids();
+		$updated = $this->Vehicle_master_fix_model
+			->update_vehicle_brand_model_ids();
 
-        echo "Updated vehicles: " . $updated;
-        exit;
-    }
+		echo "Updated vehicles: " . $updated;
+		exit;
+	}
 
-		public function test()
-{
-    echo "Controller is working";
-}
+	public function test()
+	{
+		echo "Controller is working";
+	}
 }

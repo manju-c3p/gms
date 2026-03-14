@@ -1,314 +1,475 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta charset="utf-8">
+	<meta charset="utf-8">
 
-<style>
+	<style>
+		/* =========================================================
+		TAILWIND-LIKE BASE
+		========================================================= */
 
-body {
-    font-family: Arial, sans-serif;
-    font-size: 12px;
-    margin: 0;
-    padding: 0;
-}
+		body {
+			font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+			font-size: 12px;
+			color: #111827;
+			margin: 0;
+			padding: 0;
+			background: #ffffff;
+		}
 
+		.container {
+			width: 100%;
+			max-width: 780px;
+			margin: 0 auto;
+			padding: 0 10px;
+			box-sizing: border-box;
+		}
 
-/* -----------------------------------------------------------
-   PRINT SETTINGS
-------------------------------------------------------------- */
-@media print {
+		.page-container {
+			width: 100%;
+			/* max-width: 780px; */
+			/* A4 safe width */
+			margin: 0 auto;
+			padding: 0 10px;
+			box-sizing: border-box;
+		}
 
-    /* SPACE RESERVED FOR HEADER */
-    .header-space { height: 90px; }
+		.text-left {
+			text-align: left;
+		}
 
-    /* FIXED HEADER */
-    .fixed-header {
-        position: fixed;
-        top: 0;
-        width: 100%;
-        z-index: 1000;
-    }
+		.text-right {
+			text-align: right;
+		}
 
-    /* FIXED FOOTER */
-    .fixed-footer {
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        z-index: 1000;
-    }
+		.text-center {
+			text-align: center;
+		}
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 12px;
-    }
+		.font-bold {
+			font-weight: 600;
+		}
 
-    th, td {
-        padding: 6px;
-        vertical-align: top;
-    }
+		.text-sm {
+			font-size: 12px;
+		}
 
-    /* Prevent row break */
-    tr { 
-        page-break-inside: avoid !important;
-    }
+		.text-lg {
+			font-size: 18px;
+		}
 
-    thead { display: table-header-group; }
-    tfoot { display: table-footer-group; }
+		.text-gray {
+			color: #374151;
+		}
 
-    /* MAIN CONTENT AREA */
-    .content-wrapper {
-        margin-top: 20px;
-        margin-bottom: 190px !important;
-    }
-    /* Items table */
-.items {
-    width:100%;
-    border-collapse:collapse;
-    border:1px solid #ccc;
-    font-size:12px;
-}
+		.border {
+			border: 1px solid #e5e7eb;
+		}
 
-.items th {
-    background:#f7f7f7;
-    border:1px solid #ccc;
-    padding:8px;
-    text-align:center;
-    font-weight:bold;
-}
+		.border-gray {
+			border: 1px solid #d1d5db;
+		}
 
-.items td {
-    border:1px solid #ccc;
-    padding:8px;
-}
-/* WATERMARK – works on all pages */
-.watermark {
-    position: fixed;
-    top: 35%;
-    left: 20%;
-    width: 60%;
-    opacity: 0.08;
-    z-index: -1;
-}
-.watermark img { width: 100%; }
-/* Info section */
-.info {
-    margin-bottom: 10px;
-    display: flex;
-    /* gap: 18px; */
-}
+		.rounded {
+			border-radius: 6px;
+		}
 
-.info .left { flex: 1; }
-.info .right { width: 46%; }
+		.bg-gray {
+			background: #f9fafb;
+		}
 
-.info-table {
-    width: 100%;
-    border: 1px solid #e0e0e0;
-    border-collapse: collapse;
-}
+		.bg-light {
+			background: #f3f4f6;
+		}
 
-.info-table td {
-    padding: 6px 8px;
-    vertical-align: top;
-    border-bottom: 1px solid #f0f0f0;
-}
+		.p-1 {
+			padding: 4px;
+		}
 
-.info-table td.label {
-    width: 28%;
-    font-weight: 600;
-    color: #444;
-}
+		.p-2 {
+			padding: 8px;
+		}
 
-}
+		.p-3 {
+			padding: 12px;
+		}
 
-</style>
+		.mb-2 {
+			margin-bottom: 8px;
+		}
+
+		.mb-3 {
+			margin-bottom: 12px;
+		}
+
+		.mt-2 {
+			margin-top: 8px;
+		}
+
+		.mt-3 {
+			margin-top: 12px;
+		}
+
+		.flex {
+			display: flex;
+		}
+
+		.justify-between {
+			justify-content: space-between;
+		}
+
+		.items-center {
+			align-items: center;
+		}
+
+		.w-full {
+			width: 100%;
+		}
+
+		/* =========================================================
+		PRINT HEADER
+		========================================================= */
+
+		/* .fixed-header {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			width: 100%;
+			background: #ffffff;
+			padding: 0 10px;
+			z-index: 1000;
+		} */
+
+		.fixed-header {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			background: #ffffff;
+			z-index: 1000;
+		}
+
+		.fixed-header-inner {
+			max-width: 780px;
+			margin: 0 auto;
+			padding: 0 10px;
+		}
+
+		.header-space {
+			height: 140px;
+		}
+
+		/* =========================================================
+		COMPANY HEADER
+		========================================================= */
+
+		.company-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			border-bottom: 2px solid #e5e7eb;
+			padding-bottom: 8px;
+		}
+
+		.logo {
+			height: 60px;
+		}
+
+		.company-info {
+			text-align: right;
+			font-size: 11px;
+			line-height: 1.5;
+			color: #374151;
+		}
+
+		/* =========================================================
+		TITLE LINE
+		========================================================= */
+
+		.title-line {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-top: 6px;
+		}
+
+		.title {
+			font-size: 18px;
+			font-weight: bold;
+			letter-spacing: 1px;
+		}
+
+		/* =========================================================
+		INFO TABLE
+		========================================================= */
+
+		.info-section {
+			display: flex;
+			gap: 10px;
+			margin-top: 10px;
+		}
+
+		.info-box {
+			width: 100%;
+			border: 1px solid #d1d5db;
+			border-radius: 6px;
+		}
+
+		.info-box td {
+			padding: 6px 8px;
+			border-bottom: 1px solid #f1f5f9;
+		}
+
+		.info-box tr:last-child td {
+			border-bottom: none;
+		}
+
+		.label {
+			font-weight: 600;
+			width: 140px;
+			color: #374151;
+		}
+
+		/* =========================================================
+		ITEM TABLE
+		========================================================= */
+
+		.items {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 12px;
+		}
+
+		.items th {
+			background: #f3f4f6;
+			border: 1px solid #d1d5db;
+			padding: 8px;
+			font-weight: 600;
+		}
+
+		.items td {
+			border: 1px solid #e5e7eb;
+			padding: 8px;
+		}
+
+		/* =========================================================
+		TOTAL ROWS
+		========================================================= */
+
+		.total-row td {
+			font-weight: 600;
+		}
+
+		.grand-total {
+			background: #f3f4f6;
+			font-weight: bold;
+		}
+
+		/* =========================================================
+			WATERMARK
+			========================================================= */
+
+		.watermark {
+			position: fixed;
+			top: 35%;
+			left: 20%;
+			width: 60%;
+			opacity: 0.06;
+			z-index: -1;
+		}
+
+		.watermark img {
+			width: 100%;
+		}
+
+		/* =========================================================
+			PRINT SETTINGS
+			========================================================= */
+
+		@media print {
+
+			thead {
+				display: table-header-group;
+			}
+
+			tfoot {
+				display: table-footer-group;
+			}
+
+			tr {
+				page-break-inside: avoid;
+			}
+
+			.content {
+				margin-bottom: 120px;
+			}
+
+		}
+	</style>
 </head>
 
 <body>
-    <div class="watermark">
-    <img src="<?= base_url(); ?>public/header/header.jpg" alt="">
-</div>
+	<div class="watermark">
+		<img src="<?= base_url(); ?>public/header/header.jpg" alt="">
+	</div>
 
-<!-- ============================================================
+	<!-- ============================================================
      FIXED HEADER OUTSIDE TABLE STRUCTURE
 =============================================================== -->
-<div class="fixed-header">
-    <table style="border:0;">
-       <tr>
-        <td width="50%">
-            <img src="<?= base_url() ?>public/header/header.jpg" style="width:300px;height:70px;">
-        </td>
-        <td width="50%" align="right" style="line-height:1.3;">
-            <strong style="font-size:13px;"><?= $comp_details['company_name']; ?></strong><br>
-            <?= nl2br($comp_details['company_address']); ?><br>
-            <?= $comp_details['company_city']; ?>, <?= $comp_details['company_state']; ?><br>
-            <?= $comp_details['company_country']; ?><br/><?= $comp_details['company_po']; ?>
-            <?= $comp_details['company_trn']; ?>
-        </td>
-    </tr>
+	<!-- ================= HEADER ================= -->
+	<div class="fixed-header">
+		<div class="container">
 
-    <tr>
-        <td colspan="2" align="center" style="padding-top:6px;">
-            <span style="font-size:16px; font-weight:bold;">PURCHASE ORDER</span>
-        </td>
-    </tr>
-    </table>
-</div>
+			<div class="company-header">
 
+				<img src="<?= base_url('public/images/logocooling.png') ?>" class="logo">
 
-<!-- ============================================================
+				<div class="company-info">
+					Cool Runnings Garage Co LLC<br>
+					7 St, Al Quoz 3, Dubai, UAE<br>
+					www.coolrunningsgarage.com<br>
+					info@coolrunningsgarage.com<br>
+					Tel: +971 4 265 4887<br>
+					TRN: 104026094300003
+				</div>
+
+			</div>
+
+			<div class="title-line">
+				<span>PO # : <?= $po[0]->po_code ?></span>
+				<span class="title">PURCHASE ORDER</span>
+				<span>Date : <?= date('d/m/Y', strtotime($po[0]->po_date)) ?></span>
+			</div>
+
+			<!-- <div class="text-center font-bold mt-2">
+				SUPPLIER PURCHASE ORDER
+			</div> -->
+
+		</div>
+	</div>
+
+	<!-- ============================================================
      MAIN PAGE FRAME (reserves header & footer)
 =============================================================== -->
-<table>
-    <thead>
-        <tr><td class="header-space">
- 
+	<div class="container">
+		   <div class="header-space"></div>
+	
 
-        
-        </td></tr>
-    </thead>
-
-    <tbody>
-        <tr>
-            <td>
-
-                <!-- ======================================================
+						<!-- ======================================================
                      MAIN CONTENT AREA
                 ======================================================= -->
-                <div class="content-wrapper">
+						
 
-             <div class="info">
-        <div class="left">
-            <table  style="width: 100%; border-radius: 6px;border:1px solid #ccc;">
-                        <tr>
-                            <td align="left" width="30%"><b>Name</b></td><td>:</td>
-							<td><?= $po[0]->supplier_name; ?></td>
-                        </tr>
-                        <tr>
-                            <td align="left"><b>Address</b></td><td>:</td>
-                            <td><?= $po[0]->billing_address; ?></td>
-                        </tr>
-                        <tr>
-                            <td align="left"><b>Email</b></td><td>:</td>
-                            <td><?= $po[0]->supplier_email; ?></td>
-                        </tr>
-                        <tr>
-                            <td align="left"><b>Contact Person</b></td><td>:</td>
-                            <td><?= $po[0]->supplier_email; ?></td>
-                        </tr>
-                        <tr>
-                            <td align="left"><b>TRN No</b></td><td>:</td>
-                            <td><?= $po[0]->trn_no; ?></td>
-                        </tr>
-                        <tr>
-                            <td align="left"><b>Shipment Mode</b></td><td>:</td>
-                            <td><?= $po[0]->freight_mode; ?></td>
-                        </tr>
-                    </table>
-        </div>
+							<div class="info-section">
 
-        <div class="right">
-            <table  style="width: 100%; border-radius: 6px;border:1px solid #ccc;">
-                        <tr>
-                            <td align="left"><b>Date</b></td><td>:</td>
-                            <td><?= $po[0]->po_date; ?></td>
-                        </tr>
-                        <tr>
-                            <td align="left"><b>Doc No</b></td><td>:</td>
-                            <td><?= $po[0]->po_code; ?></td>
-                        </tr>
-                        <tr>
-                            <td align="left"><b>Supplier</b></td><td>:</td>
-                            <td><?= $po[0]->supplier_name; ?></td>
-                        </tr>
-                          <tr>
-                            <td align="left"><b>Quote Ref</b></td><td>:</td>
-                            <td><?= $po[0]->quotation_code; ?></td>
-                        </tr>
-                          <tr>
-                            <td align="left"><b>Payment Terms</b></td><td>:</td>
-                            <td><?= $po[0]->payment_term; ?></td>
-                        </tr>
-                          <tr>
-                            <td align="left"><b>Shipping Terms</b></td><td>:</td>
-                            <td><?= $po[0]->shipping_term; ?></td>
-                        </tr>
-                    </table>
-        </div>
-    </div>      
+								<table class="info-box">
+									<tr>
+										<td class="label">Name</td>
+										<td><?= $po[0]->supplier_name ?></td>
+									</tr>
+									<tr>
+										<td class="label">Address</td>
+										<td><?= $po[0]->billing_address ?></td>
+									</tr>
+									<tr>
+										<td class="label">Email</td>
+										<td><?= $po[0]->email_id ?></td>
+									</tr>
+									<tr>
+										<td class="label">TRN No</td>
+										<td><?= $po[0]->trn_no ?></td>
+									</tr>
+								</table>
 
-                    <!-- ==================================================
+								<table class="info-box">
+									<tr>
+										<td class="label">Doc No</td>
+										<td><?= $po[0]->po_code ?></td>
+									</tr>
+									<tr>
+										<td class="label">Quote Ref</td>
+										<td><?= $po[0]->quotation_code ?></td>
+									</tr>
+									<tr>
+										<td class="label">Payment Terms</td>
+										<td><?= $po[0]->payment_term ?></td>
+									</tr>
+								</table>
+
+							</div>
+
+							<!-- ==================================================
                          PRODUCT TABLE
                     ==================================================== -->
-                    <table border="1">
-            <thead>
-                <tr>
-                    <th style="width: 4%;">Sl No</th>
-                    <th style="width: 12%;">Model</th>
-                    <th style="width: 28%;">Description</th>
-                    <th style="width: 8%;">Qty</th>
-                    <th style="width: 8%;">Unit</th>
-                    <th style="width: 10%;">Price</th>
-                    <th style="width: 10%;">Discount</th>
-                    <th style="width: 10%;">Total</th>
-                </tr>
-            </thead>
+							<table class="items">
 
-            <tbody>
-                <?php
-                $sl_no = 1;
-                $total_before_vat = $po[0]->sub_total ?? 0;
-                $discount = $po[0]->discount ?? 0;
-                $vat_amount = $po[0]->vat_amt ?? 0;
-                $grand_total = $po[0]->grand_total;
+								<thead>
+									<tr>
+										<th>Sl No</th>
+										<th>Model</th>
+										<th>Description</th>
+										<th>Qty</th>
+										<th>Unit</th>
+										<th class="text-right">Price</th>
+										<th class="text-right">Discount</th>
+										<th class="text-right">Total</th>
+									</tr>
+								</thead>
 
-                foreach ($po_tr as $detail):
-                    // $total_before_vat += $detail->price * $detail->quantity;
-                ?>
-                <tr>
-                    <td align="center"><?= $sl_no++; ?></td>
-                    <td><?= htmlspecialchars($detail->item_model); ?></td>
-                    <td><?= htmlspecialchars($detail->item_description); ?></td>
-                    <td align="center"><?= $detail->quantity; ?></td>
-                    <td align="center"><?= $detail->unit_name; ?></td>
-                    <td align="right"><?= number_format($detail->price, 2); ?></td>
-                    <td align="right"><?= number_format($detail->dis_amt, 2); ?></td>
-                    <td align="right"><?= number_format($detail->total, 2); ?></td>
-                </tr>
-                <?php endforeach; ?>
+								<tbody>
+									<?php
+									$sl_no = 1;
+									$total_before_vat = $po[0]->sub_total ?? 0;
+									$discount = $po[0]->discount ?? 0;
+									$vat_amount = $po[0]->vat_amt ?? 0;
+									$grand_total = $po[0]->grand_total;
 
-                <!-- Summary Rows -->
-                <tr>
-                    <td colspan="7" align="right"><b>Total Before VAT</b></td>
-                    <td align="right"><?= number_format($total_before_vat, 2); ?></td>
-                </tr>
-                <tr>
-                    <td colspan="7" align="right"><b>Additional Discount</b></td>
-                    <td align="right"><?= number_format($discount, 2); ?></td>
-                </tr>
-                <tr>
-                    <td colspan="7" align="right"><b>VAT Amount</b></td>
-                    <td align="right"><?= number_format($vat_amount, 2); ?></td>
-                </tr>
-                <tr style="background: #f7f7f7;">
-                    <td colspan="7" align="right"><b>Grand Total</b></td>
-                    <td align="right"><?= number_format($grand_total, 2); ?></td>
-                </tr>
+									foreach ($po_tr as $detail):
+										// $total_before_vat += $detail->price * $detail->quantity;
+									?>
+										<tr>
+											<td align="center"><?= $sl_no++; ?></td>
+											<td><?= htmlspecialchars($detail->part_name); ?></td>
+											<td><?= htmlspecialchars($detail->part_name); ?></td>
+											<td align="center"><?= $detail->quantity; ?></td>
+											<td align="center"><?= $detail->unit_name; ?></td>
+											<td align="right"><?= number_format($detail->price, 2); ?></td>
+											<td align="right"><?= number_format($detail->dis_amt, 2); ?></td>
+											<td align="right"><?= number_format($detail->total, 2); ?></td>
+										</tr>
+									<?php endforeach; ?>
 
-            </tbody>
-        </table>
-                  
+									<!-- your PHP loop same -->
 
-            </td>
-        </tr>
-    </tbody>
-</table>
+									<tr class="total-row">
+										<td colspan="7" class="text-right">Total Before VAT</td>
+										<td class="text-right"><?= number_format($total_before_vat, 2) ?></td>
+									</tr>
 
+									<tr class="total-row">
+										<td colspan="7" class="text-right">VAT</td>
+										<td class="text-right"><?= number_format($vat_amount, 2) ?></td>
+									</tr>
+
+									<tr class="grand-total">
+										<td colspan="7" class="text-right">Grand Total</td>
+										<td class="text-right"><?= number_format($grand_total, 2) ?></td>
+									</tr>
+
+								</tbody>
+							</table>
+
+
+					
+	</div>
 
 </body>
+
 </html>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        window.print();
-    });
+	document.addEventListener("DOMContentLoaded", function() {
+		window.print();
+	});
 </script>

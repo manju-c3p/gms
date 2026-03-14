@@ -10,7 +10,7 @@
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
 	<h2 class="text-2xl font-bold mb-4">Add Customer & Vehicles</h2>
 
-	<form method="POST" action="<?= base_url('index.php/customer/save'); ?>">
+	<form method="POST" action="<?= base_url('index.php/Customer/save'); ?>"  onsubmit="return preventDoubleSubmit(this);">
 
 		<!-- CUSTOMER SECTION -->
 		<h3 class="text-xl font-semibold mb-3">Customer Details</h3>
@@ -25,7 +25,7 @@
 
 			<div>
 				<label class="font-medium">Phone</label>
-				<input type="text" name="phone" class="w-full border p-2 rounded">
+				<input type="number" name="phone" class="w-full border p-2 rounded" >
 			</div>
 
 			<div>
@@ -115,7 +115,7 @@
 
 				<div>
 					<label class="font-medium">Year</label>
-					<input name="vehicle_year[]" class="border p-2 rounded w-full" placeholder="2020">
+					<input type="number" name="vehicle_year[]" class="border p-2 rounded w-full" placeholder="2020">
 				</div>
 
 				<div>
@@ -145,7 +145,7 @@
 
 		<br><br>
 
-		<button type="submit"
+		<button type="submit" id="saveBtn"
 			class="px-6 py-2 bg-blue-600 text-white rounded">
 			Save Customer & Vehicles
 		</button>
@@ -407,3 +407,34 @@
 		$('#modelModal').addClass('hidden');
 	}
 </script>
+<script>
+document.getElementById('saveBtn').addEventListener('click', function () {
+
+    this.disabled = true;
+    this.innerText = 'Saving...';
+
+    this.form.submit();
+
+});
+</script>
+<script>
+
+var isSubmitting = false;
+
+function preventDoubleSubmit(form)
+{
+    if(isSubmitting)
+    {
+        return false;
+    }
+
+    isSubmitting = true;
+
+    document.getElementById('saveBtn').disabled = true;
+    document.getElementById('saveBtn').innerText = 'Saving...';
+
+    return true;
+}
+
+</script>
+

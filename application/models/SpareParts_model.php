@@ -40,9 +40,9 @@ class SpareParts_model extends CI_Model
 			->row();
 	}
 	public function get_part_rfq($part_id)
-{
-    return $this->db
-        ->select('
+	{
+		return $this->db
+			->select('
             p.*,
             m.model_name,
             m.model_id,
@@ -53,20 +53,20 @@ class SpareParts_model extends CI_Model
             su.unit_name AS stock_unit_name,
             su.unit_abbr AS stock_unit_abbr
         ')
-        ->from('spare_parts p')
+			->from('spare_parts p')
 
-        ->join('vehicle_models m', 'm.model_id = p.vehicle_model_id', 'left')
+			->join('vehicle_models m', 'm.model_id = p.vehicle_model_id', 'left')
 
-        // Purchase Unit
-        ->join('unit_master pu', 'pu.unit_id = p.purchase_unit_id', 'left')
+			// Purchase Unit
+			->join('unit_master pu', 'pu.unit_id = p.purchase_unit_id', 'left')
 
-        // Stock Unit
-        ->join('unit_master su', 'su.unit_id = p.stock_unit_id', 'left')
+			// Stock Unit
+			->join('unit_master su', 'su.unit_id = p.stock_unit_id', 'left')
 
-        ->where('p.part_id', $part_id)
-        ->get()
-        ->row();
-}
+			->where('p.part_id', $part_id)
+			->get()
+			->row();
+	}
 
 
 
@@ -146,14 +146,36 @@ class SpareParts_model extends CI_Model
 		$part_id = $this->db->insert_id();
 
 		// 2️⃣ Insert opening stock (only if qty > 0)
-		if ($opening_qty > 0) {
-			$this->db->insert('stock_in', [
-				'part_id'   => $part_id,
-				'qty'       => $opening_qty,
-				'date_in'   => date('Y-m-d'),
-				'created_at' => date('Y-m-d H:i:s')
-			]);
-		}
+		// if ($opening_qty > 0) {
+		$this->db->insert('stock_in', [
+			'part_id'   => $part_id,
+			'qty'       => $opening_qty,
+			'date_in'   => date('Y-m-d'),
+			'created_at' => date('Y-m-d H:i:s')
+		]);
+		// }
+
+		/* stock_ledger */
+		$this->db->insert('stock_ledger', [
+			'part_id'      => $part_id,
+			'txn_type'     => 'OPENING',
+			'qty'          => 0,
+			'unit_id'      => $stock_unit_id,
+			'reference_id' => $stock_in_id,
+			'reference_no' => 'OPENING-STOCK',
+			'remarks'      => 'Opening stock initialization',
+			'txn_date'     => date('Y-m-d H:i:s'),
+			'created_at'   => date('Y-m-d H:i:s'),
+			'created_by'   => $this->session->userdata('user_id')
+		]);
+
+
+		/* stock_summary */
+		$this->db->insert('stock_summary', [
+			'part_id'       => $part_id,
+			'current_stock' => 0,
+			'updated_at'    => date('Y-m-d H:i:s')
+		]);
 
 		$this->db->trans_complete(); // ✅ commit / rollback
 

@@ -81,7 +81,7 @@
         <div class="border-t pt-6"></div>
 
         <!-- Contact Persons -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+        <div class="hidden grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
 
             <label class="font-semibold text-gray-700">
                 Contact Persons

@@ -85,8 +85,8 @@
                         class="w-full rounded-lg border border-gray-300 px-4 py-2">
                     <option value="">Select</option>
                     <?php foreach ($supplier_records as $row): ?>
-                        <option value="<?= $row->supp_name . ',' . $row->supp_id; ?>">
-                            <?= $row->supp_name; ?>
+                        <option value="<?= $row->supplier_name . ',' . $row->supplier_id; ?>">
+                            <?= $row->supplier_name; ?>
                         </option>
                     <?php endforeach; ?>
                 </select>

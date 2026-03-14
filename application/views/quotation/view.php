@@ -584,10 +584,33 @@
 		<!-- FOOTER -->
 		<div class="footer">
 			<p>Total Amount in Words:<br><strong><?= $amount_in_words ?></strong></p>
-			<p>1. Additional repairs if any will be informed.<br>
-				2. Prices subject to availability of spare parts.<br>
-				3. Quotation valid for 15 days.</p>
-			<br>
+
+
+			<hr>
+				<strong>Conditions :</strong>
+
+				<ul class="terms-list">
+					<li>After dismantling, if any additional work or spare parts not covered in this estimate are required, a supplementary estimate will be provided.</li>
+					<li>All deliveries are subject to availability of spare parts.</li>
+					<li>Spare parts prices are subject to change without prior notice. Prices prevailing at the time of actual delivery shall be charged.</li>
+					<li>This estimate is valid for <strong>15 days</strong> from the date of issue.</li>
+					<li>Payment can only be made by cash or card. Cheque payments are not accepted.</li>
+					<li>Used parts are not covered under warranty.</li>
+					<li>Brand new electronic parts are not covered under warranty.</li>
+					<li>The client authorizes Cool Runnings Garage to test drive the serviced vehicle.</li>
+					<li>The company will not be held liable for any missing items inside the client’s vehicle.</li>
+					<li>The client is responsible for removing all personal belongings from the vehicle before service or repair.</li>
+					<li>A minimum of <strong>50%</strong> of the total estimate value is required as a down payment for any service.</li>
+					<li>Once the client approves and confirms the estimate, it cannot be withdrawn.</li>
+					<li>All approved estimates are subject to change or revision as per specialist advice during the course of work.</li>
+					<li>The company will not be responsible for damage to other vehicle parts due to brittleness or friability.</li>
+					<li>Free parking for <strong>7 days</strong> will be provided after completion of repairs. Thereafter, parking will be charged at <strong>AED 100 per day</strong>.</li>
+					<li>The company is not liable for any loss or damage to vehicles parked outside the garage.</li>
+					<li>The vehicle will not be released until full payment is received.</li>
+					<li>Replaced parts must be collected by the client within <strong>2–3 days</strong>, failing which they will be treated as scrap.</li>
+					<li>The company may take photographs of the vehicle and repair process for marketing purposes only.</li>
+				</ul>
+				<br>
 			<p>Name: _______________________ &nbsp;&nbsp; Signature: _______________________</p>
 		</div>
 

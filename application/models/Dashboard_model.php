@@ -49,11 +49,25 @@ class Dashboard_model extends CI_Model
 			->result();
 	}
 
-	public function get_pending_job_cards_count()
+	public function get_Scheduled_job_cards_count()
 	{
 		return $this->db
 			->from('job_cards')
-			->where_in('status', ['Pending'])
+			->where_in('status', ['Scheduled'])
+			->count_all_results();
+	}
+	public function get_inprogress_job_cards_count()
+	{
+		return $this->db
+			->from('job_cards')
+			->where_in('status', ['In Progress'])
+			->count_all_results();
+	}
+	public function get_finished_job_cards_count()
+	{
+		return $this->db
+			->from('job_cards')
+			->where_in('status', ['Finished',''])
 			->count_all_results();
 	}
 
@@ -61,7 +75,7 @@ class Dashboard_model extends CI_Model
 	{
 		return $this->db
 			->from('job_cards')
-			->where_in('status', ['Pending', 'In Progress'])
+			->where_in('status', ['Scheduled', 'In Progress', 'Finished',''])
 			->count_all_results();
 	}
 	public function get_customers_count()
@@ -70,15 +84,39 @@ class Dashboard_model extends CI_Model
 			->from('customers')
 			->count_all_results();
 	}
+	public function get_vehicles_count()
+	{
+		return $this->db
+			->from('vehicles')
+			->count_all_results();
+	}
 	public function get_total_revenue()
 	{
 		return (float) $this->db
 			->select('COALESCE(SUM(grand_total), 0) AS total_revenue')
 			->from('invoices')
-			->where('status', 'Paid')
+			// ->where('status', 'Paid')
 			->get()
 			->row()
 			->total_revenue;
+	}
+	public function get_grn_count()
+	{
+		return $this->db
+			->from('purchase_grn_master')
+			->count_all_results();
+	}
+	public function get_purchase_order_count()
+	{
+		return $this->db
+			->from('purchase_order_master')
+			->count_all_results();
+	}
+	public function get_purchase_return_count()
+	{
+		return $this->db
+			->from('purchase_return')
+			->count_all_results();
 	}
 
 
@@ -178,17 +216,17 @@ class Dashboard_model extends CI_Model
 	{
 		// Get jobcards with description count & employee
 		$sql = "
-	SELECT 
-		j.jobcard_id,
-		j.jobcard_no,
-		e.employee_name AS employee_name,
-		COUNT(d.jobcard_description_id) AS total_jobs
-	FROM job_cards j
-	JOIN jobcard_descriptions d ON d.jobcard_id = j.jobcard_id
-	JOIN employees e ON e.employee_id = d.employee_id
-	WHERE j.status != 'COMPLETED'
-	GROUP BY j.jobcard_id, e.employee_id
-	";
+			SELECT 
+				j.jobcard_id,
+				j.jobcard_no,
+				e.employee_name AS employee_name,
+				COUNT(d.jobcard_description_id) AS total_jobs
+			FROM job_cards j
+			JOIN jobcard_descriptions d ON d.jobcard_id = j.jobcard_id
+			JOIN employees e ON e.employee_id = d.employee_id
+			WHERE j.status != 'COMPLETED'
+			GROUP BY j.jobcard_id, e.employee_id
+			";
 
 		$rows = $this->db->query($sql)->result();
 
@@ -274,7 +312,7 @@ class Dashboard_model extends CI_Model
 			->result();
 	}
 
-	public function get_jobcard_job_completion()
+	public function get_jobcard_job_completionold()
 	{
 		return $this->db
 			->select('
@@ -301,6 +339,44 @@ class Dashboard_model extends CI_Model
 			)
 			->group_by('jc.jobcard_id')
 			->order_by('jc.created_at', 'DESC')
+			->get()
+			->result();
+	}
+	public function get_jobcard_job_completion()
+	{
+		return $this->db
+			->select('
+            jc.jobcard_id,
+            jc.jobcard_no,
+            jc.jobcard_date,
+
+            c.name AS customer_name,
+            v.registration_no,
+            v.model,
+
+            COUNT(DISTINCT js.jobcard_service_id) AS total_jobs,
+
+            COUNT(DISTINCT CASE
+                WHEN wl.status = "STOP"
+                THEN wl.jobcard_service_id
+            END) AS completed_jobs
+        ')
+			->from('job_cards jc')
+
+			->join('customers c', 'c.customer_id = jc.customer_id', 'left')
+			->join('vehicles v', 'v.vehicle_id = jc.vehicle_id', 'left')
+
+			->join('jobcard_services js', 'js.jobcard_id = jc.jobcard_id', 'left')
+
+			->join(
+				'jobcard_work_logs wl',
+				'wl.jobcard_service_id = js.jobcard_service_id',
+				'left'
+			)
+
+			->group_by('jc.jobcard_id')
+			->order_by('jc.created_at', 'DESC')
+			->limit(10)   // Limit to 10 records
 			->get()
 			->result();
 	}
@@ -380,5 +456,30 @@ class Dashboard_model extends CI_Model
     ";
 
 		return $this->db->query($sql)->result();
+	}
+
+	public function get_revenue_summary()
+	{
+		$query = $this->db->query("
+        SELECT
+            IFNULL(SUM(i.grand_total),0) AS total_invoice_amount,
+
+            IFNULL((
+                SELECT SUM(v.amount)
+                FROM voucher_transaction v
+                WHERE v.voucher_type = 'R'
+                AND v.drcr_type = 'Cr'
+                AND v.cancel = 0
+            ),0) AS total_collected_amount
+
+        FROM invoices i
+        WHERE i.invoice_type = 'TI'
+    ");
+
+		$row = $query->row();
+
+		$row->pending_amount = $row->total_invoice_amount - $row->total_collected_amount;
+
+		return $row;
 	}
 }

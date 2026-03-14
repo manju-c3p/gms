@@ -1,9 +1,22 @@
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
 <div class="bg-white rounded-xl shadow p-6">
 
 <!-- Header -->
-		<div class="px-6 py-4 border-b border-gray-200">
-			<h2 class="text-lg font-semibold text-gray-800">Payment Entry</h2>
-		</div><br>
+		<div class="flex items-center justify-between mb-6 border-b pb-3">
+  
+  <!-- Caption -->
+  <h2 class="text-xl font-semibold text-gray-800">
+    Add Payment Voucher
+  </h2>
+
+  <!-- List Button -->
+  <a href="<?php echo base_url('index.php/accounts/view_payment_list'); ?>"
+     class="inline-flex items-center bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-md shadow">
+    <i class="fa fa-list mr-2"></i> List
+  </a>
+
+</div>
 	<form action="<?php echo base_url() . 'index.php/accounts/add_payment_details'; ?>"
 		  id="receipt"
 		  method="post"
@@ -40,7 +53,7 @@
 						tabindex="2"
 						onchange="get_invoice_list()"
 						required
-						class="w-full border rounded-lg px-3 py-2 text-sm select2">
+						class="w-full border rounded-lg px-3 py-2 text-sm select2 debtor-select">
 					<option value="">Select</option>
 					<?php foreach ($sundry_detors_records as $s) { ?>
 						<option value="<?php echo $s->account_id; ?>">
@@ -61,8 +74,9 @@
 						required
 						class="w-full border rounded-lg px-3 py-2 text-sm select2">
 					<option value="">Select</option>
+					<option value="Cash">Cash</option>
 					<option value="cheque">Cheque</option>
-					<option value="etransfer">E-Transfer</option>
+					<option value="etransfer">Card/Transfer</option>
 					<option value="other">Other</option>
 				</select>
 			</div>
@@ -110,7 +124,7 @@
 			<table class="w-full border border-gray-200 rounded-lg text-sm" id="cr_table">
 				<thead class="bg-gray-100">
 					<tr>
-						<th class="border px-3 py-2 text-left">Debit Account (Cr)</th>
+						<th class="border px-3 py-2 text-left">Debit Account (Dr)</th>
 						<th class="border px-3 py-2 text-left">Debit Amount</th>
 						<th class="border px-3 py-2 w-20 text-center">
 							<button type="button"
@@ -128,7 +142,7 @@
 									name="creditor[]"
 									onchange="get_account_balance(0,'cr')"
 									required
-									class="w-full border rounded px-2 py-1 select2">
+									class="w-full border rounded px-2 py-1 select2 credit-select">
 								<option value="">Select</option>
 								<?php foreach ($receipt_Creditors as $row) { ?>
 									<option value="<?php echo $row->account_id; ?>">
@@ -224,16 +238,57 @@
 		//  });
 
 		var k = 1;
-		$("#cr_add_row").click(function() {
-			$('#cr_addr' + k).html("<td><select class='form-select form-control-sm select2 select2Width' id='creditor" + k + "' name='creditor[]' onchange=get_account_balance(" + k + ",'cr') required><option value=''>Select</option><?php foreach ($receipt_Creditors as $s) { ?>  <option value='<?php echo $s->account_id; ?>'><?php echo $s->account_name; ?></option><?php } ?></select><br><label id='set_balancecr" + k + "'>Balance</label></td><td><input type='number' step='0.01' name='cr_amount[]' id='cr_amount" + k + "' class='form-control form-control-sm credit_sum' min='0' required onkeyup='calculate_grand_total()'></td><td><a onclick='remove_row_cr(" + k + ");' title='Delete' class='btn btn-xs bg-orange remove1'><span class='fa fa-trash'></span></a></td>");
-			$('#cr_body tr:last').after('<tr id="cr_addr' + (k + 1) + '"></tr>');
-			k++;
+		$("#cr_add_row").click(function () {
 
-			// initialize select2 on new element
-			$('#creditor' + (k - 1)).select2({
-				width: "220px"
-			});
-		});
+    $('#cr_addr' + k).html(`
+        <td class="border px-3 py-2">
+            <select id="creditor${k}"
+                name="creditor[]"
+                onchange="get_account_balance(${k},'cr')"
+                required
+                class="w-full border rounded px-2 py-1 select2 credit-select">
+
+                <option value="">Select</option>
+
+                <?php foreach ($receipt_Creditors as $s) { ?>
+                    <option value="<?php echo $s->account_id; ?>">
+                        <?php echo $s->account_name; ?>
+                    </option>
+                <?php } ?>
+
+            </select>
+
+            <p class="text-xs mt-1" id="set_balancecr${k}">Balance</p>
+        </td>
+
+        <td class="border px-3 py-2">
+            <input type="number"
+                step="0.01"
+                name="cr_amount[]"
+                id="cr_amount${k}"
+                min="0"
+                onkeyup="calculate_grand_total()"
+                required
+                class="w-full border rounded px-2 py-1 credit_sum">
+        </td>
+
+        <td class="border px-3 py-2 text-center">
+            <button type="button"
+                onclick="remove_row_cr(${k})"
+                class="bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 rounded">
+                <i class="fa fa-trash"></i>
+            </button>
+        </td>
+    `);
+
+    $('#cr_body tr:last').after('<tr id="cr_addr' + (k + 1) + '"></tr>');
+    k++;
+
+    // reinitialize select2
+    $('#creditor' + (k - 1)).select2({
+        width: '100%'
+    });
+});
 		$("#delete_row2").click(function() {
 			if (k > 1) {
 				$("#cr_addr" + (k - 1)).html('');
@@ -354,6 +409,7 @@
 	// 	}
 	function get_invoice_list() {
 		var supplier_id = document.getElementById('debtor').value;
+	
 		console.log("Selected Supplier ID:", supplier_id);
 
 		if (supplier_id != '') {
@@ -446,4 +502,17 @@
 			document.getElementById('bank_name').value = '';
 		}
 	}
+
+	$(document).ready(function() {
+		$('.debtor-select').select2({
+			width: '100%'
+		});
+		
+		$('.credit-select').select2({
+			width: '100%'
+		});
+	
+
+
+	});
 </script>

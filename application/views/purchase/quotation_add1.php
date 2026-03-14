@@ -1,3 +1,9 @@
+<style>
+.form-control{
+  font-size:12px;
+}
+</style>
+
 <form id="main" method="post" action="<?php echo base_url().'index.php/'; ?>Purchase/add_purchase_quotation_records" autocomplete="off" enctype="multipart/form-data">
 	
  
@@ -50,12 +56,19 @@
                 <div class="col-md-12">
                   <label class="control-label col-md-2 col-sm-3 col-xs-3">Project Name</label>
                   <div class="col-md-4 col-sm-6 col-xs-6">
-                    <input type="text" class="form-control" name="project" id="project" >  
+                    <input type="text" class="form-control" name="project" id="project"  >  
                   </div>
                   <label class="control-label col-md-1 col-sm-3 col-xs-3">Upload Document</label>
                   <div class="col-md-4 col-sm-6 col-xs-6">
                     <input type="file" class="form-control" name="quote_doc" id="quote_doc" >  
                   </div>
+                </div>
+                <div class="col-md-12">
+                  <label class="control-label col-md-2 col-sm-3 col-xs-3">RFQ Created By</label>
+                  <div class="col-md-4 col-sm-6 col-xs-6">
+                    <input type="text" class="form-control" name="rfq_by" id="rfq_by">  
+                  </div>
+                
                 </div>
               </div>
             </div>
@@ -156,7 +169,7 @@
 <script>
 function get_enquiry_info() {
 		var rfq_id = document.getElementById("rfq_id").value;
-// alert (rfq_id);
+
 		if (rfq_id != '') {
 			$.ajax({
 				async: "false",
@@ -167,7 +180,11 @@ function get_enquiry_info() {
 				success: function (msg) {
 					 document.getElementById("supplier_id").value = msg.supplier_id;
 					 document.getElementById("supplier_name").value = msg.supplier_code + ' ' + msg.supplier_name;
+           document.getElementById("rfq_by").value = msg.rfq_created_by;
+           document.getElementById("project").value = msg.project;
+           document.getElementById("ref_no").value = msg.ref;
 					 get_rfq_items_list(rfq_id);
+            
 				}
 			});
 		}
@@ -181,102 +198,89 @@ function get_enquiry_info() {
 		}
 	}
 
-  function get_rfq_items_list(rfq_id)
-  {
-    
+ function get_rfq_items_list(rfq_id) {
     $.ajax({
-          type: "POST",
-          url:"<?php echo base_url()?>index.php/Ajax/get_rfq_items_for_quote",
-          data: {rfq_id:rfq_id} ,
-          success: function(msg){	       	
-              document.getElementById('rfq_items_list').innerHTML=msg;
+        type: "POST",
+        url:"<?php echo base_url()?>index.php/Ajax/get_rfq_items_for_quote",
+        data: { rfq_id: rfq_id },
+        success: function(msg){	       	
+            $('#rfq_items_list').html(msg);
+            $('.select2').select2(); 
+
+            // Calculate each row immediately
+            $('#rfq_items_list').find('tr').each(function() {
+                calculateRow($(this));
+            });
+
+            // Then calculate totals
+            calculateAll();
         }
     });
-    
-  }
+}
+
+
+function calculateRow($row) {
+    var qty = parseFloat($row.find('.qty').val()) || 0;
+    var price = parseFloat($row.find('.unit_price').val()) || 0;
+
+    var disPer1 = parseFloat($row.find('.dis_per').val()) || 0;
+    var disAmt1 = (qty * price * disPer1) / 100;
+    $row.find('.dis_amt').val(disAmt1.toFixed(2));
+
+    var subtotalAfterFirst = qty * price - disAmt1;
+
+    var disPer2 = parseFloat($row.find('.dis_per2').val()) || 0;
+    var disAmt2 = (subtotalAfterFirst * disPer2) / 100;
+    $row.find('.dis_amt2').val(disAmt2.toFixed(2));
+
+    var finalRowTotal = subtotalAfterFirst - disAmt2;
+
+    var finalUnitPrice = qty > 0 ? finalRowTotal / qty : 0;
+    $row.find('.final_unit_price').val(finalUnitPrice.toFixed(2));
+
+    $row.find('.total_price').val(finalRowTotal.toFixed(2));
+}
 
 
   $(document).ready(function () {
     // Event listener for input changes
-    $(document).on('input change', '.qty, .unit_price, .dis_per, .dis_amt, .dis_per2, .dis_amt2', function () {
-        var $row = $(this).closest('tr');
-        calculateRow($row);
-        calculateAll();
-    });
 
-    // Function to calculate row total and final unit price
-    function calculateRow($row) {
-        var qty = parseFloat($row.find('.qty').val()) || 0;
-        var price = parseFloat($row.find('.unit_price').val()) || 0;
+  $(document).on('input change keyup', '.qty, .unit_price, .dis_per, .dis_amt, .dis_per2, .dis_amt2', function (e) {
 
-        var disPer1 = parseFloat($row.find('.dis_per').val()) || 0;
-        var disAmt1 = parseFloat($row.find('.dis_amt').val()) || 0;
+    var $row = $(this).closest('tr');
+    calculateRow($row);
+    calculateAll();
+});
 
-        var disPer2 = parseFloat($row.find('.dis_per2').val()) || 0;
-        var disAmt2 = parseFloat($row.find('.dis_amt2').val()) || 0;
 
-        var rowTotal = qty * price;
+    
 
-        // --- First Discount Calculation ---
-        if ($row.find('.dis_per').is(':focus')) {
-            disAmt1 = (rowTotal * disPer1) / 100;
-            $row.find('.dis_amt').val(disAmt1.toFixed(2));
-        } else if ($row.find('.dis_amt').is(':focus')) {
-            disPer1 = rowTotal === 0 ? 0 : (disAmt1 / rowTotal) * 100;
-            $row.find('.dis_per').val(disPer1.toFixed(2));
-        } else {
-            disAmt1 = (rowTotal * disPer1) / 100;
-            $row.find('.dis_amt').val(disAmt1.toFixed(2));
-        }
 
-        var subtotalAfterFirst = rowTotal - disAmt1;
 
-        // --- Second Discount Calculation ---
-        if ($row.find('.dis_per2').is(':focus')) {
-            disAmt2 = (subtotalAfterFirst * disPer2) / 100;
-            $row.find('.dis_amt2').val(disAmt2.toFixed(2));
-        } else if ($row.find('.dis_amt2').is(':focus')) {
-            disPer2 = subtotalAfterFirst === 0 ? 0 : (disAmt2 / subtotalAfterFirst) * 100;
-            $row.find('.dis_per2').val(disPer2.toFixed(2));
-        } else {
-            disAmt2 = (subtotalAfterFirst * disPer2) / 100;
-            $row.find('.dis_amt2').val(disAmt2.toFixed(2));
-        }
 
-        var finalRowTotal = subtotalAfterFirst - disAmt2;
 
-        // --- Final Unit Price Calculation ---
-        var finalUnitPrice = (qty > 0) ? finalRowTotal / qty : 0;
-        $row.find('.final_unit_price').val(finalUnitPrice.toFixed(2));
-
-        // --- Set Total Price ---
-        $row.find('.total_price').val(finalRowTotal.toFixed(2));
-    }
-
-    // Function to calculate total of all rows and apply VAT
-    function calculateAll() {
-        var total = 0;
-        $('tbody tr').each(function () {
-            var rowTotal = parseFloat($(this).find('.total_price').val()) || 0;
-            total += rowTotal;
-        });
-
-        $('#sub_total').val(total.toFixed(2));
-
-        // VAT
-        var vatPer = parseFloat($('#vat_per').val()) || 0;
-        var vatAmount = (total * vatPer) / 100;
-        $('#vat_amount').val(vatAmount.toFixed(2));
-
-        var grandTotal = total + vatAmount;
-        $('#grand_total').val(grandTotal.toFixed(2));
-    }
+    
 
     // Recalculate when VAT changes
     $('#vat_per').on('input change', function () {
         calculateAll();
     });
 });
+function calculateAll() {
+    var total = 0;
+    $('#rfq_items_list').find('tr').each(function() {
+        var rowTotal = parseFloat($(this).find('.total_price').val()) || 0;
+        total += rowTotal;
+    });
+
+    $('#sub_total').val(total.toFixed(2));
+
+    var vatPer = parseFloat($('#vat_per').val()) || 0;
+    var vatAmount = (total * vatPer) / 100;
+    $('#vat_amount').val(vatAmount.toFixed(2));
+
+    $('#grand_total').val((total + vatAmount).toFixed(2));
+}
 
 
 </script>

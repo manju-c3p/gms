@@ -945,7 +945,7 @@
 						);
 
 						var discount_amt = parseFloat(
-							document.getElementById("discount").value || 0
+							document.getElementById("discount_amount").value || 0
 						);
 
 						var vat_amt = parseFloat(

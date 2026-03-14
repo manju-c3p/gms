@@ -63,7 +63,7 @@ class MaterialIssue extends CI_Controller
            5️⃣ Load view
         ================================ */
 
-		$data['title'] = 'jaterial_issue';
+		$data['title'] = 'Material_issue';
 		$data['main_content'] = 'material_issue/create'; // SAME PAGE
 
 		$this->load->view('includes/template', $data);

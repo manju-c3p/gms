@@ -107,7 +107,7 @@
 								value="<?= $appointment->model ?? $vehicle->model ?>" readonly>
 						</td>
 
-						<td class="border p-2 font-medium">Registration No</td>
+						<td class="border p-2 font-medium">Plate No</td>
 						<td class="border p-2">
 							<input type="text" class="w-full border rounded px-2 py-1 bg-gray-100"
 								value="<?= $appointment->registration_no ?? $vehicle->registration_no ?>" readonly>
@@ -181,10 +181,7 @@
 				Services
 			</h3>
 
-			<button type="button" id="addService"
-				class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-				<span class="text-lg">+</span> Add Service
-			</button>
+
 		</div>
 
 		<!-- Table -->
@@ -280,7 +277,7 @@
 					</tr>
 
 
-	<!-- ================================================= -->
+					<!-- ================================================= -->
 					<tr class="bg-gray-50">
 						<td colspan="4" class="text-right px-3 py-2">Discount Amount</td>
 						<td class="px-3 py-2 text-right">
@@ -345,6 +342,11 @@
 			</table>
 		</div>
 
+		<button type="button" id="addService"
+			class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+			<span class="text-lg">+</span> Add Service
+		</button>
+
 		<p class="text-xs text-gray-500 mt-3">
 			Service cost is calculated automatically based on time and rate.
 		</p>
@@ -365,10 +367,7 @@
 			<h4 class="text-lg font-semibold text-blue-700 mb-3">
 				Original Parts / Consumables
 			</h4>
-			<button type="button" id="addNewPart"
-				class="mb-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-				+ Add Original Part
-			</button>
+
 
 			<div class="relative w-full overflow-x-auto overflow-y-visible">
 
@@ -577,6 +576,11 @@
 
 				</table>
 			</div>
+
+			<button type="button" id="addNewPart"
+				class="mb-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+				+ Add Original Part
+			</button>
 		</div>
 		<hr class="border-gray-300 mb-6">
 		<!-- Aftermarket Parts -->
@@ -584,10 +588,7 @@
 			<h4 class="text-lg font-semibold text-green-700 mb-3">
 				Aftermarket Parts
 			</h4>
-			<button type="button" id="addAftermarketPart"
-				class="mb-3 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-				+ Add Aftermarket Part
-			</button>
+
 
 			<div class="relative w-full overflow-x-auto overflow-y-visible">
 
@@ -804,6 +805,11 @@
 
 				</table>
 			</div>
+
+			<button type="button" id="addAftermarketPart"
+				class="mb-3 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+				+ Add Aftermarket Part
+			</button>
 		</div>
 		<hr class="border-gray-300 mb-6">
 		<!-- Used Parts -->
@@ -811,10 +817,6 @@
 			<h4 class="text-lg font-semibold text-orange-700 mb-3">
 				Used Parts
 			</h4>
-			<button type="button" id="addUsedPart"
-				class="mb-3 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
-				+ Add Used Part
-			</button>
 
 			<div class="relative w-full overflow-x-auto overflow-y-visible">
 
@@ -1032,6 +1034,12 @@
 
 				</table>
 			</div>
+
+			<button type="button" id="addUsedPart"
+				class="mb-3 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+				+ Add Used Part
+			</button>
+
 		</div>
 
 		<p class="text-xs text-gray-500 mt-6">
@@ -1129,6 +1137,15 @@
 						</td>
 						<td></td>
 					</tr>
+					<tr class="bg-gray-50">
+						<td colspan="4" class="text-right px-3 py-2">Discount Amount</td>
+						<td class="px-3 py-2 text-right">
+							<input type="text"
+								id="sublet_discount" name="sublet_discount" value="<?= !empty($sublet_discount) ? $sublet_discount : 0 ?>"
+								class="w-full text-right bg-gray-100">
+						</td>
+						<td></td>
+					</tr>
 
 					<!-- Taxable Amount (same as subtotal, no discount here) -->
 					<tr class="bg-gray-50">
@@ -1188,7 +1205,7 @@
 
 		<!-- FOOTER DETAILS -->
 
-		<div class="bg-white rounded-2xl shadow-md p-6 mt-8 text-sm"  style="display:none">
+		<div class="bg-white rounded-2xl shadow-md p-6 mt-8 text-sm" style="display:none">
 
 			<h3 class="text-lg font-semibold text-gray-800 mb-4">
 				Cost Summary
@@ -1703,13 +1720,19 @@
 				subtotal += num(el.value);
 			});
 
-			const vat = subtotal * 0.05;
-			const totalWithVat = subtotal + vat;
+			const subletdistotal = document.getElementById("sublet_discount").value;
+			const sublettaxablevalue = subtotal - subletdistotal;
+			const vat = sublettaxablevalue * 0.05;
+
+			const sublettotalWithVat = sublettaxablevalue + vat;
+
+			// const vat = subtotal * 0.05;
+			// const totalWithVat = subtotal + vat;
 
 			document.getElementById("job_subtotal").value = subtotal.toFixed(2);
-			document.getElementById("job_taxable").value = subtotal.toFixed(2);
+			document.getElementById("job_taxable").value = sublettaxablevalue.toFixed(2);
 			document.getElementById("job_vat").value = vat.toFixed(2);
-			document.getElementById("job_total").value = totalWithVat.toFixed(2);
+			document.getElementById("job_total").value = sublettotalWithVat.toFixed(2);
 		}
 
 		if (e.target.classList.contains('brandSelect')) {
@@ -2253,7 +2276,7 @@
 		const taxableamt = subtotal - discount;
 
 		const taxAmount = taxableamt * taxPercent / 100;
-		const grandTotal =  taxAmount + taxableamt;
+		const grandTotal = taxAmount + taxableamt;
 
 		document.getElementById("subtotal").value = subtotal.toFixed(2);
 		document.getElementById("tax_amount").value = taxAmount.toFixed(2);
@@ -2345,21 +2368,21 @@
 	}
 
 
-	function calculateJobTotals() {
+	// function calculateJobTotals() {
 
-		let subtotal = 0;
-		document.querySelectorAll("#jobDescTable .jobAmount").forEach(el => {
-			subtotal += num(el.value);
-		});
+	// 	let subtotal = 0;
+	// 	document.querySelectorAll("#jobDescTable .jobAmount").forEach(el => {
+	// 		subtotal += num(el.value);
+	// 	});
 
-		const vat = subtotal * 0.05;
+	// 	const vat = subtotal * 0.05;
 
-		document.getElementById("job_subtotal").value = subtotal.toFixed(2);
-		document.getElementById("job_taxable").value = subtotal.toFixed(2);
-		document.getElementById("job_vat").value = vat.toFixed(2);
-		document.getElementById("job_total").value = (subtotal + vat).toFixed(2);
-	}
-// ========================================================================
+	// 	document.getElementById("job_subtotal").value = subtotal.toFixed(2);
+	// 	document.getElementById("job_taxable").value = subtotal.toFixed(2);
+	// 	document.getElementById("job_vat").value = vat.toFixed(2);
+	// 	document.getElementById("job_total").value = (subtotal + vat).toFixed(2);
+	// }
+	// ========================================================================
 	function calculateServiceTotals() {
 
 		let serviceSubtotal = 0;
@@ -2382,6 +2405,7 @@
 		document.getElementById("service_vat").value = vat.toFixed(2);
 		document.getElementById("service_total_with_vat").value = totalWithVat.toFixed(2);
 	}
+
 	function updateServiceRow(row) {
 		const time = num(row.querySelector(".serviceTime")?.value);
 		const cost = num(row.querySelector(".serviceCost")?.value);
@@ -2852,7 +2876,7 @@
 		const partName = $('#new_part_name').val().trim();
 		const unitPrice = $('#new_part_price').val();
 		const partType = $('#new_part_type').val();
-		const labeling  = $('#labeling').is(':checked') ? 1 : 0; // ✅ added
+		const labeling = $('#labeling').is(':checked') ? 1 : 0; // ✅ added
 
 		if (partName === '') {
 			alert('Part name is required');
@@ -2867,7 +2891,7 @@
 				part_name: partName,
 				unit_price: unitPrice,
 				part_type: partType,
-				labeling: labeling 
+				labeling: labeling
 			},
 			success: function(res) {
 

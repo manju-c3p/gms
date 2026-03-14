@@ -5,7 +5,7 @@
 
 		<!-- Header -->
 		<div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-			<h2 class="text-lg font-semibold text-gray-800">Receipt Entry</h2>
+			<h2 class="text-lg font-semibold text-gray-800">Receipt Voucher</h2>
 
 			<span class="flex gap-2">
 				<a href="<?php echo base_url('index.php/accounts/add_receipt'); ?>"
@@ -52,7 +52,7 @@
 					<!-- onchange="get_invoice_list()" -->
 					<select name="debtor"
 						id="debtor"
-						
+
 						class="w-full rounded-lg border border-gray-300 px-4 py-2 select2 debtor-select">
 						<option value="">Select</option>
 						<?php foreach ($receipt_Creditors as $s): ?>
@@ -62,7 +62,7 @@
 							</option>
 						<?php endforeach; ?>
 					</select>
-					<input type="text" name="customer_org_id" id="customer_org_id">
+					<input type="hidden" name="customer_org_id" id="customer_org_id">
 					<!-- <input type="text" name="customer_id" id="customer_id"> -->
 				</div>
 
@@ -76,8 +76,9 @@
 						onchange="toggleTransactionFields()"
 						class="w-full rounded-lg border border-gray-300 px-4 py-2 select2">
 						<option value="">Select</option>
+						<option value="Cash">Cash</option>
 						<option value="cheque">Cheque</option>
-						<option value="etransfer">E-Transfer</option>
+						<option value="etransfer">Card/Transfer</option>
 						<option value="other">Other</option>
 					</select>
 				</div>
@@ -269,7 +270,7 @@
 	$(document).ready(function() {
 		var k = 1; // credit row counter (0 exists)
 
-		$('#cr_add_row').click(function() {
+		$('#cr_add_row123').click(function() {
 			let newRow = `
         <tr id="cr_addr${k}">
           <td>
@@ -289,8 +290,7 @@
               <span class="fa fa-trash"></span>
             </a>
           </td>
-        </tr>
-      `;
+        </tr>`;
 			$('#cr_body').append(newRow);
 			// Initialize select2 for new row
 			$('#creditor' + k).select2({
@@ -298,6 +298,55 @@
 			});
 			k++;
 		});
+
+		$('#cr_add_row').click(function() {
+
+			let newRow = `
+			<tr id="cr_addr${k}">
+				<td class="px-4 py-2">
+					<select name="creditor[]"
+						id="creditor${k}"
+						onchange="get_account_balance(${k},'cr')"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 select2 credit_select">
+						<option value="">Select</option>
+						<?php foreach ($sundry_detors_records as $row): ?>
+							<option value="<?= $row->account_id ?>">
+								<?= $row->account_name ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+					<p class="text-xs text-gray-500 mt-1" id="set_balancecr${k}">Balance</p>
+				</td>
+
+				<td class="px-4 py-2">
+					<input type="number"
+						step="0.01"
+						name="cr_amount[]"
+						id="cr_amount${k}"
+						class="w-full rounded-lg border border-gray-300 px-3 py-2 credit_sum"
+						onkeyup="calculate_grand_total()">
+				</td>
+
+				<td class="px-4 py-2 text-center">
+					<button type="button"
+						onclick="remove_row_cr(${k})"
+						class="w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200">
+						🗑
+					</button>
+				</td>
+			</tr>`;
+
+			$('#cr_body').append(newRow);
+
+			// Reinitialize select2
+			$('#creditor' + k).select2({
+				width: '100%'
+			});
+
+			k++;
+		});
+
+
 	});
 
 	function remove_row_cr(id) {
@@ -352,20 +401,21 @@
 		return true;
 	}
 
-$('#debtor').on('select2:select', function (e) {
+	$('#debtor').on('select2:select', function(e) {
 
-    var customerId = e.params.data.element.dataset.customerId;
+		var customerId = e.params.data.element.dataset.customerId;
 
-    $('#customer_org_id').val(customerId);
+		$('#customer_org_id').val(customerId);
 
-    get_invoice_list();
-});
+		get_invoice_list();
+	});
 
 
 	function get_invoice_list() {
+
 		var debtorSelect = document.getElementById('debtor');
 		var account_id = debtorSelect.value;
-
+// alert(account_id);
 		// Get customer_id from selected option data attribute
 		var customer_id = debtorSelect.options[debtorSelect.selectedIndex]?.getAttribute('data-customer-id');
 		// alert(customer_id);

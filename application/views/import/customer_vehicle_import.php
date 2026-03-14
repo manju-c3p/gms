@@ -78,6 +78,22 @@
 			Supported fields: Customer, Mobile, Plate No, Brand, Model, Year, VIN
 		</p><br><br>
 
+		<p>============ ********** import customers from invoice history excel sheet************  new function==========</p>
+
+		<form method="post" enctype="multipart/form-data"
+			action="<?= base_url('index.php/Customer_vehicle_import/import_history') ?>">
+
+			<input type="file" name="csv_file2" accept=".csv" required><br><br>
+
+			<button type="submit">Upload CSV</button>
+		</form>
+
+		<p style="margin-top:15px;font-size:12px;color:#666;">
+			CSV must contain header row.<br>
+			Supported fields: Customer, Mobile, Plate No, Brand, Model, Year, VIN
+		</p><br><br>
+
+
 		<p>=========== ************ update customer id from customer table on billing invoice table ********* ========</p>
 
 		<a href="<?= base_url('index.php/customer_vehicle_import/map_invoice_customers') ?>"

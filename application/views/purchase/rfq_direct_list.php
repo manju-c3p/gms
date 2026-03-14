@@ -1,105 +1,99 @@
+ <!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+<!-- Buttons (optional but recommended) -->
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>  
    <!-- page content -->
-  <div class="w-full mx-auto bg-white shadow-md rounded-2xl p-6 mt-6">
+   <div class="w-full mx-auto bg-white shadow-md rounded-2xl p-6 mt-6">
 
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-6 border-b pb-4">
-        <h2 class="text-2xl font-semibold">RFQ List</h2>
+   	<!-- Header -->
+   	<div class="flex justify-between items-center mb-6 border-b pb-4">
+   		<h2 class="text-2xl font-semibold">RFQ List</h2>
 
-        <a href="<?php echo base_url().'index.php/Purchase/add_direct_rfq'; ?>"
-           class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-sm">
-            + Create RFQ
-        </a>
-    </div>
+   		<a href="<?php echo base_url() . 'index.php/Purchase/add_direct_rfq'; ?>"
+   			class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-sm">
+   			+ Create RFQ
+   		</a>
+   	</div>
 
-    <!-- Table -->
-    <div class="overflow-x-auto">
-        <table id="rfqTable" class="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+   	<!-- Table -->
+   	<div class="overflow-x-auto">
+   		<table id="rfqTable" class="min-w-full border border-gray-200 rounded-lg overflow-hidden">
 
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Sr.No</th>
-                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">RFQ Code</th>
-                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
-                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Supplier</th>
-                    <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Action</th>
-                </tr>
-            </thead>
+   			<thead class="bg-gray-100">
+   				<tr>
+   					<th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Sr.No</th>
+   					<th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">RFQ Code</th>
+   					<th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
+   					<th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Supplier</th>
+   					<th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Action</th>
+   				</tr>
+   			</thead>
 
-            <tbody class="divide-y divide-gray-200">
-                <?php $i = 1; foreach ($records as $row): ?>
-                    <tr class="hover:bg-gray-50 transition">
+   			<tbody class="divide-y divide-gray-200">
+   				<?php $i = 1;
+					foreach ($records as $row): ?>
+   					<tr class="hover:bg-gray-50 transition">
 
-                        <td class="px-4 py-3"><?php echo $i++; ?></td>
+   						<td class="px-4 py-3"><?php echo $i++; ?></td>
 
-                        <td class="px-4 py-3 font-medium text-blue-600 hover:underline">
-                            <a href="<?php echo base_url().'index.php/Purchase/edit_rfq/'.$row->rfq_id.'/'.$row->rev_version.'/1'; ?>">
-                                <?php echo $row->rfq_code; ?>
-                            </a>
-                        </td>
+   						<td class="px-4 py-3 font-medium text-blue-600 hover:underline">
+   							<a href="<?php echo base_url() . 'index.php/Purchase/edit_rfq/' . $row->rfq_id . '/' . $row->rev_version . '/1'; ?>">
+   								<?php echo $row->rfq_code; ?>
+   							</a>
+   						</td>
 
-                        <td class="px-4 py-3">
-                            <?php echo date('d-M-Y', strtotime($row->rfq_date)); ?>
-                        </td>
+   						<td class="px-4 py-3">
+   							<?php echo date('d-M-Y', strtotime($row->rfq_date)); ?>
+   						</td>
 
-                        <td class="px-4 py-3 text-blue-600 hover:underline">
-                            <a target="_blank"
-                               href="<?php echo base_url().'index.php/Users/edit_supplier/'.$row->supplier_id; ?>">
-                                <?php echo $row->supplier_name; ?>
-                            </a>
-                        </td>
+   						<td class="px-4 py-3 ">
+   							
+   								<?php echo $row->supplier_name; ?>
+   							
+   						</td>
 
-                        <td class="px-4 py-3">
-                            <div class="flex justify-center gap-2">
+   						<td class="px-4 py-3">
+   							<div class="flex justify-center gap-2">
 
-                                <!-- Edit -->
-                                <a href="<?php echo base_url().'index.php/Purchase/edit_rfq/'.$row->rfq_id.'/0'; ?>"
-                                   class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-sm">
-                                    Edit
-                                </a>
+   								<!-- Edit -->
+   								<a href="<?php echo base_url() . 'index.php/Purchase/edit_rfq/' . $row->rfq_id . '/0'; ?>"
+   									class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-sm">
+   									Edit
+   								</a>
 
-                                <!-- Delete -->
-                                <a href="<?php echo base_url().'index.php/Purchase/delete_rfq/'.$row->rfq_id; ?>"
-                                   onclick="return confirm('Delete this RFQ?')"
-                                   class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm">
-                                    Delete
-                                </a>
+   								<!-- Delete -->
+   								<a href="<?php echo base_url() . 'index.php/Purchase/delete_rfq/' . $row->rfq_id; ?>"
+   									onclick="return confirm('Delete this RFQ?')"
+   									class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm">
+   									Delete
+   								</a>
 
-                            </div>
-                        </td>
+   							</div>
+   						</td>
 
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
+   					</tr>
+   				<?php endforeach; ?>
+   			</tbody>
 
-        </table>
-    </div>
+   		</table>
+   	</div>
 
-</div>
+   </div>
 
    <script>
-   	$(document).ready(function() {
-   		// Add row
-   		$(document).on('click', '.addRow', function() {
-   			const newRow = `<tr>
-        <td><input type="text" name="product_name" value=""></td>
-        <td><input type="text" name="description" value=""></td>
-        <td><input type="number" name="quantity" value=""></td>
-        <td><input type="text" name="unit" value=""></td>
-        <td><input type="text" name="packing" value=""></td>
-        <td>
-          <button class="addRow">Add</button>
-          <button class="deleteRow">Delete</button>
-        </td>
-      </tr>`;
-   			$('#datatable-responsive tbody').append(newRow);
-   		});
-
-   		// Delete row
-   		$(document).on('click', '.deleteRow', function() {
-   			$(this).closest('tr').remove();
-   		});
-   	});
-
+   
    	function handleKeyPress(event, row) {
    		var suggestionDiv = $('#display' + row);
    		var selected = suggestionDiv.find('.selected');
@@ -150,60 +144,15 @@
 
 
 
-   	function showsugg(row, event) {
-   		var name = $('#search' + row).val();
-   		if (name.length > 4) {
-   			$.ajax({
-   				type: "POST",
-   				url: "<?php echo site_url('Product/ajax_product_search'); ?>",
-   				dataType: 'json',
-   				data: {
-   					search_key: name
-   				},
-   				success: function(data) {
-
-   					document.getElementById('display' + row).innerHTML = '';
-   					var parentDiv = document.getElementById('display' + row);
-   					if (data.length > 0) {
-   						data.forEach(function(product) {
-   							var option = document.createElement('div');
-   							option.textContent = product.product_name;
-   							option.classList.add('suggestion');
-   							option.dataset.productId = product.product_id;
-   							option.addEventListener('click', function() {
-   								document.getElementById('search' + row).value = product.product_name;
-   								document.getElementById('pro_id' + row).value = product.product_id;
-   								parentDiv.innerHTML = ''; // Clear search results
-   								get_product_info(row);
-
-   							});
-   							parentDiv.appendChild(option);
-
-   						});
-   					} else {
-   						var option = document.createElement('div');
-   						option.textContent = 'No products found';
-   						option.classList.add('suggestion');
-   						parentDiv.appendChild(option);
-
-   					}
-   					$('#display' + row).show();
-   				}
-   			});
-
-   		} else {
-   			document.getElementById('display' + row).innerHTML = '';
-   		}
-
-   	}
+  
    </script>
 
-	 <script>
-$(document).ready(function() {
-    $('#rfqTable').DataTable({
-        pageLength: 10,
-        responsive: true,
-        autoWidth: false
-    });
-});
-</script>
+   <script>
+   	$(document).ready(function() {
+   		$('#rfqTable').DataTable({
+   			pageLength: 10,
+   			responsive: true,
+   			autoWidth: false
+   		});
+   	});
+   </script>

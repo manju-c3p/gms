@@ -251,9 +251,9 @@ class Accounts_model extends CI_Model
 
 	function get_supplier_record()
 	{ // in use
-		// $query = $this->db->query("select supp_id,supp_name from supplier_data_entity");
-		// return $query->result();
-		return true;
+		$query = $this->db->query("select supplier_id,supplier_name from supplier_master");
+		return $query->result();
+		// return true;
 	}
 
 	function get_bank_records()
@@ -1043,7 +1043,7 @@ class Accounts_model extends CI_Model
 
 	public function add_new_payment_data()
 	{
-		$code_prifix = "BES/P/" . date('y') . "/";
+		$code_prifix = "COOL/P/" . date('y') . "/";
 		$this->load->model('Accounts_model');
 
 		$num = ($this->Accounts_model->get_account_code_count($code_prifix, 'P')) + 1;
@@ -1096,9 +1096,9 @@ class Accounts_model extends CI_Model
 				$this->db->insert('voucher_transaction', $data);
 
 				// Update paid amount in GRN_master by adding current payment
-				$this->db->set('paid_amt', 'paid_amt + ' . (float)$dr_amount, FALSE)
-					->where('grn_id', $inv_id)
-					->update('GRN_master');
+				// $this->db->set('paid_amt', 'paid_amt + ' . (float)$dr_amount, FALSE)
+				// 	->where('grn_id', $inv_id)
+				// 	->update('purchase_grn_master');
 			}
 		}
 
@@ -1139,11 +1139,11 @@ class Accounts_model extends CI_Model
 		$insert_id = $this->db->insert_id();
 
 		if ($insert_id) {
-			$user_id = $this->session->userdata('user_id');
-			$page_name = explode('index.php/', $_SERVER['PHP_SELF']);
-			$ci = get_instance();
-			$ci->load->helper('log');
-			add_log_entry($user_id, 1, $page_name[1], 'voucher_transaction', 'voucher_id', $insert_id);
+			// $user_id = $this->session->userdata('user_id');
+			// $page_name = explode('index.php/', $_SERVER['PHP_SELF']);
+			// $ci = get_instance();
+			// $ci->load->helper('log');
+			// add_log_entry($user_id, 1, $page_name[1], 'voucher_transaction', 'voucher_id', $insert_id);
 
 			return $insert_id;
 		}
@@ -1353,8 +1353,8 @@ class Accounts_model extends CI_Model
             FROM ($base_sql) AS one
             LEFT JOIN (
                 SELECT g.invoice_no, g.grn_id, g.invoice_date, o.po_code
-                FROM GRN_master g
-                JOIN purchase_order o ON g.po_id = o.po_id
+                FROM purchase_grn_master g
+                JOIN purchase_order_master o ON g.po_id = o.po_id
             ) AS two ON one.trans_id = two.grn_id
         ", [$acc_id, $from_date, $to_date]);
 		} elseif ($group_no == 30) {
@@ -1876,7 +1876,7 @@ class Accounts_model extends CI_Model
         LEFT JOIN supplier_master sm ON sm.supplier_id = vt.customer_id
         LEFT JOIN general_ledger gl_cr ON vt.account_id = gl_cr.account_id
         LEFT JOIN general_ledger gl_dr ON vt.account_id = gl_dr.account_id
-		LEFT JOIN GRN_master gm ON vt.invoice_no = gm.grn_code
+		LEFT JOIN purchase_grn_master gm ON vt.invoice_code = gm.grn_code
         WHERE vt.voucher_code = ? AND vt.voucher_type = 'P'
         ORDER BY vt.drcr_type DESC, vt.voucher_id
     ";
@@ -1979,6 +1979,65 @@ class Accounts_model extends CI_Model
 
 	/////////////Balance sheet data
 
+	private function get_child_groups($group_no)
+	{
+		$groups = [$group_no];
+
+		$this->db->reset_query();   // 🔴 VERY IMPORTANT
+
+		$children = $this->db->select('group_no')
+			->from('account_group')
+			->where('parent_group', $group_no)
+			->get()
+			->result();
+
+		foreach ($children as $child) {
+			$groups = array_merge($groups, $this->get_child_groups($child->group_no));
+		}
+
+		return $groups;
+	}
+	// public function get_balance_sheet_data($from_date, $to_date, $group_no)
+	// {
+	//     $this->db->reset_query();  // 🔴 VERY IMPORTANT
+
+	//     $this->db->select("
+	//         gl.group_no,
+	//         ag.group_name,
+	//         gl.account_id,
+	//         gl.account_name,
+	//         IFNULL(SUM(CASE WHEN vt.voucher_date < '{$from_date}' 
+	//             THEN CASE WHEN vt.drcr_type = 'Dr' THEN vt.amount ELSE -vt.amount END 
+	//         ELSE 0 END), 0) AS opening_balance,
+	//         IFNULL(SUM(CASE WHEN vt.voucher_date BETWEEN '{$from_date}' AND '{$to_date}' 
+	//             AND vt.drcr_type = 'Dr' THEN vt.amount ELSE 0 END), 0) AS debit,
+	//         IFNULL(SUM(CASE WHEN vt.voucher_date BETWEEN '{$from_date}' AND '{$to_date}' 
+	//             AND vt.drcr_type = 'Cr' THEN vt.amount ELSE 0 END), 0) AS credit,
+	//         (
+	//             IFNULL(SUM(CASE WHEN vt.voucher_date < '{$from_date}' 
+	//                 THEN CASE WHEN vt.drcr_type = 'Dr' THEN vt.amount ELSE -vt.amount END 
+	//             ELSE 0 END), 0)
+	//             +
+	//             IFNULL(SUM(CASE WHEN vt.voucher_date BETWEEN '{$from_date}' AND '{$to_date}' 
+	//                 AND vt.drcr_type = 'Dr' THEN vt.amount ELSE 0 END), 0)
+	//             -
+	//             IFNULL(SUM(CASE WHEN vt.voucher_date BETWEEN '{$from_date}' AND '{$to_date}' 
+	//                 AND vt.drcr_type = 'Cr' THEN vt.amount ELSE 0 END), 0)
+	//         ) AS closing_balance");
+
+	//     $this->db->from('general_ledger gl');
+	//     $this->db->join('voucher_transaction vt', 'gl.account_id = vt.account_id', 'left');
+	//     $this->db->join('account_group ag', 'gl.group_no = ag.group_no', 'left');
+
+	//     $group_list = $this->get_child_groups($group_no);
+	//     $this->db->where_in('gl.group_no', $group_list);
+
+	//     $this->db->group_by('gl.account_id');
+	//     $this->db->order_by('ag.group_name, gl.account_name');
+
+	//     return $this->db->get()->result();
+	// }
+
 	public function get_balance_sheet_data($from_date, $to_date, $group_no)
 	{
 		// Query to get balances grouped by account group and ledger
@@ -2001,12 +2060,17 @@ class Accounts_model extends CI_Model
             IFNULL(SUM(CASE WHEN vt.voucher_date BETWEEN '{$from_date}' AND '{$to_date}' AND vt.drcr_type = 'Dr' THEN vt.amount ELSE 0 END), 0)
             -
             IFNULL(SUM(CASE WHEN vt.voucher_date BETWEEN '{$from_date}' AND '{$to_date}' AND vt.drcr_type = 'Cr' THEN vt.amount ELSE 0 END), 0)
-        ) AS closing_balance
-    ");
+        ) AS closing_balance");
 		$this->db->from('general_ledger gl');
 		$this->db->join('voucher_transaction vt', 'gl.account_id = vt.account_id', 'left');
 		$this->db->join('account_group ag', 'gl.group_no = ag.group_no', 'left');
 		$this->db->where('gl.group_no', $group_no);
+
+
+
+
+
+
 		$this->db->group_by('gl.account_id');
 		$this->db->order_by('ag.group_name, gl.account_name');
 
@@ -2111,4 +2175,152 @@ class Accounts_model extends CI_Model
 
 
 	/*********************************  End CI Model **************************************************/
+
+	public function get_voucher_vat_summary($from_date = null, $to_date = null)
+	{
+		// VAT Account IDs
+		$input_vat_account_id  = 226; // Purchase VAT
+		$output_vat_account_id = 228; // Sales VAT
+
+		$this->db->select("
+        account_id,
+        SUM(CASE 
+                WHEN drcr_type = 'Dr' THEN amount 
+                ELSE -amount 
+            END) AS vat_amount
+    ");
+
+		$this->db->from('voucher_transaction');
+		$this->db->where_in('account_id', [$input_vat_account_id, $output_vat_account_id]);
+		$this->db->where('cancel', 0);
+
+		// ✅ Proper DATETIME filtering
+		if (!empty($from_date) && !empty($to_date)) {
+			$this->db->where('voucher_date >=', $from_date . ' 00:00:00');
+			$this->db->where('voucher_date <=', $to_date . ' 23:59:59');
+		}
+
+		$this->db->group_by('account_id');
+
+		$query = $this->db->get();
+		$rows  = $query->result();
+
+		// ✅ Log SQL Query
+		// log_message('error', 'VAT SQL : ' . $this->db->last_query());
+
+		// Initialize Summary
+		$summary = [
+			'input'  => ['taxable' => 0, 'vat' => 0, 'total' => 0],
+			'output' => ['taxable' => 0, 'vat' => 0, 'total' => 0],
+		];
+
+		foreach ($rows as $row) {
+
+			$vat = (float) $row->vat_amount;
+
+			// If VAT negative → make positive for report display
+			$vat_display = abs($vat);
+
+			// 5% VAT → taxable = VAT * 20
+			$taxable = $vat_display * 20;
+			$total   = $taxable + $vat_display;
+
+			if ($row->account_id == $input_vat_account_id) {
+
+				$summary['input'] = [
+					'taxable' => round($taxable, 2),
+					'vat'     => round($vat_display, 2),
+					'total'   => round($total, 2)
+				];
+			} elseif ($row->account_id == $output_vat_account_id) {
+
+				$summary['output'] = [
+					'taxable' => round($taxable, 2),
+					'vat'     => round($vat_display, 2),
+					'total'   => round($total, 2)
+				];
+			}
+		}
+
+		// ✅ Log Final Result
+		// log_message('error', 'VAT SUMMARY RESULT : ' . print_r($summary, true));
+
+		return (object) $summary;
+	}
+
+
+	public function get_voucher_vat_details($from_date = null, $to_date = null)
+	{
+		// Define VAT account IDs
+		$input_vat_account_id  = 226;  // Input VAT (Purchase)
+		$output_vat_account_id = 228;  // Output VAT (Sales)
+
+		// Fetch transactions only for VAT accounts
+		$this->db->select("
+        voucher_id,
+        voucher_code,
+        voucher_date,
+        voucher_type,
+        account_id,
+        amount");
+		$this->db->from('voucher_transaction');
+		$this->db->where_in('account_id', [$input_vat_account_id, $output_vat_account_id]);
+		$this->db->where('cancel', 0);
+
+		if (!empty($from_date) && !empty($to_date)) {
+			$this->db->where('voucher_date >=', $from_date . ' 00:00:00');
+			$this->db->where('voucher_date <=', $to_date . ' 23:59:59');
+		}
+
+		$this->db->order_by('voucher_date', 'ASC');
+		$query = $this->db->get();
+		$rows = $query->result();
+
+		// Initialize structure
+		$data = [
+			'input'  => [],
+			'output' => [],
+			'totals' => [
+				'input_taxable'  => 0,
+				'input_vat'      => 0,
+				'output_taxable' => 0,
+				'output_vat'     => 0,
+			]
+		];
+
+		// Process each row
+		foreach ($rows as $row) {
+			$vat      = (float)$row->amount;   // already VAT amount
+			$taxable  = $vat * 20;             // for 5% VAT → taxable = VAT × 20
+			$total    = $taxable + $vat;
+
+			$entry = (object)[
+				'voucher_code'   => $row->voucher_code,
+				'voucher_date'   => $row->voucher_date,
+				'voucher_type'   => $row->voucher_type,
+				'taxable_amount' => round($taxable, 2),
+				'vat_amount'     => round($vat, 2),
+				'total'          => round($total, 2),
+			];
+
+			if ($row->account_id == $input_vat_account_id) {
+				// Input VAT (Purchase)
+				$data['input'][] = $entry;
+				$data['totals']['input_taxable'] += $taxable;
+				$data['totals']['input_vat']     += $vat;
+			} elseif ($row->account_id == $output_vat_account_id) {
+				// Output VAT (Sales)
+				$data['output'][] = $entry;
+				$data['totals']['output_taxable'] += $taxable;
+				$data['totals']['output_vat']     += $vat;
+			}
+		}
+
+		// Round totals for consistency
+		foreach ($data['totals'] as $key => $value) {
+			$data['totals'][$key] = round($value, 2);
+		}
+
+		return (object)$data;
+	}
 }

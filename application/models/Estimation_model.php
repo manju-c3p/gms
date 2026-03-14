@@ -32,9 +32,7 @@ class Estimation_model extends CI_Model
         a.*,
         c.*,
         
-        v.*,
-      
-    ");
+        v.*,");
 		$this->db->from('appointments a');
 		$this->db->join('customers c', 'c.customer_id = a.customer_id');
 		$this->db->join('vehicles v', 'v.vehicle_id = a.vehicle_id');
@@ -49,28 +47,81 @@ class Estimation_model extends CI_Model
 			->where('estimation_id', $estimation_id)
 			->update('estimations', $data);
 	}
-	public function save_job_descriptions($estimation_id, $descriptions, $jamt)
+	// public function save_job_descriptions($estimation_id, $descriptions, $jamt, $subletdiscount)
+	// {
+	// 	// Remove existing records for this estimation
+	// 	$this->db->where('estimation_id', $estimation_id)
+	// 		->delete('estimation_job_descriptions');
+
+	// 	foreach ($descriptions as $i => $desc) {
+
+	// 		// Skip empty rows
+	// 		if (trim($desc) === '') {
+	// 			continue;
+	// 		}
+
+	// 		$this->db->insert('estimation_job_descriptions', [
+	// 			'estimation_id' => $estimation_id,
+	// 			'description'   => $desc,
+	// 			'amount'        => isset($jamt[$i]) ? $jamt[$i] : 0
+	// 		]);
+	// 	}
+	// }
+
+	public function save_job_descriptions($estimation_id, $descriptions, $jamt, $subletdiscount)
 	{
-		// Remove existing records for this estimation
+		// 1. Remove existing records
 		$this->db->where('estimation_id', $estimation_id)
 			->delete('estimation_job_descriptions');
 
+		// 2. Calculate subtotal
+		$subtotal = 0;
+		foreach ($jamt as $amt) {
+			$subtotal += (float)$amt;
+		}
+
+		// Safety check
+		if ($subtotal <= 0) {
+			$subtotal = 1;
+		}
+
+		$total_discount = (float)$subletdiscount;
+		$distributed_discount = 0;
+		$last_index = array_key_last($descriptions);
+
 		foreach ($descriptions as $i => $desc) {
 
-			// Skip empty rows
-			if (trim($desc) === '') {
-				continue;
+			if (trim($desc) === '') continue;
+
+			$amount = (float)$jamt[$i];
+
+			// 3. Proportional discount calculation
+			if ($i == $last_index) {
+				$discount_amount = round($total_discount - $distributed_discount, 2);
+			} else {
+				$discount_amount = round(($amount / $subtotal) * $total_discount, 2);
+				$distributed_discount += $discount_amount;
 			}
 
+			// 4. Discount percentage
+			$discount_percentage = ($amount > 0)
+				? round(($discount_amount / $amount) * 100, 2)
+				: 0;
+
+			// 5. Taxable amount
+			$taxable_amount = round($amount - $discount_amount, 2);
+
+			// 6. Insert
 			$this->db->insert('estimation_job_descriptions', [
-				'estimation_id' => $estimation_id,
-				'description'   => $desc,
-				'amount'        => isset($jamt[$i]) ? $jamt[$i] : 0
+				'estimation_id'       => $estimation_id,
+				'description'         => $desc,
+				'amount'              => $amount,
+				'discount_amount'     => $discount_amount,
+				'discount_percentage' => $discount_percentage,
+				'taxable_amount'      => $taxable_amount
 			]);
 		}
 	}
-
-
 	public function save_parts($estimation_id, $part_ids, $qtys, $unit_prices, $sell_prices, $totals, $markup, $discount, $discountamt, $parttype, $brandid, $selected, $remarks)
 	{
 
@@ -204,8 +255,8 @@ class Estimation_model extends CI_Model
 				'taxable_amount'      => $taxable_amount
 			]);
 
-			log_message('error', $this->db->last_query());
-			log_message('error', json_encode($this->db->error()));
+			// log_message('error', $this->db->last_query());
+			// log_message('error', json_encode($this->db->error()));
 		}
 	}
 
@@ -363,5 +414,50 @@ class Estimation_model extends CI_Model
 			->where('inspection_id', $inspection_id)
 			->get('estimations')
 			->row();
+	}
+	// ====================================================
+
+	public function copy_jobs($old_id, $new_id)
+	{
+		$rows = $this->db->where('estimation_id', $old_id)
+			->get('estimation_job_descriptions')->result_array();
+
+		foreach ($rows as &$row) {
+			unset($row['id']);
+			$row['estimation_id'] = $new_id;
+		}
+
+		if ($rows)
+			$this->db->insert_batch('estimation_job_descriptions', $rows);
+	}
+
+
+	public function copy_parts($old_id, $new_id)
+	{
+		$rows = $this->db->where('estimation_id', $old_id)
+			->get('estimation_parts')->result_array();
+
+		foreach ($rows as &$row) {
+			unset($row['id']);
+			$row['estimation_id'] = $new_id;
+		}
+
+		if ($rows)
+			$this->db->insert_batch('estimation_parts', $rows);
+	}
+
+
+	public function copy_services($old_id, $new_id)
+	{
+		$rows = $this->db->where('estimation_id', $old_id)
+			->get('estimation_services')->result_array();
+
+		foreach ($rows as &$row) {
+			unset($row['id']);
+			$row['estimation_id'] = $new_id;
+		}
+
+		if ($rows)
+			$this->db->insert_batch('estimation_services', $rows);
 	}
 }

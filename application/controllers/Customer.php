@@ -102,6 +102,8 @@ class Customer extends CI_Controller
 			'emirates' => $this->input->post('emirate'),
 		];
 
+		$this->db->trans_start();
+
 		// 2️⃣ Insert Customer
 		$customer_id = $this->Customer_model->insert_customer($customerData);
 
@@ -145,7 +147,7 @@ class Customer extends CI_Controller
 
 			$this->Vehicle_model->insert_vehicle($vehicleData);
 		}
-
+		$this->db->trans_complete();
 		// 5️⃣ Flash message + redirect
 		$this->session->set_flashdata('success', 'Customer and vehicles added successfully!');
 		redirect('customer');
@@ -426,6 +428,22 @@ class Customer extends CI_Controller
 		$this->db->insert('customers', $customer);
 		$customer_id = $this->db->insert_id();
 
+		// =========================ledger entry
+		$prifix = 'CUST';
+
+		$digit = sprintf("%1$04d", $customer_id);
+		$Code = $prifix . $digit;
+
+		$grp_no = 30;
+		$data1 = array(
+			'account_name' => $this->input->post('name') . ' ' . $Code,
+			'group_no' => $grp_no,
+			'customer_id' => $customer_id,
+			'opening_bal_type' => 'Dr',
+		);
+		$this->db->insert('general_ledger', $data1);
+		// return $this->db->insert_id(); // return customer_id
+		// =========================ledger entry
 		$brand_id = $this->input->post('brand_id');
 		$model_id = $this->input->post('model_id');
 
@@ -511,5 +529,39 @@ class Customer extends CI_Controller
 			'status'  => 'success',
 			'message' => $result . ' customers added to General Ledger'
 		]);
+	}
+	// ======================function to list customers who is not having ledger account ===
+	public function create_customer_ledgers()
+	{
+	
+
+		$count = $this->Customer_model->create_missing_customer_ledgers();
+
+		echo $count . " customer ledger accounts created.";
+	}
+	public function check_customers_without_ledger()
+	{
+
+
+		// Get customers without ledger
+		$data['customers'] = $this->Customer_model->get_customers_without_ledger();
+
+		// Count
+		$data['count'] = count($data['customers']);
+
+		// Load view (recommended)
+		// $this->load->view('ledger/customers_without_ledger', $data);
+
+		// OR simple print for testing
+
+		echo "<h3>Customers without ledger: " . $data['count'] . "</h3>";
+
+		if ($data['count'] > 0) {
+			echo "<pre>";
+			print_r($data['customers']);
+			echo "</pre>";
+		} else {
+			echo "All customers have ledger accounts.";
+		}
 	}
 }

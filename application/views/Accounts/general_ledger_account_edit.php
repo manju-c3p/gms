@@ -39,8 +39,8 @@ foreach ($gen_ledger_records as $row) {
                 <input type="text"
                        name="ac_name"
                        value="<?= $ac_no; ?>"
-                       readonly
-                       class="w-full rounded-lg border border-gray-300 bg-gray-100 px-4 py-2 cursor-not-allowed">
+                       
+                       class="w-full rounded-lg border border-gray-300  px-4 py-2 cursor-not-allowed">
             </div>
 
             <!-- Account Group -->

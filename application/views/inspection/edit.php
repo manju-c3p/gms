@@ -50,18 +50,18 @@ $rightItems = array_slice($items, $half);
 					View & Print
 				</a>
 
-				
+
 				<?php if (!empty($inspection) && !empty($inspection->appointment_id)) { ?>
 
 					<a href="<?= base_url('index.php/Estimation/create/' . $inspection->appointment_id) ?>"
-					class="px-6 py-2 bg-green-600 text-white rounded">
+						class="px-6 py-2 bg-green-600 text-white rounded">
 						Estimation
 					</a>
 
 				<?php } elseif (!empty($inspection) && !empty($inspection->inspection_id)) { ?>
 
 					<a href="<?= base_url('index.php/Estimation/create_inspection/' . $inspection->inspection_id) ?>"
-					class="px-6 py-2 bg-green-600 text-white rounded">
+						class="px-6 py-2 bg-green-600 text-white rounded">
 						Estimation
 					</a>
 
@@ -69,9 +69,25 @@ $rightItems = array_slice($items, $half);
 
 
 				<!-- SAVE BUTTON -->
-				<button type="submit"
+				<button type="button"
+					id="editInspectionBtn"
+					onclick="enableInspectionEdit()"
 					class="w-full sm:w-auto px-6 py-2 bg-blue-600 text-white rounded">
+					Edit
+				</button>
+
+				<button type="submit"
+					id="updateInspectionBtn"
+					class="hidden w-full sm:w-auto px-6 py-2 bg-green-600 text-white rounded">
 					Update
+				</button>
+
+
+				<button type="button"
+					id="cancelInspectionBtn"
+					onclick="cancelInspectionEdit()"
+					class="hidden w-full sm:w-auto px-6 py-2 bg-gray-500 text-white rounded">
+					Cancel Edit
 				</button>
 
 				<a href="<?= base_url('index.php/appointment'); ?>"
@@ -79,6 +95,53 @@ $rightItems = array_slice($items, $half);
 			</div>
 		</div>
 		<hr class="border-gray-300 mb-6">
+
+		<label id="revisionCheckboxWrap"
+			class="hidden flex flex-wrap items-center gap-4 mt-3 px-4 py-3 
+           bg-yellow-50 border border-yellow-400 rounded-lg
+           text-yellow-800 font-semibold shadow-sm">
+
+			<!-- checkbox -->
+			<div class="flex items-center gap-2">
+				<input type="checkbox"
+					name="create_revision"
+					value="1"
+					class="w-5 h-5 accent-yellow-600 cursor-pointer">
+
+				<span>Create Revision</span>
+			</div>
+
+			<!-- Last Revision -->
+			<div class="flex items-center gap-2 ml-4">
+				<span class="text-sm font-medium text-yellow-900">
+					Last Rev:
+				</span>
+
+				<input type="text"
+					value="<?= isset($inspection->revision_no) ? $inspection->revision_no : 1 ?>"
+			readonly
+					class="w-16 px-2 py-1 text-center font-bold
+                   bg-gray-100 border border-gray-400
+                   rounded-md text-gray-800">
+			</div>
+
+			<!-- Next Revision -->
+			<div class="flex items-center gap-2">
+				<span class="text-sm font-medium text-yellow-900">
+					Next Rev:
+				</span>
+
+				<input type="text"
+					name="revision_no"
+					value="<?= isset($inspection->revision_no) ? $inspection->revision_no + 1 : 1 ?>"
+			readonly
+					readonly
+					class="w-16 px-2 py-1 text-center font-bold
+                   bg-yellow-100 border border-yellow-500
+                   rounded-md text-yellow-900">
+			</div>
+
+		</label>
 		<!-- CUSTOMER / VEHICLE INFO -->
 		<div class="overflow-x-auto">
 			<table class="w-full border mb-4 text-sm min-w-[600px]">
@@ -101,7 +164,7 @@ $rightItems = array_slice($items, $half);
 						<?= $appointment->customer_name ?? $customer->name ?>
 					</td>
 
-					<td class="border p-1 font-bold">Reg. No.</td>
+					<td class="border p-1 font-bold">Plate. No.</td>
 					<td class="border p-1">
 						<?= $appointment->registration_no ?? $vehicle->registration_no ?>
 					</td>
@@ -123,7 +186,7 @@ $rightItems = array_slice($items, $half);
 					<td class="border p-1 font-bold">Driver Name</td>
 					<td class="border p-1">
 						<input type="text" name="driver_name" value="<?= $inspection->drivername ?>"
-							class="w-full border px-2 py-1">
+							class="w-full border px-2 py-1 edit-field">
 					</td>
 
 					<td class="border p-1 font-bold">Veh. Type</td>
@@ -136,10 +199,10 @@ $rightItems = array_slice($items, $half);
 					<td class="border p-1 font-bold">Driver Mobile</td>
 					<td class="border p-1">
 						<input type="number" name="driver_mobile" value="<?= $inspection->driverphno ?>"
-							class="w-full border px-2 py-1">
+							class="w-full border px-2 py-1 edit-field">
 					</td>
 
-					<td class="border p-1 font-bold">Model</td>
+					<td class="border p-1 font-bold">Year</td>
 					<td class="border p-1">
 						<?= $appointment->year ?? $vehicle->year ?>
 					</td>
@@ -155,7 +218,7 @@ $rightItems = array_slice($items, $half);
 					<td class="border p-1">
 						<input type="number" name="km_reading"
 							value="<?= $inspection->km_reading ?>"
-							class="w-full border px-2 py-1">
+							class="w-full border px-2 py-1 edit-field">
 					</td>
 				</tr>
 			</table>
@@ -185,17 +248,17 @@ $rightItems = array_slice($items, $half);
 									<?= ($index + 1) ?>. <?= $i->item_name ?>
 								</td>
 								<td class="border text-center">
-									<input type="radio"
+									<input type="radio" class="edit-field"
 										name="item_status[<?= $i->item_id ?>]"
 										value="A" <?= ($item_results[$i->item_id] ?? '') == 'A' ? 'checked' : '' ?>>
 								</td>
 								<td class="border text-center">
-									<input type="radio"
+									<input type="radio" class="edit-field"
 										name="item_status[<?= $i->item_id ?>]"
 										value="C" <?= ($item_results[$i->item_id] ?? '') == 'C' ? 'checked' : '' ?>>
 								</td>
 								<td class="border text-center">
-									<input type="radio"
+									<input type="radio" class="edit-field"
 										name="item_status[<?= $i->item_id ?>]"
 										value="S" <?= ($item_results[$i->item_id] ?? '') == 'S' ? 'checked' : '' ?>>
 								</td>
@@ -223,17 +286,17 @@ $rightItems = array_slice($items, $half);
 									<?= ($half + $index + 1) ?>. <?= $i->item_name ?>
 								</td>
 								<td class="border text-center">
-									<input type="radio"
+									<input type="radio" class="edit-field"
 										name="item_status[<?= $i->item_id ?>]"
 										value="A" <?= ($item_results[$i->item_id] ?? '') == 'A' ? 'checked' : '' ?>>
 								</td>
 								<td class="border text-center">
-									<input type="radio"
+									<input type="radio" class="edit-field"
 										name="item_status[<?= $i->item_id ?>]"
 										value="C" <?= ($item_results[$i->item_id] ?? '') == 'C' ? 'checked' : '' ?>>
 								</td>
 								<td class="border text-center">
-									<input type="radio"
+									<input type="radio" class="edit-field"
 										name="item_status[<?= $i->item_id ?>]"
 										value="S" <?= ($item_results[$i->item_id] ?? '') == 'S' ? 'checked' : '' ?>>
 								</td>
@@ -290,7 +353,7 @@ $rightItems = array_slice($items, $half);
 						<?php foreach ($saved_services as $index => $srv): ?>
 							<tr>
 								<td class="border px-2 py-2 w-20 text-center"><?= $index + 1 ?></td>
-								<td  class="border px-2 py-2">
+								<td class="border px-2 py-2">
 									<?php if ($srv->service_id): ?>
 										<?= $service_map[$srv->service_id] ?>
 									<?php else: ?>
@@ -305,7 +368,7 @@ $rightItems = array_slice($items, $half);
 			</div>
 
 			<button type="button"
-				onclick="addServiceRow()"
+				onclick="if(inspectionEditMode){addServiceRow();}"
 				class="w-full sm:w-auto mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg">
 				+ Add Service
 			</button>
@@ -315,13 +378,13 @@ $rightItems = array_slice($items, $half);
 
 
 		<!-- WORKS REQUESTED -->
-	
+
 
 		<!-- INVENTORY STATUS -->
 		<h4 class="font-bold mb-1">INVENTORY STATUS</h4>
 		<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
 			<?php foreach ($inventory as $inv): ?>
-				<label><input type="checkbox" name="inventory_status[]" value="<?= $inv->inventory_status_id ?>" <?= in_array($inv->inventory_status_id, $selected_inventory) ? 'checked' : '' ?>> <?= $inv->status_name ?></label>
+				<label><input type="checkbox" name="inventory_status[]" class="edit-field" value="<?= $inv->inventory_status_id ?>" <?= in_array($inv->inventory_status_id, $selected_inventory) ? 'checked' : '' ?>> <?= $inv->status_name ?></label>
 			<?php endforeach; ?>
 		</div>
 
@@ -333,32 +396,32 @@ $rightItems = array_slice($items, $half);
 					<label class="font-bold block">Fuel</label>
 					<input name="fuel_level"
 						placeholder="1/2" value="<?= $inspection->fuel_level ?>"
-						class="border px-2 py-1 w-full">
+						class="border px-2 py-1 w-full edit-field">
 				</div>
 
 				<div class="col-span-1">
 					<label class="font-bold block">Estimated Del. Date</label>
 					<input name="delivery_date" type="date"
 						placeholder="3.8.22, 14:17" value="<?= $inspection->deliverydate ?>"
-						class="border px-2 py-1 w-full">
+						class="border px-2 py-1 w-full edit-field">
 				</div>
 				<div class="col-span-1">
 					<label class="font-bold block">Estimated Del. Time</label>
 					<input name="delivery_time" type="time"
 						placeholder="3.8.22, 14:17" value="<?= $inspection->deliverytime ?>"
-						class="border px-2 py-1 w-full">
+						class="border px-2 py-1 w-full edit-field">
 				</div>
 
 
 				<div class="col-span-4">
 					<label class="font-bold block">Remarks</label>
 					<input name="remarks" value="<?= $inspection->remarks ?>"
-						class="border px-2 py-1 w-full">
+						class="border px-2 py-1 w-full edit-field">
 				</div>
 				<div class="col-span-5">
 					<label class="font-bold block">Inspection Package</label>
 
-					<select class="w-full border rounded px-2 py-1" name="inspackage">
+					<select class="w-full border rounded px-2 py-1 edit-field" name="inspackage">
 						<option value="">-- Select Package --</option>
 
 						<?php foreach ($packages as $pkg) : ?>
@@ -381,7 +444,7 @@ $rightItems = array_slice($items, $half);
 						accept="image/*"
 						capture="environment"
 						multiple
-						class="border p-2 rounded w-full">
+						class="border p-2 rounded w-full edit-field">
 					<hr>
 
 
@@ -446,7 +509,7 @@ $rightItems = array_slice($items, $half);
 				<div class="col-span-3">
 					<label class="font-bold block">Technician Remarks</label>
 					<input name="tecremarks" value="<?= $inspection->techremarks ?>"
-						class="border px-2 py-1 w-full">
+						class="border px-2 py-1 w-full edit-field">
 				</div>
 			</div>
 
@@ -717,6 +780,7 @@ $rightItems = array_slice($items, $half);
 	// ADD DAMAGE MARK
 	container.addEventListener('click', function(e) {
 
+		if (!inspectionEditMode) return;
 		// Prevent adding when clicking existing mark
 		if (e.target.classList.contains('damage-mark')) return;
 
@@ -755,6 +819,7 @@ $rightItems = array_slice($items, $half);
 
 	// REMOVE DAMAGE MARK
 	document.addEventListener('click', function(e) {
+		if (!inspectionEditMode) return;
 		if (!e.target.classList.contains('damage-mark')) return;
 
 		const markId = e.target.dataset.id;
@@ -886,4 +951,46 @@ $rightItems = array_slice($items, $half);
 		selectedFiles.forEach(file => dt.items.add(file));
 		photoInput.files = dt.files;
 	});
+</script>
+<script>
+	let inspectionEditMode = false;
+
+	const editFields = document.querySelectorAll('.edit-field');
+
+	function setInspectionViewMode() {
+		editFields.forEach(el => el.disabled = true);
+		inspectionEditMode = false;
+	}
+
+	function setInspectionEditMode() {
+		editFields.forEach(el => el.disabled = false);
+		inspectionEditMode = true;
+	}
+
+	// default view mode
+	document.addEventListener("DOMContentLoaded", function() {
+		setInspectionViewMode();
+	});
+</script>
+
+<script>
+	function enableInspectionEdit() {
+		setInspectionEditMode();
+
+		document.getElementById('editInspectionBtn').classList.add('hidden');
+		document.getElementById('updateInspectionBtn').classList.remove('hidden');
+		document.getElementById('cancelInspectionBtn').classList.remove('hidden');
+
+		document.getElementById('revisionCheckboxWrap').classList.remove('hidden');
+	}
+
+	function cancelInspectionEdit() {
+		setInspectionViewMode();
+
+		document.getElementById('editInspectionBtn').classList.remove('hidden');
+		document.getElementById('updateInspectionBtn').classList.add('hidden');
+		document.getElementById('cancelInspectionBtn').classList.add('hidden');
+
+		document.getElementById('revisionCheckboxWrap').classList.add('hidden');
+	}
 </script>

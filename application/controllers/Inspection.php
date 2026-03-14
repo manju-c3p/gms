@@ -59,74 +59,350 @@ class Inspection extends CI_Controller
 		$this->load->view('includes/template', $data);
 	}
 
-	// Save inspection
+	// normal Save inspection
 
-	public function save()
-	{
-		$inspection_id = $this->input->post('inspection_id');
+	// public function save()
+	// {
+	// 	$inspection_id = $this->input->post('inspection_id');
+	// 	   $create_revision = $this->input->post('create_revision');
 
-		if (!$inspection_id) {
-			show_error('Invalid Inspection');
-		}
+	// 	if (!$inspection_id) {
+	// 		show_error('Invalid Inspection');
+	// 	}
 
-		// 1️⃣ Update main inspection table
-		$inspectionData = [
-			'km_reading'    => $this->input->post('km_reading'),
-			'fuel_level'    => $this->input->post('fuel_level'),
-			'remarks'       => $this->input->post('remarks'),
-			'status'        => 'Completed',
-			'drivername'     => $this->input->post('driver_name'),
-			'driverphno' => $this->input->post('driver_mobile'),
-			'deliverytime' => $this->input->post('delivery_time'),
-			'deliverydate'       => $this->input->post('delivery_date'),
-			'techremarks'       => $this->input->post('tecremarks'),
-			'inspackage'       => $this->input->post('inspackage'),
-		];
+	// 	// 1️⃣ Update main inspection table
+	// 	$inspectionData = [
+	// 		'km_reading'    => $this->input->post('km_reading'),
+	// 		'fuel_level'    => $this->input->post('fuel_level'),
+	// 		'remarks'       => $this->input->post('remarks'),
+	// 		'status'        => 'Completed',
+	// 		'drivername'     => $this->input->post('driver_name'),
+	// 		'driverphno' => $this->input->post('driver_mobile'),
+	// 		'deliverytime' => $this->input->post('delivery_time'),
+	// 		'deliverydate'       => $this->input->post('delivery_date'),
+	// 		'techremarks'       => $this->input->post('tecremarks'),
+	// 		'inspackage'       => $this->input->post('inspackage'),
+	// 	];
 
-		$this->Inspection_model->update_inspection($inspection_id, $inspectionData);
+	// 	$this->Inspection_model->update_inspection($inspection_id, $inspectionData);
 
-		// 2️⃣ Save Inspection Items (A / C / S)
-		if ($this->input->post('item_status')) {
-			foreach ($this->input->post('item_status') as $item_id => $status) {
-				$this->Inspection_model->save_item_result(
-					$inspection_id,
-					$item_id,
-					$status
-				);
-			}
-		}
+	// 	// 2️⃣ Save Inspection Items (A / C / S)
+	// 	if ($this->input->post('item_status')) {
+	// 		foreach ($this->input->post('item_status') as $item_id => $status) {
+	// 			$this->Inspection_model->save_item_result(
+	// 				$inspection_id,
+	// 				$item_id,
+	// 				$status
+	// 			);
+	// 		}
+	// 	}
 
-		// 3️⃣ Save Services / Description table
-		$service_ids     = $this->input->post('service_id') ?? [];
-		$custom_services = $this->input->post('custom_service') ?? [];
+	// 	// 3️⃣ Save Services / Description table
+	// 	$service_ids     = $this->input->post('service_id') ?? [];
+	// 	$custom_services = $this->input->post('custom_service') ?? [];
 
-		$this->Inspection_model->save_inspection_services(
-			$inspection_id,
-			$service_ids,
-			$custom_services
-		);
+	// 	$this->Inspection_model->save_inspection_services(
+	// 		$inspection_id,
+	// 		$service_ids,
+	// 		$custom_services
+	// 	);
 
-		// 4️⃣ Save Works Requested
-		$works = $this->input->post('works_requested') ?? [];
-		$this->Inspection_model->save_works_requested($inspection_id, $works);
+	// 	// 4️⃣ Save Works Requested
+	// 	$works = $this->input->post('works_requested') ?? [];
+	// 	$this->Inspection_model->save_works_requested($inspection_id, $works);
 
-		// 5️⃣ Save Inventory Status
-		$inventory = $this->input->post('inventory_status') ?? [];
-		$this->Inspection_model->save_inventory_status($inspection_id, $inventory);
+	// 	// 5️⃣ Save Inventory Status
+	// 	$inventory = $this->input->post('inventory_status') ?? [];
+	// 	$this->Inspection_model->save_inventory_status($inspection_id, $inventory);
 
-		// inspection photos
+	// 	// inspection photos
 
-		$this->Inspection_model->save_inspection_photos(
-			$inspection_id,
-			$_FILES['inspection_photos']
-		);
+	// 	$this->Inspection_model->save_inspection_photos(
+	// 		$inspection_id,
+	// 		$_FILES['inspection_photos']
+	// 	);
 
 
-		// 6️⃣ Redirect to inspection view / preview
-		redirect('inspection/edit/' . $inspection_id);
-		// redirect('estimation/create/' . $inspection_id);
-	}
+	// 	// 6️⃣ Redirect to inspection view / preview
+	// 	redirect('inspection/edit/' . $inspection_id);
+	// 	// redirect('estimation/create/' . $inspection_id);
+	// }
+	// save with revision
+	// public function save()
+	// {
+	// 	$inspection_id    = $this->input->post('inspection_id');
+	// 	$create_revision  = $this->input->post('create_revision');
 
+	// 	if (!$inspection_id) {
+	// 		show_error('Invalid Inspection');
+	// 	}
+
+	// 	// Prepare data
+	// 	$inspectionData = [
+	// 		'km_reading'   => $this->input->post('km_reading'),
+	// 		'fuel_level'   => $this->input->post('fuel_level'),
+	// 		'remarks'      => $this->input->post('remarks'),
+	// 		'status'       => 'Completed',
+	// 		'drivername'   => $this->input->post('driver_name'),
+	// 		'driverphno'   => $this->input->post('driver_mobile'),
+	// 		'deliverytime' => $this->input->post('delivery_time'),
+	// 		'deliverydate' => $this->input->post('delivery_date'),
+	// 		'techremarks'  => $this->input->post('tecremarks'),
+	// 		'inspackage'   => $this->input->post('inspackage'),
+	// 		'updated_at'   => date('Y-m-d H:i:s')
+	// 	];
+
+	// 	// ============================================================
+	// 	// REVISION MODE
+	// 	// ============================================================
+	// 	if ($create_revision) {
+	// 		// 1️⃣ Get original inspection
+	// 		$original = $this->Inspection_view_model->get_by_inspection($inspection_id);
+
+	// 		// 2️⃣ Find next revision number
+	// 		$next_revision = $this->Inspection_view_model->get_next_revision_no($inspection_id);
+
+	// 		// 3️⃣ Prepare revision data
+	// 		$revisionData = array_merge((array)$original, $inspectionData);
+
+	// 		unset($revisionData['inspection_id']); // remove PK
+
+	// 		$revisionData['parent_inspection_id'] = $inspection_id;
+	// 		$revisionData['revision_no']          = $next_revision;
+	// 		$revisionData['is_revision']         = 1;
+	// 		$revisionData['created_at']          = date('Y-m-d H:i:s');
+
+	// 		// 4️⃣ Insert revision
+	// 		$new_inspection_id = $this->Inspection_view_model->insert_inspection($revisionData);
+
+	// 		// 5️⃣ Copy child tables
+	// 		$this->Inspection_view_model->copy_items($inspection_id, $new_inspection_id);
+	// 		$this->Inspection_view_model->copy_services($inspection_id, $new_inspection_id);
+	// 		$this->Inspection_view_model->copy_inventory($inspection_id, $new_inspection_id);
+	// 		$this->Inspection_view_model->copy_photos($inspection_id, $new_inspection_id);
+	// 		$this->Inspection_view_model->copy_damage_marks($inspection_id, $new_inspection_id);
+
+	// 		$inspection_id = $new_inspection_id;
+	// 	} else {
+	// 		// NORMAL UPDATE
+	// 		$this->Inspection_model->update_inspection($inspection_id, $inspectionData);
+	// 	}
+
+	// 	// ============================================================
+	// 	// SAVE CHILD TABLES (for revision or update)
+	// 	// ============================================================
+
+	// 	if ($this->input->post('item_status')) {
+	// 		foreach ($this->input->post('item_status') as $item_id => $status) {
+	// 			$this->Inspection_model->save_item_result(
+	// 				$inspection_id,
+	// 				$item_id,
+	// 				$status
+	// 			);
+	// 		}
+	// 	}
+
+	// 	$service_ids     = $this->input->post('service_id') ?? [];
+	// 	$custom_services = $this->input->post('custom_service') ?? [];
+
+	// 	$this->Inspection_model->save_inspection_services(
+	// 		$inspection_id,
+	// 		$service_ids,
+	// 		$custom_services
+	// 	);
+
+	// 	$works = $this->input->post('works_requested') ?? [];
+	// 	$this->Inspection_model->save_works_requested($inspection_id, $works);
+
+	// 	$inventory = $this->input->post('inventory_status') ?? [];
+	// 	$this->Inspection_model->save_inventory_status($inspection_id, $inventory);
+
+	// 	$this->Inspection_model->save_inspection_photos(
+	// 		$inspection_id,
+	// 		$_FILES['inspection_photos']
+	// 	);
+
+	// 	redirect('inspection/edit/' . $inspection_id);
+	// }
+public function save()
+{
+    $inspection_id    = $this->input->post('inspection_id');
+    $create_revision  = $this->input->post('create_revision');
+
+    if (!$inspection_id) {
+        show_error('Invalid Inspection');
+    }
+
+    /* ============================================================
+    1️⃣ GET ORIGINAL INSPECTION
+    ============================================================ */
+
+    $original = $this->Inspection_view_model
+        ->get_by_inspection($inspection_id);
+
+    if (!$original) {
+        show_error('Inspection not found');
+    }
+
+    /* ============================================================
+    2️⃣ PREPARE DATA FROM FORM (POST DATA)
+    ============================================================ */
+
+    $inspectionData = [
+
+        'km_reading'   => $this->input->post('km_reading'),
+        'fuel_level'   => $this->input->post('fuel_level'),
+        'remarks'      => $this->input->post('remarks'),
+
+        'status'       => 'Completed',
+
+        'drivername'   => $this->input->post('driver_name'),
+        'driverphno'   => $this->input->post('driver_mobile'),
+
+        'deliverytime' => $this->input->post('delivery_time'),
+        'deliverydate' => $this->input->post('delivery_date'),
+
+        'techremarks'  => $this->input->post('tecremarks'),
+        'inspackage'   => $this->input->post('inspackage'),
+
+        'updated_at'   => date('Y-m-d H:i:s')
+
+    ];
+
+
+    /* ============================================================
+    3️⃣ REVISION MODE
+    ============================================================ */
+
+    if ($create_revision)
+    {
+
+        // determine parent
+        $parent_id = $original->parent_inspection_id
+            ? $original->parent_inspection_id
+            : $original->inspection_id;
+
+
+        // get next revision number
+        $max_revision = $this->db
+            ->select_max('revision_no')
+            ->where("(inspection_id = $parent_id OR parent_inspection_id = $parent_id)")
+            ->get('inspections')
+            ->row()
+            ->revision_no;
+
+        $new_revision_no = ($max_revision !== null)
+            ? $max_revision + 1
+            : 1;
+
+
+        // insert NEW inspection revision
+        $revisionData = array_merge($inspectionData, [
+
+            'appointment_id' => $original->appointment_id,
+            'customer_id'    => $original->customer_id,
+            'vehicle_id'     => $original->vehicle_id,
+
+            'parent_inspection_id' => $parent_id,
+            'revision_no'          => $new_revision_no,
+            'is_revision'          => 1,
+
+            'inspection_date' => date('Y-m-d'),
+            'inspection_time' => date('H:i:s'),
+
+            'created_at'      => date('Y-m-d H:i:s')
+
+        ]);
+
+
+        $this->db->insert('inspections', $revisionData);
+
+        // IMPORTANT: switch to new revision id
+        $inspection_id = $this->db->insert_id();
+
+    }
+    else
+    {
+
+        // NORMAL UPDATE
+        $this->Inspection_model
+            ->update_inspection($inspection_id, $inspectionData);
+
+
+        // delete old child rows before saving new ones
+        $this->Inspection_model->delete_item_results($inspection_id);
+        $this->Inspection_model->delete_services($inspection_id);
+        $this->Inspection_model->delete_inventory_status($inspection_id);
+        $this->Inspection_model->delete_works_requested($inspection_id);
+		$this->Inspection_model->delete_photos($inspection_id);
+
+    }
+
+
+    /* ============================================================
+    4️⃣ SAVE CHILD TABLES (POST DATA ONLY)
+    ============================================================ */
+
+    // ITEMS
+    if ($this->input->post('item_status'))
+    {
+        foreach ($this->input->post('item_status') as $item_id => $status)
+        {
+            $this->Inspection_model->save_item_result(
+                $inspection_id,
+                $item_id,
+                $status
+            );
+        }
+    }
+
+
+    // SERVICES
+    $service_ids     = $this->input->post('service_id') ?? [];
+    $custom_services = $this->input->post('custom_service') ?? [];
+
+    $this->Inspection_model->save_inspection_services(
+        $inspection_id,
+        $service_ids,
+        $custom_services
+    );
+
+
+    // WORKS REQUESTED
+    $works = $this->input->post('works_requested') ?? [];
+
+    $this->Inspection_model->save_works_requested(
+        $inspection_id,
+        $works
+    );
+
+
+    // INVENTORY
+    $inventory = $this->input->post('inventory_status') ?? [];
+
+    $this->Inspection_model->save_inventory_status(
+        $inspection_id,
+        $inventory
+    );
+
+
+    // PHOTOS
+    if (!empty($_FILES['inspection_photos']['name'][0]))
+    {
+        $this->Inspection_model->save_inspection_photos(
+            $inspection_id,
+            $_FILES['inspection_photos']
+        );
+    }
+
+
+    /* ============================================================
+    5️⃣ REDIRECT
+    ============================================================ */
+
+    redirect('inspection/edit/' . $inspection_id);
+
+}
 	public function update()
 	{
 		$inspection_id = $this->input->post('inspection_id');
@@ -408,7 +684,15 @@ class Inspection extends CI_Controller
 				'inspection_id' => $inspection_id
 			])->result();
 
-		$data['title'] = "View Inspection";
+		// $data['title'] = "View Inspection";
+		$data['title'] =
+			'Inspection_' .
+			($appointment->doc_no ?? ('VIN-' . str_pad($inspection_id, 6, '0', STR_PAD_LEFT))) . '_' .
+			preg_replace('/[^A-Za-z0-9\-]/', '_', $appointment->registration_no ?? $vehicle->registration_no ?? '') . '_' .
+			preg_replace('/[^A-Za-z0-9\-]/', '_', $appointment->customer_name ?? $customer->name ?? '') . '_' .
+			date('d-m-Y');
+
+
 		$data['main_content'] = 'inspection/view';
 		$this->load->view('includes/template', $data);
 	}
@@ -620,7 +904,7 @@ class Inspection extends CI_Controller
 		}
 
 		$vehicles = $this->db
-			->select('vehicle_id, registration_no, brand, model')
+			->select('vehicle_id, registration_no, brand, model, chassis_no')
 			->where('customer_id', $customer_id)
 			->order_by('vehicle_id', 'DESC')
 			->get('vehicles')
@@ -638,6 +922,21 @@ class Inspection extends CI_Controller
 			->from('vehicles v')
 			->join('customers c', 'c.customer_id = v.customer_id')
 			->where('v.chassis_no', $chassis)
+			->get()
+			->row();
+
+		echo json_encode($data);
+	}
+
+	public function get_by_plateno()
+	{
+		$plate_no = $this->input->post('plate_no');
+
+		$data = $this->db
+			->select('v.*, c.customer_id')
+			->from('vehicles v')
+			->join('customers c', 'c.customer_id = v.customer_id')
+			->where('v.registration_no', $plate_no)
 			->get()
 			->row();
 

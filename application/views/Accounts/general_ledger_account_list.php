@@ -64,7 +64,7 @@
                                 </a>
 
                                 <!-- Delete (restricted groups only) -->
-                                <?php if ($row->group_name == 'Farmer' || $row->group_name == 'Vendors/Suppliers'): ?>
+                               
                                     <button onclick="delete_area(<?= $row->account_id; ?>)"
                                             class="inline-flex items-center justify-center
                                                    w-8 h-8 rounded-full bg-red-100 text-red-700
@@ -72,7 +72,7 @@
                                             title="Delete">
                                         🗑️
                                     </button>
-                                <?php endif; ?>
+                           
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -104,34 +104,33 @@ $(document).ready(function () {
 
 
 <script>
-	function delete_area(id) {
+function delete_area(id) {
 
-		var x;
-		var r = bootbox.confirm("Are you sure you want to delete record?!", function(res) {
-			if (res == true) {
-				$.ajax({
-					url: "<?php echo base_url() ?>index.php/accounts/delete_ledger_record",
-					type: "POST",
-					dataType: "json",
-					data: {
-						account_id: id
-					},
-					success: function(msg) {
-						if (msg == 1) {
-							alert("The record is deleted!");
-							window.location.href = "<?php echo $_SERVER['PHP_SELF'] ?>";
-						} else {
-							bootbox.alert("The record is not deleted!");
-						}
+    if (confirm("Are you sure you want to delete record?")) {
 
-					},
-					error: function(xhr, textStatus, errorThrown) {
-						alert('Cannot deleted mater records');
-					}
-				});
-			} else
-				return false;
+        $.ajax({
+            url: "<?= base_url() ?>index.php/Accounts/delete_ledger_record",
+            type: "POST",
+            dataType: "json",
+            data: {
+                account_id: id
+            },
+            success: function(msg) {
 
-		})
-	};
+                if (msg == 1) {
+                    alert("The record is deleted!");
+                    location.reload();
+                } else {
+                    alert("The record is not deleted!");
+                }
+
+            },
+            error: function() {
+                alert('Cannot delete master records');
+            }
+        });
+
+    }
+
+}
 </script>

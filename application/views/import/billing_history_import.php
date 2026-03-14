@@ -22,7 +22,7 @@
 <body>
 
 <div class="box">
-    <h3>Import Customer Billing History</h3>
+    <h3>Import Customer Billing History using cvs file</h3>
 
     <?php if ($this->session->flashdata('success')): ?>
         <p style="color:green"><?= $this->session->flashdata('success') ?></p>

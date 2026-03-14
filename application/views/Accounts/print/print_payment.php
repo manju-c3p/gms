@@ -3,15 +3,15 @@
 $this->load->helper('menu_helper.php');
 $this->load->helper('myopeningbalance_helper.php');
 
-foreach ($logo_details as $row1) {
-    $company_name    = $row1->company_name;
-    $company_add1    = $row1->company_address;
-    $company_city    = $row1->company_city;
-    $company_pin     = $row1->company_pincode;
-    $company_state   = $row1->company_state;
-    $company_website = $row1->company_website;
-    $company_email   = $row1->company_email_id;
-}
+// foreach ($logo_details as $row1) {
+//     $company_name    = $row1->company_name;
+//     $company_add1    = $row1->company_address;
+//     $company_city    = $row1->company_city;
+//     $company_pin     = $row1->company_pincode;
+//     $company_state   = $row1->company_state;
+//     $company_website = $row1->company_website;
+//     $company_email   = $row1->company_email_id;
+// }
 
 $receipt_no       = $header->voucher_code;
 $receipt_date     = $header->voucher_date;
@@ -91,18 +91,21 @@ $bank_name        = $header->bank_name ?? '';
   }
 </style>
 
-<div class="header-wrapper">
-  <div class="logo">
-    <img src="<?= base_url('public/logo/Logo-bsg.jpg'); ?>" alt="Company Logo" />
-  </div>
-  <div class="company-info">
-    <div><?= strtoupper($company_name); ?></div>
-    <small><?= $company_add1; ?></small>
-    <small><?= $company_city . ' - ' . $company_pin; ?></small>
-    <small>Emirate: <?= $company_state; ?></small>
-    <small>E-Mail: <?= $company_email; ?></small>
-  </div>
-</div>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+
+			<!-- Logo -->
+			<img src="<?= base_url('public/images/logocooling.png'); ?>" width="30%" style="height:70px;">
+
+			<!-- Company Details -->
+			<div style="text-align:right; font-size:13px; line-height:1.5;">
+				<strong>Cool Runnings Garage Co LLC</strong><br>
+				Al Quoz 3, Dubai, UAE<br>
+				www.coolrunningsgarage.com<br>
+				Tel: +971 4 265 4887<br>
+				TRN: 104026094300003
+			</div>
+
+		</div>
 
 <h3>Payment Voucher</h3>
 

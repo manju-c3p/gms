@@ -182,7 +182,7 @@
 	$('#addCustomerBtn').on('click', function() {
 		$('#customerModal').removeClass('hidden');
 		$('#customerModalBody').load(
-			"<?= base_url('index.php/customer/add_spot_popup'); ?>"
+			"<?= base_url('index.php/Customer/add_spot_popup'); ?>"
 		);
 	});
 

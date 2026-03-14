@@ -235,26 +235,28 @@ class Ajax extends CI_Controller
 	}
 
 
-	public function get_subcategories_by_category() {
-    $cat_id = $this->input->post('category_id');
-    $this->db->where('cid', $cat_id);
-    $subs = $this->db->get('costsheet_items')->result();
+	public function get_subcategories_by_category()
+	{
+		$cat_id = $this->input->post('category_id');
+		$this->db->where('cid', $cat_id);
+		$subs = $this->db->get('costsheet_items')->result();
 
-    echo '<option value="">Select</option>';
-    foreach($subs as $s){
-        echo '<option value="'.$s->cs_item_id.'">'.$s->sub_category_name.'</option>';
-    }
-}
-public function get_item_details() {
-    $sub_id = $this->input->post('sub_id');
-    $item = $this->db->where('cs_item_id', $sub_id)->get('costsheet_items')->row();
+		echo '<option value="">Select</option>';
+		foreach ($subs as $s) {
+			echo '<option value="' . $s->cs_item_id . '">' . $s->sub_category_name . '</option>';
+		}
+	}
+	public function get_item_details()
+	{
+		$sub_id = $this->input->post('sub_id');
+		$item = $this->db->where('cs_item_id', $sub_id)->get('costsheet_items')->row();
 
-    echo json_encode([
-        'description' => $item->description,
-        'unit'        => $item->unit_quantity, 
-        'unit_price'  => $item->unit_price
-    ]);
-}
+		echo json_encode([
+			'description' => $item->description,
+			'unit'        => $item->unit_quantity,
+			'unit_price'  => $item->unit_price
+		]);
+	}
 
 
 	function ajax_get_copy_quotation_info()
@@ -633,133 +635,272 @@ public function get_item_details() {
 	}
 	function get_invoice_list()
 	{
-		$value=array();
+		$value = array();
 		$account_id = $this->input->post('account_id');
-		$data['records1']='';
+
+		// log_message('error', 'Account ID: ' . $account_id);
+
+		$data['records1'] = '';
 		$this->load->model('Ajax_model');
 		$data['record'] = $this->Ajax_model->get_general_ledger_list_by_id($account_id);
+		// Log records from Ajax_model
+		// log_message('error', 'General Ledger Records: ' . print_r($data['record'], true));
+
 		foreach ($data['record'] as $v) {
 			$customer_id = $v->customer_id;
-		
+
 			$this->load->model('Invoice_model');
-			$data['records1']=$this->Invoice_model->get_debt_invoice_list($customer_id,$account_id);
+			$data['records1'] = $this->Invoice_model->get_debt_invoice_list($customer_id, $account_id);
+
+			// Log invoice list
+			// log_message('error', 'Debt Invoice List: ' . print_r($data['records1'], true));
 		}
 
-		$this->load->view('ajax/inv_list_debtors.php',$data);
-   }
-public function get_grn_list()
-{
-    $account_id = $this->input->post('supplier_id');
 
-    if (empty($account_id)) {
-        echo "Supplier ID is required.";
-        return;
-    }
+		// Final data sent to view
+		// log_message('error', 'Final Data Sent To View: ' . print_r($data, true));
+		$this->load->view('ajax/inv_list_debtors.php', $data);
+	}
+	public function get_grn_list()
+	{
+		$account_id = $this->input->post('supplier_id');
+		log_message('error', 'Accountr ID: ' . $account_id);
 
-    $this->load->model('Accounts_model');
-    $supplier_id = $this->Accounts_model->get_supp_id_from_account_id($account_id);
+		if (empty($account_id)) {
+			echo "Supplier ID is required.";
+			return;
+		}
 
-    if (empty($supplier_id)) {
-        echo "No supplier found for this account.";
-        return;
-    }
+		$this->load->model('Accounts_model');
+		$supplier_id = $this->Accounts_model->get_supp_id_from_account_id($account_id);
+		log_message('error', 'Supplier ID: ' . $supplier_id);
 
-    $this->load->model('Sales_model');
-    $data['records1'] = $this->Sales_model->get_grn_master_data($supplier_id, $account_id);
+		if (empty($supplier_id)) {
+			echo "No supplier found for this account.";
+			return;
+		}
 
-    $this->load->view('ajax/grn_list_payment_entry.php', $data);
-}
+		$this->load->model('Purchase_Model');
+		$data['records1'] = $this->Purchase_Model->get_grn_master_data($supplier_id, $account_id);
+
+		$this->load->view('ajax/grn_list_payment_entry.php', $data);
+	}
 
 
-//    function get_grn_list()
-//    {
-// 	$value=array();
-// 	$account_id = $this->input->post('supplier_id');
+	//    function get_grn_list()
+	//    {
+	// 	$value=array();
+	// 	$account_id = $this->input->post('supplier_id');
 
-// 	$this->load->model('Accounts_model');
-// 	$supplier_id = $this->Accounts_model->get_supp_id_from_account_id($account_id);
-		
-// 	$this->load->model('Sales_model');
-// 	$data['records1']=$this->Sales_model->get_grn_master_data($supplier_id, $account_id);
+	// 	$this->load->model('Accounts_model');
+	// 	$supplier_id = $this->Accounts_model->get_supp_id_from_account_id($account_id);
 
-// 	$this->load->view('ajax/grn_list_payment_entry.php',$data);
-//   }
+	// 	$this->load->model('Sales_model');
+	// 	$data['records1']=$this->Sales_model->get_grn_master_data($supplier_id, $account_id);
 
-   function get_enquiry_controlpanels_list()
-   {
-	$value=array();
-	$enq_id = $this->input->post('enq_id');
-	$rev_version = $this->input->post('rev_version');
+	// 	$this->load->view('ajax/grn_list_payment_entry.php',$data);
+	//   }
 
-		
-	$this->load->model('Sales_model');
-	$data['records']=$this->Sales_model->get_enquiry_controlpanels_list($enq_id, $rev_version);
-	$data['records1']=$this->Sales_model->get_cost_sheet_master_by_id();
+	function get_enquiry_controlpanels_list()
+	{
+		$value = array();
+		$enq_id = $this->input->post('enq_id');
+		$rev_version = $this->input->post('rev_version');
 
-	$this->load->view('ajax/enquiry_controlpanels_list.php',$data);
-  }
-  public function check_duplicate_exist5()
-  {
-	  $this->load->model('Ajax_model');
-	  $res = $this->Ajax_model->check_duplicate_exist5();
 
-	  // Echo the count
-	  echo $res > 0 ? 1 : 0;
-  }
-function get_reco_list()
-  {
-	$value=array();
+		$this->load->model('Sales_model');
+		$data['records'] = $this->Sales_model->get_enquiry_controlpanels_list($enq_id, $rev_version);
+		$data['records1'] = $this->Sales_model->get_cost_sheet_master_by_id();
+
+		$this->load->view('ajax/enquiry_controlpanels_list.php', $data);
+	}
+	public function check_duplicate_exist5()
+	{
+		$this->load->model('Ajax_model');
+		$res = $this->Ajax_model->check_duplicate_exist5();
+
+		// Echo the count
+		echo $res > 0 ? 1 : 0;
+	}
+	function get_reco_list()
+	{
+		$value = array();
 		$account_id = $this->input->post('account_id');
 		$this->load->model('Accounts_model');
 		$data['records'] = $this->Accounts_model->get_reco_list($account_id);
 
 
-		$this->load->view('ajax/reco_list.php',$data);
-		
-	
-  }
-/*********************************************************************************************************************/
+		$this->load->view('ajax/reco_list.php', $data);
+	}
+	/*********************************************************************************************************************/
 
 
-function ajax_get_cust_accountId_from_dc()
-{
-    // if (!$this->session->userdata('user_id')) {
-    //     echo json_encode([
-    //         'status' => false,
-    //         'message' => 'Session expired'
-    //     ]);
-    //     exit;
-    // }
+	function ajax_get_cust_accountId_from_dc()
+	{
+		// if (!$this->session->userdata('user_id')) {
+		//     echo json_encode([
+		//         'status' => false,
+		//         'message' => 'Session expired'
+		//     ]);
+		//     exit;
+		// }
 
-    $qid = $this->input->post('qid');
-	log_message('error', $qid);
+		$qid = $this->input->post('qid');
+		log_message('error', $qid);
 
-    $this->load->model('Quotation_model');
-    $records = $this->Quotation_model->get_quotation($qid);
+		$this->load->model('Quotation_model');
+		$records = $this->Quotation_model->get_quotation($qid);
 
-    if (empty($records)) {
-        echo json_encode([
-            'status' => false,
-            'message' => 'Invalid quotation'
-        ]);
-        exit;
-    }
+		if (empty($records)) {
+			echo json_encode([
+				'status' => false,
+				'message' => 'Invalid quotation'
+			]);
+			exit;
+		}
 
-    $this->load->model('Accounts_model');
-    
-	$accountId = $this->Accounts_model
-                  ->get_cust_account_Id($records->customer_id);
+		$this->load->model('Accounts_model');
+
+		$accountId = $this->Accounts_model
+			->get_cust_account_Id($records->customer_id);
 
 
-    echo json_encode([
-        'status' => true,
-        'accountId' => $accountId
-    ]);
-    exit;
+		echo json_encode([
+			'status' => true,
+			'accountId' => $accountId
+		]);
+		exit;
+	}
+
+	function ajax_get_rfq_info()
+	{
+		$value = array();
+		$rfq_id = $this->input->post('rfq_id');
+
+		$this->load->model('Purchase_Model');
+		$data['records'] = $this->Purchase_Model->get_purchase_rfq_by_id($rfq_id);
+		foreach ($data['records'] as $row) {
+			$value = array('supplier_id' => $row->supplier_id, 'supplier_code' => $row->supplier_code, 'supplier_name' => $row->supplier_name, 'rfq_created_by' => $row->rfq_created_by, 'project' => $row->project, 'ref' => $row->ref);
+		}
+		echo json_encode($value);
+	}
+	function get_rfq_items_for_quote()
+	{
+
+		$rfq_id = $this->input->post('rfq_id');
+		$this->load->model('Purchase_Model');
+		$this->load->model('Setup_model');
+		$data['active_units'] = $this->Setup_model->get_active_unit_list();
+		$data['records2'] = $this->Purchase_Model->get_purchase_rfq_tr($rfq_id);
+		log_message('error', 'RFQ Data: ' . print_r($data['records2'], true));
+		$this->load->view('ajax/purchase_rfq_items_for_quote', $data);
+	}
+
+	function ajax_get_quote_info()
+	{
+		$value = array();
+		$quotation_id = $this->input->post('quotation_id');
+
+		$this->load->model('Purchase_Model');
+		$data['records'] = $this->Purchase_Model->get_pur_qtn_master_by_id($quotation_id);
+		log_message('error', 'RFQ Data: ' . print_r($data['records'], true));
+		foreach ($data['records'] as $row) {
+			$value = array('supplier_id' => $row->supplier_id, 'supplier_code' => $row->supplier_code, 'supplier_name' => $row->supplier_name, 'subtotal' => $row->subtotal, 'discount_percent' => $row->discount_percent, 'discount' => $row->discount, 'vat_percent' => $row->vat_percent, 'vat_amt' => $row->vat_amt, 'grand_total' => $row->grand_total, 'validity' => $row->validity, 'payment_term' => $row->payment_term, 'general_term' => $row->general_term, 'delivery_term' => $row->delivery_term, 'reference' => $row->reference, 'project' => $row->project);
+		}
+		echo json_encode($value);
+	}
+
+	function get_quote_items_for_po()
+	{
+
+		$quotation_id = $this->input->post('quotation_id');
+		$this->load->model('Purchase_Model');
+		$this->load->model('Setup_model');
+		$data['records2'] = $this->Purchase_Model->get_pur_qtn_tr_by_id($quotation_id);
+		$data['active_units'] = $this->Setup_model->get_active_unit_list();
+		$this->load->view('ajax/purchase_quote_items_for_po', $data);
+	}
+
+	function ajax_get_po_info()
+	{
+		$value = array();
+		$po_id = $this->input->post('po_id');
+
+		$this->load->model('Purchase_Model');
+		$data['records'] = $this->Purchase_Model->get_po_master_by_id($po_id);
+		log_message('error', 'RFQ Data: ' . print_r($data['records'], true));
+		foreach ($data['records'] as $row) {
+			$value = array('supplier_id' => $row->supplier_id, 'supplier_code' => $row->supplier_code, 'supplier_name' => $row->supplier_name, 'subtotal' => $row->sub_total, 'discount_percent' => $row->discount_percent, 'discount' => $row->discount, 'vat_percent' => $row->vat_percent, 'vat_amt' => $row->vat_amt, 'grand_total' => $row->grand_total);
+		}
+		echo json_encode($value);
+	}
+	function get_po_items_for_grn()
+	{
+		$po_id = $this->input->post('po_id');
+		$this->load->model('Purchase_Model');
+		$this->load->model('Setup_model');
+		$data['active_units'] = $this->Setup_model->get_active_unit_list();
+		$data['records2'] = $this->Purchase_Model->get_po_tr_by_id($po_id);
+		log_message('error', 'po Data: ' . print_r($data['records2'], true));
+
+		//  $data['approved_quotations'] = $this->Purchase_Model->get_approved_quotation_list();
+		$this->load->view('ajax/purchase_po_items_for_grn', $data);
+	}
+
+	function ajax_get_paid_leave_info()
+	{
+		$value = array();
+		$employee_id = $this->input->post('employee_id');
+		$ltype_id = $this->input->post('ltype_id');
+
+		$this->load->model('Ajax_model');
+		$data['record1'] = $this->Ajax_model->get_paid_leave_type_days($employee_id, $ltype_id);
+		foreach ($data['record1'] as $row) {
+			$paid_days = $row->paid_days;
+			$use_paid_leave = $row->use_paid_leave;
+		}
+		$value = array('paid_days' => $paid_days, 'use_paid_leave' => $use_paid_leave);
+
+		echo json_encode($value);
+	}
+	// ===================== purchase return =======================
+
+	public function ajax_get_grn_info()
+	{
+
+		$grn_id = $_POST['grn_id'];
+
+		$row = $this->db
+			->select('purchase_grn_master.*, supplier_master.supplier_name, supplier_master.supplier_code')
+			->from('purchase_grn_master')
+			->join('supplier_master', 'supplier_master.supplier_id = purchase_grn_master.supplier_id', 'left')
+			->where('purchase_grn_master.grn_id', $grn_id)
+			->get()
+			->row();
+
+		echo json_encode($row);
+	}
+
+	public function get_grn_items_for_return()
+	{
+
+		$grn_id = $_POST['grn_id'];
+
+		$data['records2'] = $this->db
+			->select('purchase_grn_transaction.*, spare_parts.part_name')
+			->from('purchase_grn_transaction')
+			->join('spare_parts', 'spare_parts.part_id = purchase_grn_transaction.product_id', 'left')
+			->where('purchase_grn_transaction.grn_master_id', $grn_id)
+			->get()
+			->result();
+
+		// log_message('error', 'records2: ' . print_r($data['records2'], true));
+
+		$data['active_units'] = $this->db
+			->get('unit_master')
+			->result();
+		log_message('error', 'active_units: ' . print_r($data['active_units'], true));
+
+		$this->load->view('ajax/get_grn_items_for_return', $data);
+	}
 }
-
-
-
-}
-
-?>

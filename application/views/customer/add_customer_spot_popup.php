@@ -125,7 +125,7 @@ $('#brandSelect').on('change', function () {
     e.preventDefault();
 
     $.ajax({
-        url: "<?= base_url('index.php/customer/save_spot_ajax'); ?>",
+        url: "<?= base_url('index.php/Customer/save_spot_ajax'); ?>",
         type: "POST",
         data: $(this).serialize(),
         dataType: "json",

@@ -24,6 +24,29 @@ class Jobcard extends CI_Controller
 		$this->load->model('Vehicle_model');
 	}
 
+	private function generate_jobcard_no()
+	{
+		$year = date('Y');
+
+		$last = $this->db
+			->like('jobcard_no', "JC-$year-", 'after')
+			->order_by('jobcard_id', 'DESC')
+			// ->order_by("CAST(SUBSTRING_INDEX(jobcard_no,'-',-1) AS UNSIGNED)", "DESC")
+			->limit(1)
+			->get('jobcards')
+			->row();
+
+		if ($last) {
+			$last_no = intval(substr($last->jobcard_no, -4));
+			$new_no  = str_pad($last_no + 1, 4, '0', STR_PAD_LEFT);
+		} else {
+			$new_no = '0001';
+		}
+
+		return "JC-$year-$new_no";
+	}
+
+
 	public function create($appointment_id)
 	{
 		$data['username'] = $this->session->userdata('username');
@@ -56,6 +79,8 @@ class Jobcard extends CI_Controller
 		$quotation = $this->Quotation_model->get_quotation_details($appointment_id);
 		$quotation_id  = $quotation->quotation_id;
 		// 1️⃣ Create Job Card record
+		$jobcard_no = $this->generate_jobcard_no();
+
 		$jobcard_id = $this->Jobcard_model->create_jobcard([
 			'estimation_id' => $estimation_id,
 			'customer_id'   => $appointment->customer_id,
@@ -65,17 +90,18 @@ class Jobcard extends CI_Controller
 			'jobcard_time'  => date('H:i:s'),
 			'status'        => 'Pending',
 			'quotation_id'   => $quotation_id,
+			'jobcard_no' => $jobcard_no
 		]);
 
 		// 2️⃣ Generate Job Card No
-		$year = date('Y');
-		$jobcard_no = 'JC-' . $year . '-' . str_pad($jobcard_id, 6, '0', STR_PAD_LEFT);
+		// $year = date('Y');
+		// $jobcard_no = 'JC-' . $year . '-' . str_pad($jobcard_id, 6, '0', STR_PAD_LEFT);
 
-		// 3️⃣ Update job card with number
-		$this->Jobcard_model->update_jobcard(
-			$jobcard_id,
-			['jobcard_no' => $jobcard_no]
-		);
+		// // 3️⃣ Update job card with number
+		// $this->Jobcard_model->update_jobcard(
+		// 	$jobcard_id,
+		// 	['jobcard_no' => $jobcard_no]
+		// );
 
 
 
@@ -214,8 +240,6 @@ class Jobcard extends CI_Controller
 
 		$this->Jobcard_model->update_jobcard($jobcard_id, $jobcardData);
 
-
-
 		// ---------------------------
 		// 4️⃣ SERVICES / LABOUR
 		// ---------------------------
@@ -223,6 +247,33 @@ class Jobcard extends CI_Controller
 			$jobcard_id,
 			$this->input->post('service_name') ?? [],
 			$this->input->post('technician_id') ?? [],
+			$this->input->post('service_estcost') ?? [],
+			$this->input->post('service_esttime') ?? [],
+			$this->input->post('service_amt') ?? [],
+
+		);
+
+		// ---------------------------
+		// 4️⃣ parts
+		// ---------------------------
+		$this->Jobcard_model->update_parts(
+			$jobcard_id,
+			$this->input->post('part_id') ?? [],
+			$this->input->post('part_type') ?? [],
+			$this->input->post('part_qty') ?? [],
+			$this->input->post('part_sellprice') ?? [],
+			$this->input->post('part_sellprice') ?? [],
+			$this->input->post('part_totalprice') ?? [],
+			$this->input->post('part_disamt') ?? [],
+
+		);
+		// ---------------------------
+		// 4️⃣ sublet
+		// ---------------------------
+		$this->Jobcard_model->update_sublet(
+			$jobcard_id,
+			$this->input->post('sublet') ?? [],
+			$this->input->post('jobservice_amt') ?? []
 
 		);
 
@@ -314,12 +365,12 @@ class Jobcard extends CI_Controller
 		$data['estimation_no'] = $estimation->estimation_no;
 
 		$data['title'] = 'Edit Jobcard';
-		$data['main_content'] = 'jobcard/create'; // SAME PAGE
+		$data['main_content'] = 'jobcard/edit'; // SAME PAGE
 
 		$this->load->view('includes/template', $data);
 	}
 
-	public function edit_by_quotation($quotation_id)
+	public function edit_by_quotationold($quotation_id)
 	{
 		// 1️⃣ Get estimation header
 		// 1️⃣ Get jobcard by quotation
@@ -370,6 +421,7 @@ class Jobcard extends CI_Controller
 		}
 
 		$estimation_id = $estimation->estimation_id;
+
 		// $inspection = $this->Inspection_view_model->get_by_appointment($appointment_id);
 		// $inspection = $this->Inspection_view_model->get_by_inspection($jobcard->inspection_id);
 		// 3️⃣ Sub tables
@@ -402,6 +454,189 @@ class Jobcard extends CI_Controller
 		$data['jobcardstatus'] = $jobcardstatus->status;
 		$data['estimation_id'] = $estimation_id;
 		$data['estimation_no'] = $estimation->estimation_no;
+
+		$data['title'] = 'Edit Jobcard';
+		$data['main_content'] = 'jobcard/create'; // SAME PAGE
+
+		$this->load->view('includes/template', $data);
+	}
+
+	public function edit_by_quotation($quotation_id, $estimation_id)
+	{
+		// 1️⃣ Get estimation header
+		// 1️⃣ Get jobcard by quotation
+		// 3️⃣ Get estimation (jobcard MUST come after estimation)
+		// $estimation = $this->Estimation_model->get_by_appointment($appointment_id);
+
+		log_message('error', "check this function");
+		$estimation = $this->Estimation_model->get_estimation_by_id($estimation_id);
+		if (!$estimation) {
+			$this->session->set_flashdata(
+				'error',
+				'Please complete inspection before creating estimation.'
+			);
+			redirect('appointment');
+		}
+
+		$estimation_id = $estimation->estimation_id;
+		$parent_estimation_id = $estimation->parent_estimation_id;
+		log_message('error', "check this " . $parent_estimation_id);
+		log_message('error', "estimation_id this " . $estimation_id);
+
+		if (!empty($parent_estimation_id)) {
+			$jobcard = $this->Jobcard_model->get_jobcard_by_eid($parent_estimation_id);
+		} else {
+			$jobcard = $this->Jobcard_model->get_jobcard_by_eid($estimation_id);
+		}
+
+		$appointment_id = null;
+		
+
+		if (!$jobcard) {
+			// ==================if jobcard not created, check quotation is saved or not. if saved create jobcard using quotation and move forward.
+			//  otherwise show the save msg
+			$quote = $this->Quotation_model->get_quotation($quotation_id);
+			if (!$quote) {
+
+				$this->session->set_flashdata(
+					'error',
+					'Please save the quotation first before opening the jobcard.'
+				);
+				// Redirect back to quotation edit page
+				redirect('quotation/edit/' . $quotation_id);
+				return;
+			} else {
+				$jobcard_id = $this->Quotation_model->create_jobcard_from_quotation($quotation_id);
+				$jobcard = $this->Jobcard_model->get_jobcard_by_id($jobcard_id);
+			}
+		}
+		$estimation_id = $jobcard->estimation_id;
+		$jobcard_id = $jobcard->jobcard_id;
+
+		// Customer from inspection
+		$customer = $this->Customer_model
+			->get_customer($jobcard->customer_id);
+
+		// Vehicle from inspection
+		$vehicle = $this->Vehicle_model
+			->get_vehicle($jobcard->vehicle_id);
+
+
+		if ($jobcard->appointment_id !== null) {
+			// 2️⃣ Appointment + customer + vehicle
+			$appointment = $this->Estimation_model
+				->get_appointment_details($jobcard->appointment_id);
+
+			$appointment_id = $appointment->appointment_id;
+		}
+
+
+
+		// ====================now get the jocard created for parent estimation id  and add extra items or delete items from it======
+
+		$job_descriptions_quotation = $this->Quotation_model
+			->get_job_descriptions($quotation_id);
+
+		$parts_used_quotation = $this->Quotation_model
+			->get_parts($quotation_id);
+
+		$services_used_quotation = $this->Quotation_model->get_services($quotation_id);
+
+
+
+		// $inspection = $this->Inspection_view_model->get_by_appointment($appointment_id);
+		// $inspection = $this->Inspection_view_model->get_by_inspection($jobcard->inspection_id);
+		// 3️⃣ Sub tables
+		$job_descriptions = $this->Jobcard_model
+			->get_job_descriptions($jobcard_id);
+
+		$parts_used = $this->Jobcard_model
+			->get_parts($jobcard_id);
+
+		$services_used = $this->Jobcard_model->get_services($jobcard_id);
+
+		$jobcardstatus = $this->Jobcard_model->get_jobcard_status_by_id($jobcard_id);
+
+		// 4️⃣ Masters (dropdown data)
+		$data['parts']           = $this->SpareParts_model->get_all_parts();
+		$data['services_master'] = $this->Service_model->get_active_services();
+		$data['technicians'] = $this->Employee_model->get_active_technicians();
+		// 5️⃣ Send data to view
+		$data['estimation']       = $estimation;
+		$data['appointment'] = $appointment ?? null;
+
+		$data['job_descriptions'] = $job_descriptions;
+		$data['parts_used']       = $parts_used;
+		$data['services_used']    = $services_used;
+
+		$data['job_descriptions_quotation'] = $job_descriptions_quotation;
+		$data['parts_used_quotation']       = $parts_used_quotation;
+		$data['services_used_quotation']    = $services_used_quotation;
+
+
+		$data['kms'] =  $estimation->kmin;
+		$data['customer']      = $customer;
+		$data['vehicle']      = $vehicle;
+
+		$data['jobcard_id'] = $jobcard_id;
+		$data['jobcard_no'] = $jobcard->jobcard_no;
+		$data['jobcardstatus'] = $jobcardstatus->status;
+		$data['estimation_id'] = $estimation_id;
+		$data['estimation_no'] = $estimation->estimation_no;
+
+		// ==========================revison procedure starts ======================
+		// Convert jobcard services to array indexed by service_id
+		$jobcard_services_map = [];
+		foreach ($services_used as $js) {
+			$jobcard_services_map[$js->service_id] = $js;
+		}
+
+		// Convert quotation services to array indexed by service_id
+		$quotation_services_map = [];
+		foreach ($services_used_quotation as $qs) {
+			$quotation_services_map[$qs->service_id] = $qs;
+		}
+
+		$data['jobcard_services_map']   = $jobcard_services_map;
+		$data['quotation_services_map'] = $quotation_services_map;
+
+
+		// ==========================revison procedure Ends ======================
+		// ========================== PART REVISION PROCEDURE ======================
+
+		// Convert jobcard parts to array indexed by part_id
+		$jobcard_parts_map = [];
+		foreach ($parts_used as $jp) {
+			$jobcard_parts_map[$jp->part_id] = $jp;
+		}
+
+		// Convert quotation parts to array indexed by part_id
+		$quotation_parts_map = [];
+		foreach ($parts_used_quotation as $qp) {
+			$quotation_parts_map[$qp->part_id] = $qp;
+		}
+
+		$data['jobcard_parts_map']   = $jobcard_parts_map;
+		$data['quotation_parts_map'] = $quotation_parts_map;
+		// ========================== PART REVISION PROCEDURE ======================
+
+		// ========================== sublet REVISION PROCEDURE ======================
+
+		// Convert jobcard parts to array indexed by part_id
+		$jobcard_description_map = [];
+		foreach ($job_descriptions as $js) {
+			$jobcard_description_map[$js->description] = $js;
+		}
+
+		// Convert quotation services to array indexed by service_id
+		$quotation_description_map = [];
+		foreach ($job_descriptions_quotation as $qs) {
+			$quotation_description_map[$qs->description] = $qs;
+		}
+
+		$data['jobcard_description_map']   = $jobcard_description_map;
+		$data['quotation_description_map'] = $quotation_description_map;
+		// ========================== sublet REVISION PROCEDURE ======================
 
 		$data['title'] = 'Edit Jobcard';
 		$data['main_content'] = 'jobcard/create'; // SAME PAGE
@@ -639,6 +874,7 @@ class Jobcard extends CI_Controller
 		}
 
 		// 3. Create jobcard
+
 		$jobcard_id = $this->Jobcard_model->create_from_quotation($quotation_id);
 
 		redirect('jobcard/edit/' . $jobcard_id);

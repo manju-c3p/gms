@@ -605,7 +605,7 @@
 				<hr>
 				<strong>Conditions :</strong>
 
-				<ul class="terms-list">
+				<ul class="list-disc list-outside pl-5 space-y-1 text-sm text-gray-700">
 					<li>After dismantling, if any additional work or spare parts not covered in this estimate are required, a supplementary estimate will be provided.</li>
 					<li>All deliveries are subject to availability of spare parts.</li>
 					<li>Spare parts prices are subject to change without prior notice. Prices prevailing at the time of actual delivery shall be charged.</li>

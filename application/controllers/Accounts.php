@@ -451,7 +451,7 @@ class Accounts extends CI_Controller
 	{
 		// var_dump($this->input->post('customer_org_id'));
 		// echo "<pre>sss"; print_r($_POST); exit;
-		
+
 		$this->load->model('Accounts_model');
 		$id = $this->Accounts_model->add_new_receipt(); // this function uses $_POST data internally
 
@@ -619,7 +619,7 @@ class Accounts extends CI_Controller
 		$data['opening_bal'] = '';
 
 		$this->load->model('Supplier_model');
-		$data['suppliers'] = $this->Supplier_model->get_supplier_list(); //customer
+		$data['suppliers'] = $this->Supplier_model->get_active_supplier_list(); //customer
 
 		$this->load->model('Accounts_model');
 		$data['sundry_detors_records'] = $this->Accounts_model->get_general_ledger_accounts('2', '4');
@@ -778,7 +778,7 @@ class Accounts extends CI_Controller
 		// $data['from_date'] = date('d-m-Y', strtotime('01-01-' . date('Y')));
 		$data['to_date'] = date("d-m-Y", strtotime(date("Y-m-d")));
 		//    
-
+		log_message('error', $data['from_date'] . "," . $data['to_date']);
 		$data['account_id'] = "";
 
 		$this->load->model('Accounts_model');
@@ -817,7 +817,7 @@ class Accounts extends CI_Controller
 		$data['ledger_transaction_records'] = $this->Accounts_model->get_ledger_report($account_id, $from_date, $to_date);
 
 		// Load view
-		$data['main_content'] = 'Reports/account/view_individual_ledger_details';
+		$data['main_content'] = 'reports/account/view_individual_ledger_details';
 		$this->load->view('includes/template', $data);
 	}
 
@@ -829,8 +829,6 @@ class Accounts extends CI_Controller
 		$data['to_date'] = date('d-m-Y', strtotime($this->input->post('to_date')));
 		$data['account_id'] = $this->input->post('account_id');
 
-		// $this->load->model('Setup_model');
-		// $data['comapny_records'] = $this->Setup_model->get_company_master_list();
 
 		$this->load->model('Accounts_model');
 		$data['account_ledgers'] = $this->Accounts_model->get_all_general_ledger_accounts();
@@ -883,7 +881,7 @@ class Accounts extends CI_Controller
 		$data['from'] = date('01-01-Y');
 		$data['to'] = date('d-m-Y');
 
-		$data['main_content'] = 'Reports/account/balance_sheet_list';
+		$data['main_content'] = 'reports/account/balance_sheet_list';
 		$this->load->view('includes/template', $data);
 	}
 	function get_balance_sheet()
@@ -893,7 +891,7 @@ class Accounts extends CI_Controller
 		$data['from'] = date('d-m-Y', strtotime($this->input->post('from') ?? ''));;
 		$data['to'] = date('d-m-Y', strtotime($this->input->post('to') ?? ''));;
 
-		$data['main_content'] = 'Reports/account/balance_sheet_list';
+		$data['main_content'] = 'reports/account/balance_sheet_list';
 		$this->load->view('includes/template', $data);
 	}
 	function view_profit_and_loss()
@@ -902,7 +900,7 @@ class Accounts extends CI_Controller
 
 		$data['from'] = date('01-01-Y');
 		$data['to'] = date('d-m-Y');
-		$data['main_content'] = 'Reports/account/view_profit_loss.php';
+		$data['main_content'] = 'reports/account/view_profit_loss.php';
 		$this->load->view('includes/template', $data);
 	}
 	function get_profit_and_loss()
@@ -913,7 +911,7 @@ class Accounts extends CI_Controller
 		$data['to'] = $this->input->post('to') ?? date("d-m-Y", strtotime(date("Y-m-d")));
 		//$data['to']   = $this->input->post('to')   ?? date("Y-m-d");
 
-		$data['main_content'] = 'Reports/account/view_profit_loss.php';
+		$data['main_content'] = 'reports/account/view_profit_loss.php';
 		$this->load->view('includes/template', $data);
 	}
 	///////////////////////////////////////////////////////////////////////////////
@@ -931,7 +929,7 @@ class Accounts extends CI_Controller
 
 	//   $data['records'] = "";
 
-	//   $data['main_content'] = 'Reports/account/outstanding_report';
+	//   $data['main_content'] = 'reports/account/outstanding_report';
 	//   $this->load->view('includes/template', $data);
 	// }
 
@@ -949,7 +947,7 @@ class Accounts extends CI_Controller
 
 	//   $data['records'] = $this->Accounts_model->get_outstanding_report($data['account_id'], $data['from_date'], $data['to_date']);
 
-	//   $data['main_content'] = 'Reports/account/outstanding_report';
+	//   $data['main_content'] = 'reports/account/outstanding_report';
 	//   $this->load->view('includes/template', $data);
 	// }
 
@@ -979,8 +977,8 @@ class Accounts extends CI_Controller
 		$this->load->model('Setup_model');
 		$this->load->model('Accounts_model');
 
-		$data['logo_details'] = $this->Setup_model->get_company_master_list();
-
+		// $data['logo_details'] = $this->Setup_model->get_company_master_list();
+		$data['logo_details'] = "";
 		// Fetch all voucher_transaction rows for this voucher_code
 		$all_voucher_rows = $this->Accounts_model->get_payment_record($data['voucher_code']);
 
@@ -1016,7 +1014,7 @@ class Accounts extends CI_Controller
 		$data['request_type'] = "";
 		$data['records'] = "";
 
-		$data['main_content'] = 'Reports/account/outstanding_report';
+		$data['main_content'] = 'reports/account/outstanding_report';
 		$this->load->view('includes/template', $data);
 	}
 
@@ -1072,7 +1070,7 @@ class Accounts extends CI_Controller
 		} elseif ($request_type == 'Sundry Creditors') {
 			$data['ledgers'] = $this->Accounts_model->get_ledgers_by_group(29);
 		}
-		$data['main_content'] = 'Reports/account/outstanding_report';
+		$data['main_content'] = 'reports/account/outstanding_report';
 		$this->load->view('includes/template', $data);
 	}
 
@@ -1097,7 +1095,7 @@ class Accounts extends CI_Controller
 		$data['records'] = $this->Accounts_model->get_outstanding_report($voucher_date, $request_type);
 
 		// Load view
-		$data['main_content'] = 'Reports/account/outstanding_report';
+		$data['main_content'] = 'reports/account/outstanding_report';
 		$this->load->view('includes/template', $data);
 	}
 
@@ -1124,7 +1122,7 @@ class Accounts extends CI_Controller
 		$data['party_records'] = [];
 
 		// Load view
-		$data['main_content'] = 'Reports/account/outstanding_report';
+		$data['main_content'] = 'reports/account/outstanding_report';
 		$this->load->view('includes/template', $data);
 	}
 
@@ -1242,7 +1240,7 @@ class Accounts extends CI_Controller
 		$data['records'] = $this->Accounts_model->get_outstanding_individual_ledger($id, $from_date, $to_date);
 		$data['from_date'] = $from_date;
 		$data['to_date'] = $to_date;
-		$data['main_content'] = 'Reports/account/outstanding_report_individual_ledger';
+		$data['main_content'] = 'reports/account/outstanding_report_individual_ledger';
 		$this->load->view('includes/template', $data);
 	}
 
@@ -1372,7 +1370,7 @@ class Accounts extends CI_Controller
 		}
 
 		$data['title'] = 'Report - Balance Sheet';
-		$data['main_content'] = 'Reports/account/balance_sheet_drill_view';
+		$data['main_content'] = 'reports/account/balance_sheet_drill_view';
 
 
 		$this->load->view('includes/template', $data);
@@ -1479,9 +1477,9 @@ class Accounts extends CI_Controller
 		if ($this->input->method() === 'post' && !empty($group_no)) {
 			$data['balances'] = $this->Accounts_model->get_balance_sheet_data($from_date, $to_date, $group_no);
 		}
-
+		log_message('error', 'Balance Sheet Data: ' . print_r($data['balances'], true));
 		$data['title'] = "Report - Balance Sheet";
-		$data['main_content'] = 'Reports/account/balance_sheet_drill_view';  // Your view file
+		$data['main_content'] = 'reports/account/balance_sheet_drill_view';  // Your view file
 		$this->load->view('includes/template', $data);
 	}
 
@@ -1677,4 +1675,57 @@ class Accounts extends CI_Controller
 		}
 	}
 	/***********************************    End CI Controller*************************************/
+
+	function vat_report()
+	{
+		$this->load->model('Accounts_model');
+		$data['title'] = "VAT report";
+
+		// Set default date range: first day of current month to today
+		$data['from_date'] = date('Y-m-01'); // First day of current month
+		$data['to_date']   = date('Y-m-d');  // Today's date
+
+		$data['main_content'] = 'reports/account/tax_report';
+		$this->load->view('includes/template', $data);
+	}
+	public function tax_report_details()
+	{
+		$this->load->model('Accounts_model');
+		$this->load->model('Invoice_model');
+		$this->load->model('Purchase_Model');
+
+		$from_date   = $this->input->post('from_date');
+		$to_date     = $this->input->post('to_date');
+		$report_type = $this->input->post('report_type');
+
+		$from_date_db = date('Y-m-d', strtotime($from_date));
+		$to_date_db   = date('Y-m-d', strtotime($to_date));
+
+		if ($report_type == 'summary') {
+			// $data['sales_records']    = $this->Invoice_model->get_tax_summary($from_date_db, $to_date_db);
+			$data['sales_records']    = $this->Invoice_model->get_tax_summary_emirate($from_date_db, $to_date_db);
+			$data['purchase_summary'] = $this->Purchase_Model->get_purchase_vat_summary($from_date_db, $to_date_db);
+			$data['voucher_summary']  = $this->Accounts_model->get_voucher_vat_summary($from_date_db, $to_date_db);
+			$view_file = 'Reports/account/tax_report_summary';
+		} else {
+			$data['sales_records']    = $this->Invoice_model->get_tax_detailed($from_date_db, $to_date_db);
+			$data['purchase_records'] = $this->Purchase_Model->get_purchase_vat_details($from_date_db, $to_date_db);
+			$data['voucher_records']  = $this->Accounts_model->get_voucher_vat_details($from_date_db, $to_date_db);
+			$view_file = 'Reports/account/tax_report_detailed';
+		}
+
+		$data['from_date']   = $from_date;
+		$data['to_date']     = $to_date;
+		$data['report_type'] = $report_type;
+
+		if ($this->input->is_ajax_request()) {
+			// **Only return the report HTML for AJAX**
+			$this->load->view($view_file, $data);
+		} else {
+			// Normal page load
+			$data['title']        = "Tax Report";
+			$data['main_content'] = 'Reports/account/tax_report';
+			$this->load->view('includes/template', $data);
+		}
+	}
 }

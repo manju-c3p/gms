@@ -9,6 +9,7 @@ class Invoice extends CI_Controller
 		$this->load->model('Invoice_model');
 		$this->load->model('Jobcard_model');
 		$this->load->model('Accounts_model');
+		$this->load->helper('amount');
 	}
 	public function generate()
 	{
@@ -29,7 +30,7 @@ class Invoice extends CI_Controller
 		// log_message('error', 'Sundry Accounts 3 (All GL Accounts): ' . print_r($data['sundry_accounts3'], true));
 
 
-		
+
 
 		$data['main_content'] = 'invoice/generate';
 		$this->load->view('includes/template', $data);
@@ -38,9 +39,11 @@ class Invoice extends CI_Controller
 	public function index()
 	{
 		$data['title'] = 'Invoice List';
+		$data['username'] = $this->session->userdata('username');
+		$data['userid'] = $this->session->userdata('user_id');
 
 		$data['invoices'] = $this->Invoice_model->get_all_invoices_with_payment();
-
+		// log_message('error', 'Invoice List: ' . print_r($data['invoices'], true));
 		$data['main_content'] = 'invoice/index';
 		$this->load->view('includes/template', $data);
 	}
@@ -82,7 +85,7 @@ class Invoice extends CI_Controller
 		// }
 
 		$invoice_no = $this->generate_invoice_no($invoice_type);
-		
+
 		$invoice_id = $this->Invoice_model->create_invoice([
 			'jobcard_id'      => $this->input->post('jobcard_id'),
 			'quotation_id'    => $quotation_id,
@@ -94,13 +97,13 @@ class Invoice extends CI_Controller
 			'grand_total'     => $this->input->post('grand_total'),
 			'status'          => 'Unpaid',
 			'remarks'         => $this->input->post('remarks'),
-			 'invoice_no'      => $invoice_no,    
+			'invoice_no'      => $invoice_no,
 			'customer_id'     => $this->input->post('customer_id'), // used only in model
 		]);
 
 		// 2. Save invoice items from jobcard
 		// $this->Invoice_model->insert_invoice_items($invoice_id, $this->input->post('jobcard_id'));
-			$this->Invoice_model->insert_invoice_items_from_post($invoice_id);
+		$this->Invoice_model->insert_invoice_items_from_post($invoice_id);
 
 		// 3. Redirect to view page
 		redirect('invoice/view/' . $invoice_id);
@@ -190,7 +193,7 @@ class Invoice extends CI_Controller
 		$this->load->library('pdf');
 
 		$data = $this->Invoice_model->get_invoice_full($invoice_id);
-
+		log_message('error', 'Invoice Data: ' . print_r($data, true));
 		$html = $this->load->view('invoice/print_pdf', $data, true);
 
 		$this->pdf->createPDF(
@@ -364,5 +367,189 @@ class Invoice extends CI_Controller
 		}
 
 		return "$prefix-$year-$new_no";
+	}
+
+
+	public function delete($invoice_id)
+	{
+		$this->db->trans_start();
+
+		// 1. Get invoice number (for voucher delete)
+		$invoice = $this->db
+			->where('invoice_id', $invoice_id)
+			->get('invoices')
+			->row();
+
+		if (!$invoice) {
+			show_error('Invoice not found');
+		}
+
+		$invoice_no = $invoice->invoice_no;
+
+
+		// 2. Delete invoice items
+		$this->db->where('invoice_id', $invoice_id);
+		$this->db->delete('invoice_items');
+
+
+		// 3. Delete voucher transaction entry
+		$this->db->where('invoice_code', $invoice_no);
+		$this->db->delete('voucher_transaction');
+
+
+		// 4. Delete invoice header
+		$this->db->where('invoice_id', $invoice_id);
+		$this->db->delete('invoices');
+
+
+		$this->db->trans_complete();
+
+		if ($this->db->trans_status() === FALSE) {
+			$this->session->set_flashdata('error', 'Invoice delete failed');
+		} else {
+			$this->session->set_flashdata('success', 'Invoice deleted successfully');
+		}
+
+		redirect('Invoice');
+	}
+
+	// ======================= edit invoicev================
+
+	public function edit($invoice_id)
+	{
+
+		$data['invoice'] = $this->Invoice_model->get_invoice_fullnew($invoice_id);
+		$data['items']   = $this->Invoice_model->get_invoice_items($invoice_id);
+
+		$data['sundry_accounts1'] = $this->Accounts_model->get_gen_ledger_detors_records();
+		$data['sundry_accounts2'] = $this->Accounts_model->get_general_ledger_by_group('Sales Accounts');
+		$data['sundry_accounts3'] = $this->Accounts_model->get_all_general_ledger_accounts();
+
+		$data['title'] = 'Invoice Edit';
+		$data['main_content'] = 'invoice/edit_invoice';
+		$this->load->view('includes/template', $data);
+	}
+
+	public function get_invoice_details($invoice_id)
+	{
+		$header = $this->Invoice_model->get_invoice_header($invoice_id);
+		$items  = $this->Invoice_model->get_invoice_items($invoice_id);
+
+		echo json_encode([
+			'header' => $header,
+			'items'  => $items
+		]);
+	}
+
+	public function get_invoice_full_data($invoice_id)
+	{
+		$header = $this->Invoice_model->get_invoice_header($invoice_id);
+		$services = $this->Invoice_model->get_invoice_services($invoice_id);
+		$parts = $this->Invoice_model->get_invoice_parts($invoice_id);
+		$descs = $this->Invoice_model->get_invoice_desc($invoice_id);
+
+		echo json_encode([
+			'header' => $header,
+			'services' => $services,
+			'parts' => $parts,
+			'descs' => $descs
+		]);
+	}
+	public function update()
+	{
+		$invoice_id = $this->input->post('invoice_id');
+
+		$header = [
+			'remarks'         => $this->input->post('remarks'),
+			'subtotal'        => $this->input->post('subtotal'),
+			'tax_amount'      => $this->input->post('tax_amount'),
+			'discount_amount' => $this->input->post('discount_amount'),
+			'grand_total'     => $this->input->post('grand_total'),
+		];
+
+		$this->Invoice_model->update_invoice($invoice_id, $header);
+
+		// delete old items
+		$this->Invoice_model->delete_invoice_items($invoice_id);
+
+		/*
+    ====================================
+    SAVE SERVICES
+    ====================================
+    */
+		$srv_names = $this->input->post('srv_name');
+		$srv_costs = $this->input->post('srv_cost');
+
+		if ($srv_names) {
+			foreach ($srv_names as $k => $name) {
+
+				$data = [
+					'invoice_id' => $invoice_id,
+					'item_type'  => 'Service',
+					'item_name'  => $name,
+					'quantity'   => 1,
+					'unit_price' => $srv_costs[$k],
+					'total_price' => $srv_costs[$k],
+				];
+
+				$this->db->insert('invoice_items', $data);
+			}
+		}
+
+		/*
+    ====================================
+    SAVE PARTS
+    ====================================
+    */
+
+		$part_names  = $this->input->post('part_name');
+		$part_qty    = $this->input->post('part_qty');
+		$part_price  = $this->input->post('part_price');
+		$part_dis    = $this->input->post('part_dis');
+		$part_total  = $this->input->post('part_total');
+
+		if ($part_names) {
+			foreach ($part_names as $k => $name) {
+
+				$data = [
+					'invoice_id' => $invoice_id,
+					'item_type'  => 'Part',
+					'item_name'  => $name,
+					'quantity'   => $part_qty[$k],
+					'unit_price' => $part_price[$k],
+					'disamount'  => $part_dis[$k],
+					'total_price' => $part_total[$k],
+				];
+
+				$this->db->insert('invoice_items', $data);
+			}
+		}
+
+		/*
+    ====================================
+    SAVE SUBLET
+    ====================================
+    */
+
+		$sub_names = $this->input->post('sub_name');
+		$sub_costs = $this->input->post('sub_cost');
+
+		if ($sub_names) {
+			foreach ($sub_names as $k => $name) {
+
+				$data = [
+					'invoice_id' => $invoice_id,
+					'item_type'  => 'Sublet',
+					'item_name'  => $name,
+					'quantity'   => 1,
+					'unit_price' => $sub_costs[$k],
+					'total_price' => $sub_costs[$k],
+				];
+
+				$this->db->insert('invoice_items', $data);
+			}
+		}
+
+		redirect('Invoice');
 	}
 }

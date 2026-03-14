@@ -1,4 +1,3 @@
-
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
 
 
@@ -12,7 +11,7 @@
 
 			<!-- Title -->
 			<h2 class="text-xl font-bold text-center lg:text-left">
-				Job Card
+				Job Card create
 			</h2>
 
 			<!-- Action Buttons -->
@@ -27,7 +26,7 @@
 					class="w-full sm:w-auto text-center px-6 py-2 bg-gray-300 rounded">
 					View
 				</a>
-				<?php if ($jobcardstatus == "Finished") { ?>
+				<?php if ($jobcardstatus == "Scheduled") { ?>
 					<a href="<?= base_url('index.php/Invoice/generate'); ?>"
 						class="w-full sm:w-auto text-center px-6 py-2 bg-gray-300 rounded">
 						Invoice
@@ -148,13 +147,13 @@
 							<td class="px-3 py-1  font-medium bg-gray-50">KM's In</td>
 							<td class="px-3 py-1 ">
 								<input type="number" name="kmin"
-									class="w-full border rounded px-2 py-1" value="<?= $kms ?>" >
+									class="w-full border rounded px-2 py-1" value="<?= $kms ?>">
 							</td>
 
 							<td class="px-3 py-1  font-medium bg-gray-50">Estimated Delivery Date</td>
 							<td class="px-3 py-1 ">
-								<input type="date"  name="estdate"  value="<?= $estimation->est_delivery_date ?>"
-									class="w-full border rounded px-2 py-1" >
+								<input type="date" name="estdate" value="<?= $estimation->est_delivery_date ?>"
+									class="w-full border rounded px-2 py-1">
 							</td>
 						</tr>
 
@@ -162,8 +161,8 @@
 						<tr>
 							<td class="px-3 py-1  font-medium bg-gray-50">Completion Time</td>
 							<td class="px-3 py-1 ">
-								<input type="time"   name="ctime" value="<?= $estimation->est_completion_time ?>"
-									class="w-full border rounded px-2 py-1" >
+								<input type="time" name="ctime" value="<?= $estimation->est_completion_time ?>"
+									class="w-full border rounded px-2 py-1">
 							</td>
 
 							<!-- <td class="px-3 py-1  font-medium bg-gray-50">Check List Remark</td>
@@ -174,8 +173,8 @@
 
 							<td class="px-3 py-1  font-medium bg-gray-50">Remark</td>
 							<td class="px-3 py-1 ">
-								<textarea  name="remarks"
-									class="w-full border rounded px-2 py-1 h-16" ><?= $estimation->remarks ?></textarea>
+								<textarea name="remarks"
+									class="w-full border rounded px-2 py-1 h-16"><?= $estimation->remarks ?></textarea>
 							</td>
 						</tr>
 
@@ -208,13 +207,44 @@
 						</thead>
 						<tbody>
 							<?php
-							// foreach ($job_descriptions as $i => $s):
+							$all_service_ids = array_unique(array_merge(
+								array_keys($jobcard_services_map),
+								array_keys($quotation_services_map)
+							));
+
+							$i = 1;
 							$service_grand_total = 0;
-							foreach ($services_used as $i => $s):
-								$service_grand_total += (float) $s->total_cost;
+							foreach ($all_service_ids as $service_id):
+
+
+								$jobcard_service  = $jobcard_services_map[$service_id] ?? null;
+								$quotation_service = $quotation_services_map[$service_id] ?? null;
+
+								// Detect status
+								if ($jobcard_service && !$quotation_service) {
+									$row_class = "bg-red-100"; // Removed in revision
+									$source = "deleted";
+									$s = $jobcard_service;
+								} elseif (!$jobcard_service && $quotation_service) {
+									$row_class = "bg-green-100"; // Newly added in revision
+									$source = "new";
+									$s = $quotation_service;
+								} else {
+									$row_class = ""; // Existing
+									$source = "existing";
+									$s = $quotation_service; // Always follow latest quotation values
+								}
+
+								// ✅ Add to total ONLY if not deleted
+								if ($source !== 'deleted' && $s) {
+									$service_grand_total += (float)$s->total_cost;
+								}
+								// echo "<pre>";
+								// print_r($s);
+								// echo "</pre>";
 							?>
-								<tr class="border hover:bg-gray-50">
-									<td class="border px-3 py-2 text-center font-medium"><?= $i + 1 ?></td>
+								<tr class="border hover:bg-gray-50 <?= $row_class ?>">
+									<td class="border px-3 py-2 text-center font-medium"><?= $i++ ?></td>
 
 									<td class="border px-3 py-2">
 										<select name="service_name2242[]"
@@ -231,7 +261,7 @@
 										<!-- Hidden field actually submitted -->
 										<input type="hidden" name="service_name[]" value="<?= $s->service_id ?>">
 									</td>
-									
+
 									<td class="border px-3 py-2">
 
 										<input name="service_esttime[]" value="<?= $s->estimated_time ?>"
@@ -324,16 +354,44 @@
 					</thead>
 					<tbody>
 						<?php
+						$all_part_ids = array_unique(array_merge(
+							array_keys($jobcard_parts_map),
+							array_keys($quotation_parts_map)
+						));
+
+						$i = 1;
 						$parts_grand_total = 0;
-						foreach ($parts_used as $i => $p):
-							$parts_grand_total += (float) $p->total_price;
+
+						foreach ($all_part_ids as $part_id):
+
+							$jobcard_part   = $jobcard_parts_map[$part_id] ?? null;
+							$quotation_part = $quotation_parts_map[$part_id] ?? null;
+
+							// Detect revision status
+							if ($jobcard_part && !$quotation_part) {
+								$row_class = "bg-red-100";   // Removed in revision
+								$source = "deleted";
+								$p = $jobcard_part;
+							} elseif (!$jobcard_part && $quotation_part) {
+								$row_class = "bg-green-100"; // Newly added
+								$source = "new";
+								$p = $quotation_part;
+							} else {
+								$row_class = "";             // Existing
+								$source = "existing";
+								$p = $quotation_part;        // Follow latest quotation
+							}
+
+							// Add to total only if not deleted
+							if ($source !== 'deleted' && $p) {
+								$parts_grand_total += (float)$p->total_price;
+							}
 						?>
-							<tr class="border hover:bg-gray-50">
-								<td class="border px-3 py-2 text-center font-medium"><?= $i + 1 ?></td>
+							<tr class="border hover:bg-gray-50 <?= $row_class ?>">
+								<td class="border px-3 py-2 text-center font-medium"><?= $i++ ?></td>
 
 								<td class="border px-3 py-2">
-									<select name="part_id[]"
-										class="w-full border rounded px-2 py-1" disabled>
+									<select name="part_id[]" class="w-full border rounded px-2 py-1" disabled>
 										<?php foreach ($parts as $part): ?>
 											<option value="<?= $part->part_id ?>"
 												<?= $part->part_id == $p->part_id ? 'selected' : '' ?>>
@@ -341,38 +399,35 @@
 											</option>
 										<?php endforeach; ?>
 									</select>
+
+									<!-- Hidden input for submission -->
+									<input type="hidden" name="part_id[]" value="<?= $p->part_id ?>">
 								</td>
+
 								<td class="border px-3 py-2">
 									<input name="part_type[]" value="<?= $p->part_type ?>"
-										class="w-full border rounded px-2 py-1 text-center parttype" readonly>
+										class="w-full border rounded px-2 py-1 text-center" readonly>
 								</td>
 
 								<td class="border px-3 py-2">
 									<input name="part_qty[]" value="<?= $p->qty ?>"
-										class="w-full border rounded px-2 py-1 text-center partQty" readonly>
+										class="w-full border rounded px-2 py-1 text-center" readonly>
 								</td>
+
 								<td class="border px-3 py-2">
 									<input name="part_sellprice[]" value="<?= $p->selling_price ?>"
-										class="w-full border rounded px-2 py-1 text-center sellprice" readonly>
+										class="w-full border rounded px-2 py-1 text-center" readonly>
 								</td>
-								<td class="border px-3 py-2">
-									<input name="part_disamt[]" value="<?= !empty($p->disamount) ? $p->disamount : '' ?>"
 
-										class="w-full border rounded px-2 py-1 text-center disamt" readonly>
+								<td class="border px-3 py-2">
+									<input name="part_disamt[]" value="<?= $p->disamount ?? '' ?>"
+										class="w-full border rounded px-2 py-1 text-center" readonly>
 								</td>
+
 								<td class="border px-3 py-2">
 									<input name="part_totalprice[]" value="<?= $p->total_price ?>"
-										class="w-full border rounded px-2 py-1 text-center totalprice" readonly>
+										class="w-full border rounded px-2 py-1 text-center" readonly>
 								</td>
-
-
-
-								<!-- <td class="border px-3 py-2 text-center">
-									<button type="button"
-										class="remove-row text-red-600 hover:bg-red-50 px-3 py-1 rounded">
-										✕
-									</button>
-								</td> -->
 							</tr>
 						<?php endforeach; ?>
 					</tbody>
@@ -381,7 +436,6 @@
 							<td class="border px-3 py-2 text-center" colspan="6">
 								Total Parts Cost
 							</td>
-
 							<td class="border px-3 py-2 text-center">
 								<?= number_format($parts_grand_total, 2) ?>
 							</td>
@@ -396,85 +450,105 @@
 					+ Add Part
 				</button> -->
 		</div>
-</div>
-<!-- ========================================================================== -->
-<div class="bg-white rounded-2xl shadow-md mt-6 overflow-hidden">
+		<!-- ========================================================================== -->
+		<div class="bg-white rounded-2xl shadow-md mt-6 overflow-hidden">
 
-	<div class="px-6 py-3 font-semibold text-lg bg-gray-100 border-b">
-		Sublet Services
-	</div>
+			<div class="px-6 py-3 font-semibold text-lg bg-gray-100 border-b">
+				Sublet Services
+			</div>
 
-	<div class="overflow-x-auto">
-		<table class="w-full text-sm border-collapse min-w-[900px]" id="serviceTable">
-			<thead>
-				<tr class="bg-gray-50 border">
-					<th class="border px-3 py-2 w-[90px] text-center">Sl No</th>
-					<th class="border px-3 py-2">Description</th>
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm border-collapse min-w-[900px]" id="subletTable">
 
-					<th class="border px-3 py-2 text-center">Amount</th>
+					<thead>
+						<tr class="bg-gray-50 border">
+							<th class="border px-3 py-2 w-[90px] text-center">Sl No</th>
+							<th class="border px-3 py-2">Description</th>
+							<th class="border px-3 py-2 text-center">Amount</th>
+						</tr>
+					</thead>
 
-				</tr>
-			</thead>
-			<tbody>
-				<?php
-				//
-				$subletservice_grand_total = 0;
-				foreach ($job_descriptions as $i => $s):
-					$subletservice_grand_total += (float) $s->amount;
-				?>
-					<tr class="border hover:bg-gray-50">
-						<td class="border px-3 py-2 text-center font-medium"><?= $i + 1 ?></td>
+					<tbody>
+						<?php
+						$all_description_ids = array_unique(array_merge(
+							array_keys($jobcard_description_map),
+							array_keys($quotation_description_map)
+						));
 
-						<td class="border px-3 py-2">
-							<input name="sublet[]" value="<?= $s->description ?>"
-								class="w-full border rounded px-2 py-1 text-center partQty" readonly>
-						</td>
+						$i = 1;
+						$subletservice_grand_total = 0;
 
+						foreach ($all_description_ids as $desc_id):
 
+							$job_desc  = $jobcard_description_map[$desc_id] ?? null;
+							$quote_desc = $quotation_description_map[$desc_id] ?? null;
 
-						<td class="border px-3 py-2">
+							// Detect status
+							if ($job_desc && !$quote_desc) {
+								$row_class = "bg-red-100"; // Removed in revision
+								$source = "deleted";
+								$s = $job_desc;
+							} elseif (!$job_desc && $quote_desc) {
+								$row_class = "bg-green-100"; // Newly added
+								$source = "new";
+								$s = $quote_desc;
+							} else {
+								$row_class = ""; // Existing
+								$source = "existing";
+								$s = $quote_desc; // Always follow latest quotation
+							}
 
-							<input name="jobservice_amt[]" value="<?= $s->amount ?>"
-								class="w-full border rounded px-2 py-1 text-center partQty" readonly>
-						</td>
+							// Add total only if not deleted
+							if ($source !== 'deleted' && $s) {
+								$subletservice_grand_total += (float)$s->amount;
+							}
+						?>
 
-					</tr>
-				<?php endforeach; ?>
-			</tbody>
-			<tfoot>
-				<tr class="bg-gray-100 font-semibold border">
-					<td class="border px-3 py-2 text-center" colspan="2">
-						Total
-					</td>
+							<tr class="border hover:bg-gray-50 <?= $row_class ?>">
 
-					<td class="border px-3 py-2 text-center">
-						<?= number_format($subletservice_grand_total, 2) ?>
-					</td>
+								<td class="border px-3 py-2 text-center font-medium">
+									<?= $i++ ?>
+								</td>
 
+								<td class="border px-3 py-2">
+									<input name="sublet[]"
+										value="<?= $s->description ?>"
+										class="w-full border rounded px-2 py-1 text-center"
+										readonly>
+								</td>
 
-				</tr>
-			</tfoot>
+								<td class="border px-3 py-2">
+									<input name="jobservice_amt[]"
+										value="<?= $s->amount ?>"
+										class="w-full border rounded px-2 py-1 text-center"
+										readonly>
+								</td>
 
-		</table>
-	</div>
-	<!-- <button type="button" id="addService"
+							</tr>
+
+						<?php endforeach; ?>
+					</tbody>
+
+					<tfoot>
+						<tr class="bg-gray-100 font-semibold border">
+							<td class="border px-3 py-2 text-center" colspan="2">Total</td>
+
+							<td class="border px-3 py-2 text-center">
+								<?= number_format($subletservice_grand_total, 2) ?>
+							</td>
+						</tr>
+					</tfoot>
+
+				</table>
+			</div>
+			<!-- <button type="button" id="addService"
 					class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow-sm">
 					+ Add Service
 				</button> -->
-</div>
-</div>
-
-<!-- FOOTER DETAILS -->
+		</div>
 
 
-
-<!-- SAVE BUTTON -->
-<!-- SAVE BUTTON -->
-
-
-
-
-</form>
+	</form>
 
 </div>
 <!-- ========================================= script fncs======================== -->

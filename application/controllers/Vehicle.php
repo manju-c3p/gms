@@ -67,7 +67,6 @@ class Vehicle extends CI_Controller
 		$data['main_content'] = 'vehicle/brand_list';
 
 		$this->load->view('includes/template', $data);
-	
 	}
 
 	public function save_brand()
@@ -103,11 +102,10 @@ class Vehicle extends CI_Controller
 		$data['brands'] = $this->Vehicle_model->get_all_brands();
 		$data['models'] = $this->Vehicle_model->get_all_models();
 
-			$data['title'] = "Vehicles";
+		$data['title'] = "Vehicles";
 		$data['main_content'] = 'vehicle/model_list';
 
 		$this->load->view('includes/template', $data);
-	
 	}
 
 	public function save_model()
@@ -131,5 +129,44 @@ class Vehicle extends CI_Controller
 	{
 		$this->Vehicle_model->delete_model($id);
 		redirect('Vehicle/models');
+	}
+
+	// ========================================
+	public function fix_vehicle_customer_ids()
+	{
+		$this->db->trans_start();
+
+		// Get all wrong vehicle records (4 digit ids)
+		$vehicles = $this->db
+			->where('customer_id >=', 1000)
+			->get('vehicles')
+			->result();
+
+		foreach ($vehicles as $veh) {
+
+			// find ledger entry
+			$ledger = $this->db
+				->select('customer_id')
+				->where('account_id', $veh->customer_id)
+				->get('general_ledger')
+				->row();
+
+			if ($ledger && $ledger->customer_id) {
+
+				// update correct customer id
+				$this->db->where('vehicle_id', $veh->vehicle_id);
+				$this->db->update('vehicles', [
+					'customer_id' => $ledger->customer_id
+				]);
+			}
+		}
+
+		$this->db->trans_complete();
+
+		if ($this->db->trans_status() === FALSE) {
+			echo "Correction Failed";
+		} else {
+			echo "Vehicle Customer IDs Corrected Successfully";
+		}
 	}
 }

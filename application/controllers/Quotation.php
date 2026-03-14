@@ -144,6 +144,8 @@ class Quotation extends CI_Controller
 		$data['services_master'] = $this->db->where('status', 'Active')
 			->get('services_master')->result();
 		$data['kms'] = $inspection->km_reading ?? $estimation->kmin;
+		$data['service_discount'] = $estimation->service_discount ?? null;
+		$data['sublet_discount'] = $estimation->sublet_discount ?? null;
 		$data['estimation']       = $estimation;
 		$data['appointment']      = $appointment;
 		$data['job_descriptions'] = $job_descriptions;
@@ -201,10 +203,11 @@ class Quotation extends CI_Controller
 			show_404();
 		}
 
+
 		// 2. Check if quotation already exists
 		$quotation = $this->db
 			->where('estimation_id', $estimation_id)
-			->where('revision_no', 1)
+			// ->where('revision_no', 1)
 			->get('quotations')
 			->row();
 
@@ -263,7 +266,7 @@ class Quotation extends CI_Controller
 
 
 		// 4. Redirect to quotation edit page
-		redirect('quotation/edit/' . $quotation_id);
+		redirect('Quotation/edit/' . $quotation_id);
 	}
 
 
@@ -294,6 +297,7 @@ class Quotation extends CI_Controller
 			'remarks'     => $post['remarks'],
 			'status' => $status,
 			'srvice_discount'     => $this->input->post('service_discount'),
+			'sublet_discount'=> $this->input->post('sublet_discount'),
 
 			// parts
 			'part_id'        => $post['part_id'] ?? null,
@@ -312,7 +316,12 @@ class Quotation extends CI_Controller
 			'service_id'     => $post['service_id'],
 			'service_time'   => $post['service_time'],
 			'service_cost'   => $post['service_cost'],
-			'total_cost'     => $post['total_cost']
+			'total_cost'     => $post['total_cost'],
+
+			// sublet services
+			'job_description'     => $post['job_description'],
+			'job_amount'   => $post['job_amount'],
+			
 		]);
 
 
@@ -320,10 +329,19 @@ class Quotation extends CI_Controller
 		// If approved → create job card ONLY IF NOT EXISTS
 		if ($status === 'Approved') {
 
-			$existing_jobcard = $this->Jobcard_model->get_by_quotation_id($quotation_id);
+
+
+			$parent_quote_id = $this->Quotation_model->get_by_quotation_parentid($quotation_id);
+
+			if ($parent_quote_id) {
+				$existing_jobcard = $this->Jobcard_model->get_by_quotation_id($parent_quote_id);
+			} else {
+				$existing_jobcard = $this->Jobcard_model->get_by_quotation_id($quotation_id);
+			}
+
 
 			if (!$existing_jobcard) {
-				$jobcard_id = $this->Jobcard_model->create_from_quotation($quotation_id);
+				// $jobcard_id = $this->Jobcard_model->create_from_quotation($quotation_id);
 			}
 		}
 
@@ -333,7 +351,7 @@ class Quotation extends CI_Controller
 
 
 
-	public function view($quotation_id)
+	public function viewold($quotation_id)
 	{
 
 		$data['username'] = $this->session->userdata('username');
@@ -435,7 +453,7 @@ class Quotation extends CI_Controller
 
 
 
-		public function viewnew($quotation_id)
+	public function view($quotation_id)
 	{
 
 		$data['username'] = $this->session->userdata('username');
@@ -529,7 +547,13 @@ class Quotation extends CI_Controller
 
 		// $data['amount_in_words'] = $this->number_to_words_aed($data['estimation']->grand_total);
 
-		$data['title'] = 'View Quotation';
+		// $data['title'] = 'View Quotation';
+		$data['title'] =
+			'Quotation_' .
+			($appointment->doc_no ?? ('VIN-' . str_pad($quotation_id, 6, '0', STR_PAD_LEFT))) . '_' .
+			preg_replace('/[^A-Za-z0-9\-]/', '_', $appointment->registration_no ?? $vehicle->registration_no ?? '') . '_' .
+			preg_replace('/[^A-Za-z0-9\-]/', '_', $appointment->customer_name ?? $customer->name ?? '') . '_' .
+			date('d-m-Y');
 		$data['main_content'] = 'quotation/viewnew';
 
 		$this->load->view('includes/template', $data);

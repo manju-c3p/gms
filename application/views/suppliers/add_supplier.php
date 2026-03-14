@@ -61,7 +61,7 @@
 		</div>
 
 		<!-- Contact Persons -->
-		<div>
+		<div class="hidden">
 			<label class="font-medium block mb-2">Contact Persons</label>
 
 			<div class="overflow-x-auto">
@@ -78,15 +78,15 @@
 					<tbody>
 						<tr id="row0">
 							<td class="p-2">
-								<input type="text" name="contact_name[]" required
+								<input type="text" name="contact_name[]" 
 									class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
 							</td>
 							<td class="p-2">
-								<input type="number" name="contact_phone[]" required
+								<input type="number" name="contact_phone[]" 
 									class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
 							</td>
 							<td class="p-2">
-								<input type="email" name="contact_email[]" required
+								<input type="email" name="contact_email[]" 
 									class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
 							</td>
 							<td class="p-2">

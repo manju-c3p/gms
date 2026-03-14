@@ -196,7 +196,7 @@ class Inspection_model extends CI_Model
                 i.status,
                 i.km_reading,
                 i.fuel_level,
-
+				i.revision_no,
                 c.name AS customer_name,
                 c.phone AS customer_phone,
 
@@ -251,7 +251,48 @@ class Inspection_model extends CI_Model
 
 		return $this->db->trans_status();
 	}
-
+	public function delete_damage_marks($inspection_id)
+	{
+		return $this->db
+			->where('inspection_id', $inspection_id)
+			->delete('inspection_damage_marks');
+	}
+	public function delete_inventory_status($inspection_id)
+	{
+		return $this->db
+			->where('inspection_id', $inspection_id)
+			->delete('inspection_inventory_status');
+	}
+	public function delete_item_results($inspection_id)
+	{
+		return $this->db
+			->where('inspection_id', $inspection_id)
+			->delete('inspection_item_results');
+	}
+	public function delete_photos($inspection_id)
+	{
+		return $this->db
+			->where('inspection_id', $inspection_id)
+			->delete('inspection_photos');
+	}
+	public function delete_services($inspection_id)
+	{
+		return $this->db
+			->where('inspection_id', $inspection_id)
+			->delete('inspection_services');
+	}
+	public function delete_works_requested($inspection_id)
+	{
+		return $this->db
+			->where('inspection_id', $inspection_id)
+			->delete('inspection_works_requested');
+	}
+	public function delete_inspection_main($inspection_id)
+	{
+		return $this->db
+			->where('inspection_id', $inspection_id)
+			->delete('inspections');
+	}
 
 	public function save_inspection_photos($inspection_id, $files)
 	{

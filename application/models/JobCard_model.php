@@ -130,12 +130,12 @@ class Jobcard_model extends CI_Model
 		}
 	}
 
-	public function update_services($jobcard_id, $service_ids, $technician_ids)
+	public function update_servicesold($jobcard_id, $service_ids, $technician_ids)
 	{
-		// log_message('error', '--- update_services called ---');
-		// log_message('error', 'Jobcard ID: ' . $jobcard_id);
-		// log_message('error', 'Service IDs: ' . print_r($service_ids, true));
-		// log_message('error', 'Technician IDs: ' . print_r($technician_ids, true));
+		log_message('error', '--- update_services called ---');
+		log_message('error', 'Jobcard ID: ' . $jobcard_id);
+		log_message('error', 'Service IDs: ' . print_r($service_ids, true));
+		log_message('error', 'Technician IDs: ' . print_r($technician_ids, true));
 
 		foreach ($service_ids as $i => $service_id) {
 
@@ -152,8 +152,223 @@ class Jobcard_model extends CI_Model
 					'employee_id' => $employee_id
 				]);
 
-			// log_message('debug', $this->db->last_query());
-			// log_message('debug', json_encode($this->db->error()));
+			log_message('error', $this->db->last_query());
+			log_message('error', json_encode($this->db->error()));
+		}
+	}
+	public function update_services($jobcard_id, $service_ids, $technician_ids, $esticost, $estitime, $totalcost)
+	{
+		// log_message('error', '--- update_services called ---');
+
+		// 1️⃣ Get existing service IDs
+		$existing = $this->db->select('service_id')
+			->where('jobcard_id', $jobcard_id)
+			->get('jobcard_services')
+			->result_array();
+
+		$existing_ids = array_column($existing, 'service_id');
+
+		foreach ($service_ids as $i => $service_id) {
+
+			if (empty($service_id)) {
+				continue;
+			}
+
+			$employee_id    = $technician_ids[$i] ?? null;
+			$estimated_time = $estitime[$i] ?? 0;
+			$estimated_cost = $esticost[$i] ?? 0;
+			$total_cost     = $totalcost[$i] ?? 0;
+
+			$data = [
+				'jobcard_id'    => $jobcard_id,
+				'service_id'    => $service_id,
+				'employee_id'   => $employee_id,
+				'estimated_time' => $estimated_time,
+				'estimated_cost' => $estimated_cost,
+				'total_cost'    => $total_cost,
+			];
+
+			if (in_array($service_id, $existing_ids)) {
+
+				// ✅ Update full row
+				$this->db->where('jobcard_id', $jobcard_id)
+					->where('service_id', $service_id)
+					->update('jobcard_services', $data);
+
+				log_message('error', 'UPDATED: ' . $this->db->last_query());
+			} else {
+
+				// ✅ Insert new row
+				$this->db->insert('jobcard_services', $data);
+
+				log_message('error', 'INSERTED: ' . $this->db->last_query());
+			}
+
+			log_message('error', json_encode($this->db->error()));
+		}
+	}
+	public function update_sublet123($jobcard_id, $description, $amount)
+	{
+		// log_message('error', '--- update_services called ---');
+
+		// 1️⃣ Get existing service IDs
+		$existing = $this->db->select('description')
+			->where('jobcard_id', $jobcard_id)
+			->get('jobcard_descriptions')
+			->result_array();
+
+		$existing_ids = array_column($existing, 'description');
+
+		foreach ($description as $i => $service_id) {
+
+			if (empty($service_id)) {
+				continue;
+			}
+
+			$description    = $description[$i] ?? null;
+			$amount = $amount[$i] ?? 0;
+
+
+			$data = [
+				'jobcard_id'    => $jobcard_id,
+				'description'    => $description,
+				'amount'   => $amount,
+
+			];
+
+			if (in_array($service_id, $existing_ids)) {
+
+				// ✅ Update full row
+				$this->db->where('jobcard_id', $jobcard_id)
+					->where('description', $description)
+					->update('jobcard_descriptions', $data);
+
+				log_message('error', 'UPDATED: ' . $this->db->last_query());
+			} else {
+
+				// ✅ Insert new row
+				$this->db->insert('jobcard_descriptions', $data);
+
+				log_message('error', 'INSERTED: ' . $this->db->last_query());
+			}
+
+			log_message('error', json_encode($this->db->error()));
+		}
+	}
+
+	public function update_sublet($jobcard_id, $descriptions, $amounts)
+{
+    // ✅ Get existing descriptions from DB
+    $existing = $this->db->select('description')
+        ->where('jobcard_id', $jobcard_id)
+        ->get('jobcard_descriptions')
+        ->result_array();
+
+    $existing_descriptions = array_column($existing, 'description');
+
+    $submitted_descriptions = [];
+
+    foreach ($descriptions as $i => $desc) {
+
+        $desc   = trim($desc);
+        $amount = $amounts[$i] ?? 0;
+
+        if ($desc == '') {
+            continue;
+        }
+
+        $submitted_descriptions[] = $desc;
+
+        $data = [
+            'jobcard_id' => $jobcard_id,
+            'description'=> $desc,
+            'amount'     => $amount,
+           
+        ];
+
+        // ✅ UPDATE if exists
+        if (in_array($desc, $existing_descriptions)) {
+
+            $this->db->where('jobcard_id', $jobcard_id);
+            $this->db->where('description', $desc);
+            $this->db->update('jobcard_descriptions', [
+                'amount' => $amount
+            ]);
+
+        } 
+        // ✅ INSERT new
+        else {
+
+            $this->db->insert('jobcard_descriptions', $data);
+        }
+    }
+
+    // ✅ DELETE removed rows (VERY IMPORTANT)
+    if (!empty($submitted_descriptions)) {
+        $this->db->where('jobcard_id', $jobcard_id);
+        $this->db->where_not_in('description', $submitted_descriptions);
+        $this->db->delete('jobcard_descriptions');
+    }
+}
+
+	public function update_parts($jobcard_id, $part_ids, $part_type, $qtys, $unitprice, $sellprice, $totalprice, $disamt)
+	{
+		log_message('error', '--- update_parts called ---');
+		log_message('error', 'Jobcard ID: ' . $jobcard_id);
+
+		// 1️⃣ Get existing part IDs for this jobcard
+		$existing = $this->db->select('part_id')
+			->where('jobcard_id', $jobcard_id)
+			->get('jobcard_parts')
+			->result_array();
+
+		$existing_ids = array_column($existing, 'part_id');
+
+		foreach ($part_ids as $i => $part_id) {
+
+			if (empty($part_id)) {
+				continue;
+			}
+
+			$data = [
+				'jobcard_id'   => $jobcard_id,
+				'part_id'      => $part_id,
+				'qty'          => $qtys[$i] ?? 0,
+				'part_type'    => $part_type[$i] ?? null,
+				'unit_price'   => $unitprice[$i] ?? 0,
+				'selling_price' => $sellprice[$i] ?? 0,
+				'total_price'  => $totalprice[$i] ?? 0,
+				'disamount'    => $disamt[$i] ?? 0,
+			];
+
+			if (in_array($part_id, $existing_ids)) {
+
+				// ✅ Update existing part
+				$this->db->where('jobcard_id', $jobcard_id)
+					->where('part_id', $part_id)
+					->update('jobcard_parts', $data);
+
+				log_message('error', 'UPDATED PART: ' . $this->db->last_query());
+			} else {
+
+				// ✅ Insert new part
+				$this->db->insert('jobcard_parts', $data);
+
+				log_message('error', 'INSERTED PART: ' . $this->db->last_query());
+			}
+
+			log_message('error', json_encode($this->db->error()));
+		}
+
+		// 2️⃣ Delete removed parts (optional but recommended)
+		foreach ($existing_ids as $existing_id) {
+			if (!in_array($existing_id, $part_ids)) {
+				$this->db->where('jobcard_id', $jobcard_id)
+					->where('part_id', $existing_id)
+					->delete('jobcard_parts');
+
+				log_message('error', 'DELETED PART ID: ' . $existing_id);
+			}
 		}
 	}
 
@@ -194,6 +409,13 @@ class Jobcard_model extends CI_Model
 	public function get_jobcard_by_qid($id)
 	{
 		return $this->db->where('quotation_id ', $id)
+			->get('job_cards')
+			->row();
+	}
+
+	public function get_jobcard_by_eid($id)
+	{
+		return $this->db->where('estimation_id', $id)
 			->get('job_cards')
 			->row();
 	}
@@ -284,8 +506,7 @@ class Jobcard_model extends CI_Model
         vehicles.model,
         vehicles.variant,
         vehicles.year,vehicles.chassis_no,vehicles.color,
-        appointments.appointment_date
-    ");
+        appointments.appointment_date");
 
 		$this->db->from("job_cards");
 		$this->db->join("customers", "customers.customer_id = job_cards.customer_id");
@@ -341,8 +562,7 @@ class Jobcard_model extends CI_Model
             WHEN 'Aftermarket Parts' THEN 'Aftermarket'
             WHEN 'Used Parts' THEN 'Used'
             ELSE spare_parts.part_type
-        END AS part_type_label
-    ");
+        END AS part_type_label");
 		$this->db->from("jobcard_parts");
 		$this->db->join("spare_parts", "spare_parts.part_id = jobcard_parts.part_id");
 		$this->db->where("jobcard_parts.jobcard_id", $jobcard_id);
@@ -798,21 +1018,21 @@ class Jobcard_model extends CI_Model
 			->get()
 			->result();
 
-		
+
 
 
 		return $jobcard;
 	}
 
-public function get_jobcard_full_details_quotation($jobcard_id)
-{
+	public function get_jobcard_full_details_quotation($jobcard_id)
+	{
 
-    /* =====================================================
-       1. Jobcard + Quotation + Customer + Vehicle
-    ===================================================== */
+		/* =====================================================
+      	1. Jobcard + Quotation + Customer + Vehicle
+    		===================================================== */
 
-    $jobcard = $this->db
-        ->select('
+		$jobcard = $this->db
+			->select('
             jc.*,
             q.quotation_id,
             q.quotation_no,
@@ -823,67 +1043,69 @@ public function get_jobcard_full_details_quotation($jobcard_id)
 
             v.registration_no,
             v.brand,
-            v.model
-        ')
-        ->from('job_cards jc')
-        ->join('quotations q', 'q.quotation_id = jc.quotation_id')
-        ->join('customers c', 'c.customer_id = q.customer_id')
-        ->join('vehicles v', 'v.vehicle_id = q.vehicle_id')
-        ->where('jc.jobcard_id', $jobcard_id)
-        ->get()
-        ->row();
+            v.model')
+			->from('job_cards jc')
+			->join('quotations q', 'q.quotation_id = jc.quotation_id')
+			->join('customers c', 'c.customer_id = q.customer_id')
+			->join('vehicles v', 'v.vehicle_id = q.vehicle_id')
+			->where('jc.jobcard_id', $jobcard_id)
+			->get()
+			->row();
 
-    if (!$jobcard) {
-        return null;
-    }
+		if (!$jobcard) {
+			return null;
+		}
 
-    $quotation_id = $jobcard->quotation_id;
+		$quotation_id = $jobcard->quotation_id;
 
-    /* =====================================================
-       2. SERVICES (Exclude Already Invoiced)
-    ===================================================== */
+		/* =====================================================
+			2. SERVICES (Exclude Already Invoiced)
+				===================================================== */
 
-    $jobcard->services = $this->db
-        ->select('
+		$jobcard->services = $this->db
+			->select('
             qs.service_id,
             qs.total_cost,
             qs.discount_amount,
             s.service_name,
             s.service_type
         ')
-        ->from('quotation_services qs')
+			->from('quotation_services qs')
 
-        ->join('invoice_items ii',
-            "ii.source_jobcard_item_id = qs.service_id
+			->join(
+				'invoice_items ii',
+				"ii.source_jobcard_item_id = qs.service_id
              AND ii.item_type='Service'",
-            'left'
-        )
+				'left'
+			)
 
-        ->join('invoices inv',
-            "inv.invoice_id = ii.invoice_id
+			->join(
+				'invoices inv',
+				"inv.invoice_id = ii.invoice_id
              AND inv.quotation_id = {$quotation_id}",
-            'left'
-        )
+				'left'
+			)
 
-        ->join('services_master s',
-            's.master_service_id = qs.service_id',
-            'left'
-        )
+			->join(
+				'services_master s',
+				's.master_service_id = qs.service_id',
+				'left'
+			)
 
-        ->where('qs.quotation_id', $quotation_id)
-        ->where('inv.invoice_id IS NULL', null, false)
+			->where('qs.quotation_id', $quotation_id)
+			->where('inv.invoice_id IS NULL', null, false)
 
-        ->get()
-        ->result();
+			->get()
+			->result();
 
 
 
-    /* =====================================================
-       3. PARTS (Exclude Already Invoiced)
-    ===================================================== */
+		/* =====================================================
+			3. PARTS (Exclude Already Invoiced)
+			===================================================== */
 
-    $jobcard->parts = $this->db
-        ->select('
+		$jobcard->parts = $this->db
+			->select('
             qp.part_id,
             qp.qty,
             qp.selling_price,
@@ -891,83 +1113,89 @@ public function get_jobcard_full_details_quotation($jobcard_id)
             qp.total_price,
             p.part_name
         ')
-        ->from('quotation_parts qp')
+			->from('quotation_parts qp')
 
-        ->join('invoice_items ii',
-            "ii.source_jobcard_item_id = qp.part_id
+			->join(
+				'invoice_items ii',
+				"ii.source_jobcard_item_id = qp.part_id
              AND ii.item_type='Part'",
-            'left'
-        )
+				'left'
+			)
 
-        ->join('invoices inv',
-            "inv.invoice_id = ii.invoice_id
+			->join(
+				'invoices inv',
+				"inv.invoice_id = ii.invoice_id
              AND inv.quotation_id = {$quotation_id}",
-            'left'
-        )
+				'left'
+			)
 
-        ->join('spare_parts p',
-            'p.part_id = qp.part_id',
-            'left'
-        )
+			->join(
+				'spare_parts p',
+				'p.part_id = qp.part_id',
+				'left'
+			)
 
-        ->where('qp.quotation_id', $quotation_id)
-        ->where('inv.invoice_id IS NULL', null, false)
+			->where('qp.quotation_id', $quotation_id)
+			->where('inv.invoice_id IS NULL', null, false)
 
-        ->get()
-        ->result();
+			->get()
+			->result();
 
 
 
-    /* =====================================================
-       4. SUBLET / DESCRIPTIONS
-    ===================================================== */
+		/* =====================================================
+			4. SUBLET / DESCRIPTIONS
+			===================================================== */
 
-    $jobcard->descriptions = $this->db
-        ->select('
+		$jobcard->descriptions = $this->db
+			->select('
             qjd.id,
             qjd.description,
             qjd.amount,
             e.employee_name
         ')
-        ->from('quotation_job_descriptions qjd')
+			->from('quotation_job_descriptions qjd')
 
-        ->join('invoice_items ii',
-            "ii.source_jobcard_item_id = qjd.id
+			->join(
+				'invoice_items ii',
+				"ii.source_jobcard_item_id = qjd.id
              AND ii.item_type='Sublet'",
-            'left'
-        )
+				'left'
+			)
 
-        ->join('invoices inv',
-            "inv.invoice_id = ii.invoice_id
+			->join(
+				'invoices inv',
+				"inv.invoice_id = ii.invoice_id
              AND inv.quotation_id = {$quotation_id}",
-            'left'
-        )
+				'left'
+			)
 
-        ->join('employees e',
-            'e.employee_id = qjd.employee_id',
-            'left'
-        )
+			->join(
+				'employees e',
+				'e.employee_id = qjd.employee_id',
+				'left'
+			)
 
-        ->where('qjd.quotation_id', $quotation_id)
-        ->where('inv.invoice_id IS NULL', null, false)
+			->where('qjd.quotation_id', $quotation_id)
+			->where('inv.invoice_id IS NULL', null, false)
 
-        ->get()
-        ->result();
-
-
-
-    /* =====================================================
-       5. FULLY INVOICED CHECK
-    ===================================================== */
-
-    $jobcard->fully_invoiced =
-        empty($jobcard->services) &&
-        empty($jobcard->parts) &&
-        empty($jobcard->descriptions);
+			->get()
+			->result();
 
 
-    return $jobcard;
-}
+
+		/* =====================================================
+			5. FULLY INVOICED CHECK
+			===================================================== */
+
+		$jobcard->fully_invoiced =
+			empty($jobcard->services) &&
+			empty($jobcard->parts) &&
+			empty($jobcard->descriptions);
+
+
+		return $jobcard;
+	}
 
 
 
@@ -1076,7 +1304,51 @@ public function get_jobcard_full_details_quotation($jobcard_id)
 
 		return $times;
 	}
+	public function generate_jobcard_no_from_model123()
+	{
+		$year = date('Y');
 
+		$last = $this->db
+			->like('jobcard_no', "JC-$year-", 'after')
+			->order_by('jobcard_id', 'DESC')
+			->limit(1)
+			->get('job_cards')
+			->row();
+
+		if ($last) {
+			$last_no = intval(substr($last->jobcard_no, -4));
+			$new_no  = str_pad($last_no + 1, 4, '0', STR_PAD_LEFT);
+		} else {
+			$new_no = '0001';
+		}
+
+		return "JC-$year-$new_no";
+	}
+	public function generate_jobcard_no_from_model()
+	{
+		$year = date('Y');
+
+		$last = $this->db
+			->select('jobcard_no')
+			->like('jobcard_no', "JC-$year-", 'after')
+			->order_by('jobcard_id', 'DESC')
+			// ->order_by("CAST(SUBSTRING_INDEX(jobcard_no,'-',-1) AS UNSIGNED)", "DESC")
+			->limit(1)
+			->get('job_cards')
+			->row();
+
+		if ($last) {
+
+			$parts   = explode('-', $last->jobcard_no);
+			$last_no = intval(end($parts));
+
+			$new_no  = str_pad($last_no + 1, 4, '0', STR_PAD_LEFT);
+		} else {
+			$new_no = '0001';
+		}
+
+		return "JC-$year-$new_no";
+	}
 	public function create_from_quotation($quotation_id)
 	{
 
@@ -1087,6 +1359,8 @@ public function get_jobcard_full_details_quotation($jobcard_id)
 		if (!$q) {
 			show_error('Quotation not found');
 		}
+
+		$jobcard_no = $this->generate_jobcard_no_from_model(); // call function here
 
 		// Job Card Header (FULL DATA COPY)
 		$this->db->insert('job_cards', [
@@ -1103,6 +1377,7 @@ public function get_jobcard_full_details_quotation($jobcard_id)
 			'tax_amount'     => $q->tax_amount,
 			'discount'       => $q->discount,
 			'grand_total'    => $q->grand_total,
+			'jobcard_no' => $jobcard_no,
 
 			'status'         => 'Pending',
 			'created_at'     => date('Y-m-d H:i:s'),
@@ -1111,15 +1386,15 @@ public function get_jobcard_full_details_quotation($jobcard_id)
 
 		$jobcard_id = $this->db->insert_id();
 
-		// 2️⃣ Generate Job Card No
-		$year = date('Y');
-		$jobcard_no = 'JC-' . $year . '-' . str_pad($jobcard_id, 6, '0', STR_PAD_LEFT);
+		// // 2️⃣ Generate Job Card No
+		// $year = date('Y');
+		// $jobcard_no = 'JC-' . $year . '-' . str_pad($jobcard_id, 6, '0', STR_PAD_LEFT);
 
-		// 3️⃣ Update job card with number
-		$this->Jobcard_model->update_jobcard(
-			$jobcard_id,
-			['jobcard_no' => $jobcard_no]
-		);
+		// // 3️⃣ Update job card with number
+		// $this->Jobcard_model->update_jobcard(
+		// 	$jobcard_id,
+		// 	['jobcard_no' => $jobcard_no]
+		// );
 
 		// Copy jobs
 		$jobs = $this->db->get_where('quotation_job_descriptions', [
