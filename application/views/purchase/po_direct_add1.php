@@ -28,17 +28,7 @@
 
 		<!-- Row 1 -->
 		<div class="grid grid-cols-12 gap-4 items-end">
-
-		<div class="col-span-12 md:col-span-3">
-				<label class="block text-sm font-medium mb-1">Purchase Type</label>
-				<select class="w-full border rounded-lg px-3 py-2 select2"
-					name="purchase_type" id="purchase_type" required>
-					<option value="">Select</option>
-					<option value="Parts">Parts</option>
-					<option value="Non-Parts">Non Parts</option>
-				</select>
-			</div>
-			<div class="col-span-12 md:col-span-3">
+			<div class="col-span-12 md:col-span-4">
 				<label class="block text-sm font-medium mb-1">Supplier</label>
 				<select class="w-full border rounded-lg px-3 py-2 select2"
 					name="supplier_id" id="supplier_id" required>
