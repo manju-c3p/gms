@@ -16,7 +16,8 @@ class Estimation extends CI_Controller
 			'Employee_model',
 			'Quotation_model',
 			'Customer_model',
-			'Vehicle_model'
+			'Vehicle_model',
+			'Supplier_model'
 		]);
 	}
 
@@ -352,6 +353,7 @@ class Estimation extends CI_Controller
 			'remarks'     => $this->input->post('remarks'),
 			'kmin'     => $this->input->post('kmin'),
 			'service_discount'     => $this->input->post('service_discount'),
+			'estimation_date'=>$this->input->post('edate'),
 		];
 
 		$this->Estimation_model->update_estimation($estimation_id, $estimationData);
@@ -554,6 +556,7 @@ class Estimation extends CI_Controller
 			'customer_estimated_price' => $this->input->post('estimatedprice'),
 			'est_delivery_date' => $this->input->post('estdeldate'),
 			'est_completion_time' => $this->input->post('completiontime'),
+			'estimation_date'=>$this->input->post('edate'),
 
 			'remarks'         => $this->input->post('remarks'),
 			'kmin'            => $this->input->post('kmin'),
@@ -750,6 +753,8 @@ class Estimation extends CI_Controller
 		$data['service_discount'] = $estimation->service_discount ?? null;
 		$data['sublet_discount'] = $estimation->sublet_discount ?? null;
 		$data['estdate'] = $inspection->deliverytime ?? $estimation->est_completion_time;
+
+		$data['unit_records'] = $this->Supplier_model->get_units();
 
 		$data['usedbrands'] = $this->SpareParts_model
 			->get_brands_by_part_type("Used Parts");

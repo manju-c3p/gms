@@ -70,8 +70,8 @@
 						<tr class="border-b">
 							<td class="w-[13%] px-3 py-1 font-medium bg-gray-50">Date</td>
 							<td class="w-[20%] px-3 py-1">
-								<input type="date" class="w-full border rounded px-2 py-1"
-									value="<?= date('Y-m-d') ?>">
+								<input type="date" name="jobcard_date" class="w-full border rounded px-2 py-1"
+									value="<?= $jobcard->jobcard_date ?? date('Y-m-d') ?>">
 							</td>
 
 							<td class="w-[13%] px-3 py-1  font-medium bg-gray-50">Job Card No</td>
@@ -175,6 +175,34 @@
 							<td class="px-3 py-1 ">
 								<textarea name="remarks"
 									class="w-full border rounded px-2 py-1 h-16"><?= $estimation->remarks ?></textarea>
+							</td>
+
+							<td class="px-3 py-1 font-medium bg-gray-50">Status</td>
+
+							<td class="px-3 py-1">
+								<select name="status"
+									class="w-full border rounded px-2 py-2">
+
+									<option value="">Select Status</option>
+
+									<option value="Scheduled"
+										<?= ($jobcard->status == 'Scheduled') ? 'selected' : '' ?>>
+										Scheduled
+									</option>
+
+									<option value="In Progress"
+										<?= ($jobcard->status == 'In Progress') ? 'selected' : '' ?>>
+										In Progress
+									</option>
+
+									<option value="Finished"
+										<?= ($jobcard->status == 'Finished' || empty($jobcard->status)) ? 'selected' : '' ?>>
+										Finished
+									</option>
+
+
+
+								</select>
 							</td>
 						</tr>
 
@@ -340,6 +368,9 @@
 											</option>
 										<?php endforeach; ?>
 									</select>
+
+									<!-- Hidden input for submission -->
+									<input type="hidden" name="part_id[]" value="<?= $p->part_id ?>">
 								</td>
 								<td class="border px-3 py-2">
 									<input name="part_type[]" value="<?= $p->part_type ?>"

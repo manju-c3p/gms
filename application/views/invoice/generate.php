@@ -2,7 +2,7 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
 <div class="w-full bg-white rounded-2xl shadow-md p-6">
 	<!-- STEP 1: JOB CARD SELECT -->
-	<div class="bg-white rounded-xl shadow-md p-6 max-w-3xl">
+	<div class="bg-white rounded-xl shadow-md p-6 w-full">
 		<h2 class="text-xl font-semibold mb-6 text-gray-800">
 			Generate Invoice
 		</h2>
@@ -11,7 +11,18 @@
 				<?= $this->session->flashdata('error'); ?>
 			</div>
 		<?php endif; ?>
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+			<!-- Invoice Date -->
+			<div>
+				<label class="block text-sm font-medium text-gray-600 mb-2">
+					Invoice Date
+				</label>
+				<input type="date"
+					name="invoice_date"
+					id="invoice_date"
+					value="<?= date('Y-m-d') ?>"
+					class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+			</div>
 			<!-- Invoice Type -->
 			<div>
 				<label class="block text-sm font-medium text-gray-600 mb-2">
@@ -20,8 +31,9 @@
 				<select name="invoice_type_select" id="invoice_type_select"
 					class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
 					<option value="" disabled selected>Select Invoice Type</option>
-					<option value="PI">Proforma Invoice</option>
 					<option value="TI">Tax Invoice</option>
+					<option value="PI">Proforma Invoice</option>
+
 				</select>
 			</div>
 			<!-- Select Quotation -->
@@ -30,7 +42,7 @@
 					Select Quotation
 				</label>
 				<select id="jobcard_id"
-					class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+					class="select2 debtor-select w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
 					<!-- onchange='get_dc_info()' -->
 					<option value="">-- Select Quotation --</option>
 					<?php foreach ($jobcards as $jc): ?>
@@ -52,10 +64,11 @@
 
 
 		<input type="hidden" name="invoice_type" id="invoice_type">
-
+		<input type="hidden" name="invoice_date_hidden" id="invoice_date_hidden">
 		<input type="hidden" name="jobcard_id" id="jobcard_hidden">
 		<input type="hidden" name="quotation_id" id="quotation_hidden">
 		<input type="hidden" name="customer_id" id="customer_id">
+
 		<!-- CUSTOMER + VEHICLE -->
 		<div class="grid grid-cols-2 gap-4 mb-6 text-sm bg-gray-50 p-4 rounded">
 			<div>
@@ -78,7 +91,7 @@
 					</th>
 					<th class="border p-2">Service</th>
 					<th width="20%" class="border p-2 text-right">Cost</th>
-					<th class="hidden">dis amt</th>
+					<th class="hidden text">dis amt</th>
 				</tr>
 			</thead>
 			<tbody id="serviceBody"></tbody>
@@ -146,7 +159,35 @@
 				<div class="flex justify-between items-center">
 					<span>Discount</span>
 					<span id="discount"></span>
+
 					<input type="hidden" name="discount_amount" id="discount_amount" readonly>
+				</div>
+				<div class="flex justify-between items-start gap-4 hidden">
+
+					<span class="pt-2">Additional Discount</span>
+
+					<div class="flex items-center gap-3">
+
+						<div class="flex flex-col">
+							<label class="text-xs text-gray-500 mb-1">Percentage</label>
+
+							<input type="number" step="0.01"
+								class="w-24 text-right border border-gray-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+								name="adddiscount_amount_per"
+								id="adddiscount_amount_per">
+						</div>
+
+						<div class="flex flex-col">
+							<label class="text-xs text-gray-500 mb-1">Amount</label>
+
+							<input type="number" step="0.01"
+								class="w-32 text-right border border-gray-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+								name="adddiscount_amount"
+								id="adddiscount_amount">
+						</div>
+
+					</div>
+
 				</div>
 				<div class="flex justify-between items-center">
 					<span>Taxable Amount</span>
@@ -159,9 +200,19 @@
 					<span id="tax">0.00</span>
 				</div>
 
-				<div class="flex justify-between font-bold text-lg border-t pt-2 mt-2">
+				<div class="flex justify-between  border-t pt-2 mt-2">
 					<span>Grand Total</span>
 					<span id="grand_total">0.00</span>
+				</div>
+				<div class="flex justify-between  border-t pt-2 mt-2">
+					<span>Advance Payment(if Any)</span>
+
+					<input type="text" name="advance_paid" id="advance_paid" value=""
+						class="advance_paid text-right border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" readonly>
+				</div>
+				<div class="flex justify-between   border-t pt-2 mt-2">
+					<span>Balance</span>
+					<span id="balance">0.00</span>
 				</div>
 			</div>
 
@@ -379,10 +430,13 @@
 
 		<!-- HIDDEN FIELDS -->
 		<input type="hidden" name="subtotal" id="subtotal_input">
+
 		<input type="hidden" name="sdiscount" id="sdiscount">
 		<input type="hidden" name="taxableamt" id="taxableamt">
 		<input type="hidden" name="tax_amount" id="tax_input">
 		<input type="hidden" name="grand_total" id="grand_input">
+		<input type="hidden" name="adv_paid" id="adv_paid">
+		<input type="hidden" name="balance_total" id="balance_total">
 
 		<button class="mt-6 bg-green-600 text-white px-6 py-2 rounded" id="saveInvoiceBtn">
 			Save Invoice
@@ -391,6 +445,13 @@
 </div>
 <script>
 	$(document).ready(function() {
+
+
+		$('.debtor-select').select2({
+			width: '100%'
+		});
+
+
 		var i = 1;
 
 		$("#inv_dr_add_row").click(function() {
@@ -427,144 +488,75 @@
 		});
 	});
 
+	$('#jobcard_id').select2();
+
+	$('#jobcard_id').on('change', function() {
+		loadJobcardDetails($(this).val());
+	});
 
 
-	document.getElementById('jobcard_id').addEventListener('change', function() {
-		loadJobcardDetails(this.value);
+	document.addEventListener("DOMContentLoaded", function() {
+
+		const subtotalEl = document.getElementById("subtotal");
+		const ndisamtE = document.getElementById("discount_amount");
+		const addDiscountPer = document.getElementById("adddiscount_amount_per");
+		const addDiscountAmt = document.getElementById("adddiscount_amount");
+
+		// Percentage → Amount
+		addDiscountPer.addEventListener("input", function() {
+
+			let subtotal = parseFloat(subtotalEl.innerText) || 0;
+			let ndisamt = parseFloat(ndisamtE.innerText) || 0;
+			let per = parseFloat(this.value) || 0;
+
+			let amount = ((subtotal - ndisamt) * per) / 100;
+
+			addDiscountAmt.value = amount.toFixed(2);
+
+			calculateTotals();
+		});
+
+		// Amount → Percentage
+		addDiscountAmt.addEventListener("input", function() {
+
+			let subtotal = parseFloat(subtotalEl.innerText) || 0;
+			let ndisamt = parseFloat(ndisamtE.innerText) || 0;
+			let amount = parseFloat(this.value) || 0;
+
+			let per = 0;
+
+			if (subtotal > 0) {
+				per = (amount / (subtotal - ndisamt)) * 100;
+			}
+
+			addDiscountPer.value = per.toFixed(2);
+
+			calculateTotals();
+		});
 
 	});
 
 
 
-	function calculateTotalsold() {
 
-		let subtotal = 0;
+	document.getElementById('advance_paid').addEventListener('input', function() {
 
-		document.querySelectorAll('.service-cost, .part-cost, .desc-cost').forEach(el => {
-			subtotal += parseFloat(el.dataset.amount || 0);
-		});
-		// alert(subtotal);
-		let tax = subtotal * 0.05;
-		let discount = parseFloat(document.getElementById('discount').value || 0);
+		let grand = parseFloat(document.getElementById('grand_total').innerText) || 0;
+		let advpaid = parseFloat(this.value) || 0;
 
-		let grand = subtotal + tax - discount;
-		if (grand < 0) grand = 0;
+		if (advpaid > grand) {
+			advpaid = grand;
+			this.value = grand.toFixed(2);
+		}
 
-		// DISPLAY
-		document.getElementById('subtotal').innerText = subtotal.toFixed(2);
-		document.getElementById('tax').innerText = tax.toFixed(2);
-		document.getElementById('grand_total').innerText = grand.toFixed(2);
+		let balance = Math.round((grand - advpaid) * 100) / 100;
 
-		// HIDDEN INPUTS
-		document.getElementById('subtotal_input').value = subtotal.toFixed(2);
-		document.getElementById('tax_input').value = tax.toFixed(2);
-		document.getElementById('grand_input').value = grand.toFixed(2);
-	}
-
-	// function calculateTotals() {
-
-	// 	let subtotal = 0;
-	// 	let serviceTotal = 0;
-	// 	let partsTotal = 0;
-	// 	let descTotal = 0;
+		document.getElementById('balance').innerText = balance.toFixed(2);
+		document.getElementById('adv_paid').value = advpaid.toFixed(2);
+		document.getElementById('balance_total').value = balance.toFixed(2);
+	});
 
 
-	// 	/* ========= SERVICES ========= */
-
-	// 	document.querySelectorAll('.service-check:checked').forEach(cb => {
-
-	// 		const amount = parseFloat(
-	// 			cb.closest('tr')
-	// 			.querySelector('.service-cost')
-	// 			?.dataset.amount || 0
-	// 		);
-
-	// 		serviceTotal += amount;
-	// 		subtotal += amount;
-	// 	});
-
-	// 	// update table total
-	// 	const serviceEl = document.getElementById('service_total');
-	// 	if (serviceEl) serviceEl.innerText = serviceTotal.toFixed(2);
-
-
-
-	// 	/* ========= PARTS ========= */
-
-	// 	document.querySelectorAll('.part-check:checked').forEach(cb => {
-
-	// 		const amount = parseFloat(
-	// 			cb.closest('tr')
-	// 			.querySelector('.part-cost')
-	// 			?.dataset.amount || 0
-	// 		);
-
-	// 		partsTotal += amount;
-	// 		subtotal += amount;
-	// 	});
-
-	// 	const partsEl = document.getElementById('parts_total');
-	// 	if (partsEl) partsEl.innerText = partsTotal.toFixed(2);
-
-
-
-	// 	/* ========= DESCRIPTION ========= */
-
-	// 	document.querySelectorAll('.desc-check:checked').forEach(cb => {
-
-	// 		const amount = parseFloat(
-	// 			cb.closest('tr')
-	// 			.querySelector('.desc-cost')
-	// 			?.dataset.amount || 0
-	// 		);
-
-	// 		descTotal += amount;
-	// 		subtotal += amount;
-	// 	});
-
-	// 	const descEl = document.getElementById('desc_total');
-	// 	if (descEl) descEl.innerText = descTotal.toFixed(2);
-
-
-
-
-
-	// 	/* ========= DISCOUNT ========= */
-
-	// 	let discount = parseFloat(
-	// 		document.getElementById('discount')?.innerHTML || 0
-	// 	);
-
-	// 	/* ========= GRAND ========= */
-	// 	let taxamt = subtotal - discount;
-
-	// 	/* ========= TAX ========= */
-
-	// 	let tax = taxamt * 0.05;
-
-	// 	let grand = taxamt + tax;
-	// 	if (grand < 0) grand = 0;
-
-
-
-	// 	/* ========= DISPLAY ========= */
-
-	// 	document.getElementById('subtotal').innerText = subtotal.toFixed(2);
-	// 	document.getElementById('taxamt').innerText = taxamt.toFixed(2);
-	// 	document.getElementById('tax').innerText = tax.toFixed(2);
-	// 	document.getElementById('grand_total').innerText = grand.toFixed(2);
-
-
-
-	// 	/* ========= HIDDEN INPUTS ========= */
-
-	// 	document.getElementById('subtotal_input').value = subtotal.toFixed(2);
-
-	// 	document.getElementById('sdiscount').value = discount.toFixed(2);
-	// 	document.getElementById('taxableamt').value = taxamt.toFixed(2);
-	// 	document.getElementById('tax_input').value = tax.toFixed(2);
-	// 	document.getElementById('grand_input').value = grand.toFixed(2);
-	// }
 
 	function calculateTotals() {
 
@@ -573,7 +565,8 @@
 		let partsTotal = 0;
 		let descTotal = 0;
 		let totalDiscount = 0; // 🔥 IMPORTANT
-
+		let additionalDiscount = 0;
+		let totinvoice_discount =0;
 
 
 		/* ========= SERVICES ========= */
@@ -612,8 +605,11 @@
 				?.dataset.amount || 0
 			);
 
+
 			partsTotal += amount;
 			subtotal += amount;
+
+
 		});
 
 		document.getElementById('parts_total') &&
@@ -631,9 +627,14 @@
 				.querySelector('.desc-cost')
 				?.dataset.amount || 0
 			);
+			const subdiscount = parseFloat(
+				cb.closest('tr').querySelector('.sublet-discount')?.dataset.discount || 0
+			);
 
 			descTotal += amount;
 			subtotal += amount;
+
+			totalDiscount += subdiscount;
 		});
 
 		document.getElementById('desc_total') &&
@@ -643,8 +644,8 @@
 
 
 		/* ========= TAXABLE ========= */
-
-		let taxable = subtotal - totalDiscount;
+		additionalDiscount = parseFloat(document.getElementById("adddiscount_amount").value) || 0;
+		let taxable = subtotal - totalDiscount - additionalDiscount;
 		if (taxable < 0) taxable = 0;
 
 
@@ -659,7 +660,21 @@
 
 		let grand = taxable + tax;
 
+		/* ========= advance calculation ========= */
+		/* ========= advance calculation ========= */
 
+		let advpaid = parseFloat(document.getElementById('advance_paid').value) || 0;
+
+		// prevent overpayment
+		if (advpaid > grand) {
+			advpaid = grand;
+			document.getElementById('advance_paid').value = grand.toFixed(2);
+		}
+
+		let baltot = Math.round((grand - advpaid) * 100) / 100;
+
+		document.getElementById('balance').innerText = baltot.toFixed(2);
+		document.getElementById('balance_total').value = baltot.toFixed(2);
 
 		/* ========= DISPLAY ========= */
 
@@ -679,9 +694,12 @@
 		document.getElementById('grand_total').innerText =
 			grand.toFixed(2);
 		// =====================accounts fileds===================
+
+		totinvoice_discount = totalDiscount+ additionalDiscount;
 		document.getElementById("inv_dr_amount0").value = grand.toFixed(2);
 		document.getElementById("inv_cr_amount0").value = subtotal.toFixed(2);
-		document.getElementById("inv_cr_amount2").value = totalDiscount.toFixed(2);
+		// document.getElementById("inv_cr_amount2").value = totalDiscount.toFixed(2);
+		document.getElementById("inv_cr_amount2").value = totinvoice_discount;
 		document.getElementById("inv_cr_amount1").value = tax.toFixed(2);
 
 
@@ -702,6 +720,12 @@
 
 		document.getElementById('grand_input').value =
 			grand.toFixed(2);
+
+		document.getElementById('adv_paid').value =
+			advpaid.toFixed(2);
+
+		document.getElementById('balance_total').value =
+			baltot.toFixed(2);
 	}
 
 
@@ -709,6 +733,7 @@
 		const type = $(this).val();
 
 		$('#invoice_type').val(type);
+
 		$('#saveInvoiceBtn').text(
 			type === 'PI' ? 'Create Proforma Invoice' : 'Create Tax Invoice'
 		);
@@ -723,6 +748,7 @@
 	});
 
 	function loadJobcardDetails(jobcardId) {
+		// alert("hi");
 		if (!jobcardId) return;
 
 		const invoiceType = document.getElementById('invoice_type_select').value;
@@ -743,7 +769,7 @@
 
 
 
-		fetch(BASE_URL + 'invoice/get_jobcard_details/' + jobcardId)
+		fetch(BASE_URL + 'Invoice/get_jobcard_details/' + jobcardId)
 			.then(res => res.json())
 			.then(data => {
 
@@ -751,6 +777,9 @@
 				document.getElementById('jobcard_hidden').value = jobcardId;
 				document.getElementById('quotation_hidden').value = data.quotation_id;
 				document.getElementById('customer_id').value = data.customer_id;
+				document.getElementById('invoice_date').value = data.jobcard_date;
+				document.getElementById('invoice_date_hidden').value = data.jobcard_date;
+				document.getElementById("advance_paid").value = data.available_advance;
 
 				/* CUSTOMER & VEHICLE */
 				document.getElementById('customer_name').innerText = data.customer_name || '';
@@ -758,12 +787,16 @@
 				document.getElementById('vehicle_no').innerText = data.registration_no || '';
 				document.getElementById('jobcard_no').innerText = data.jobcard_no || '';
 
-				// document.getElementById('discount').innerText = data.sdiscount || '';
 
-				let discount = data.sdiscount || 0;
+				let serdiscount = Number(data.sdiscount) || 0;
+				let subdiscount = Number(data.subdiscount) || 0;
+				let total_parts_discount = Number(data.total_parts_discount) || 0;
 
-				document.getElementById('discount').innerText = discount;
-				document.getElementById('discount_amount').value = discount;
+				let jobcard_total_discount = serdiscount + subdiscount + total_parts_discount;
+				// alert(jobcard_total_discount);
+
+				document.getElementById('discount').innerText = jobcard_total_discount;
+				document.getElementById('discount_amount').value = jobcard_total_discount;
 
 				/* SERVICES */
 				let serviceHTML = '';
@@ -781,11 +814,12 @@
 							class="service-check"
 							checked
 							onchange="calculateTotals()">
-
-							<input type="hidden" name="service_ids[]" value="${s.service_id}">
+					
+					<input type="hidden" name="service_ids[]" value="${s.service_id}">
 					<input type="hidden" name="service_name[]" value="${s.service_name}">
 					<input type="hidden" name="service_price[]" value="${s.total_cost}">
 					<input type="hidden" name="service_discount[]" value="${s.discount_amount}">
+					<input type="hidden" name="qs_ids[]" value="${s.id}">
 					</td>
 
                     <td class="border p-2">${s.service_name}</td>
@@ -834,21 +868,23 @@
 						class="part-check"
 						checked
 						onchange="calculateTotals()">
-
+						
 						 <input type="hidden" name="part_id[]" value="${p.part_id}">
 						<input type="hidden" name="part_name[]" value="${p.part_name}">
 						<input type="hidden" name="part_qty[]" value="${p.qty}">
 						<input type="hidden" name="part_price[]" value="${p.selling_price}">
 						<input type="hidden" name="part_total[]" value="${p.total_price}">
 						<input type="hidden" name="part_discount[]" value="${p.dis_amount || 0}">
+						<input type="hidden" name="qp_ids[]" value="${p.id}">
 				</td>
                   
 
                     <td class="border p-2">${p.part_name}</td>
                     <td class="border p-2 text-center">${p.qty}</td>
-                    <td class="border p-2 text-center">${p.selling_price}</td>
-                    <td class="border p-2 text-center">${p.dis_amount}</td>
-                    <td class="border p-2 text-right  part-cost"
+                    <td class="border p-2 text-right">${p.selling_price}</td>
+                  
+					 <td class="border p-2 text-right part-discount">${parseFloat(p.dis_amount || 0).toFixed(2)}</td>
+                    <td class="border p-2 text-right part-cost"
                         data-amount="${parseFloat(p.total_price)}">
                         ${parseFloat(p.total_price).toFixed(2)}
                     </td>
@@ -883,10 +919,12 @@
 									class="desc-check"
 									checked
 									onchange="calculateTotals()">
-
+								
 									<input type="hidden" name="desc_id[]" value="${d.id}">
 									<input type="hidden" name="desc_name[]" value="${d.description}">
 									<input type="hidden" name="desc_amount[]" value="${d.amount}">
+									<input type="hidden" name="sublet_discount[]" value="${d.discount_amount}">
+										<input type="hidden" name="qjd_ids[]" value="${d.id}">
 							</td>
 
                     <td class="border p-2">${d.description}</td>
@@ -894,6 +932,10 @@
                         data-amount="${parseFloat(d.amount)}">
                         ${parseFloat(d.amount).toFixed(2)}
                     </td>
+					 <td class="hidden border p-2 sublet-discount"
+						data-discount="${parseFloat(d.discount_amount) || 0}">
+						${parseFloat(d.discount_amount || 0).toFixed(2)}
+					</td>
                 </tr>`;
 				});
 
@@ -1191,6 +1233,26 @@
 			width: '100%'
 		});
 
+
+	});
+</script>
+<script>
+	document.addEventListener("DOMContentLoaded", function() {
+
+		const invoiceDate = document.getElementById("invoice_date");
+		const hiddenDate = document.getElementById("invoice_date_hidden");
+
+		function syncInvoiceDate() {
+			hiddenDate.value = invoiceDate.value;
+			console.log("Updated:", hiddenDate.value); // debug
+		}
+
+		// Initial load
+		syncInvoiceDate();
+
+		// 🔥 Handle all cases
+		invoiceDate.addEventListener("input", syncInvoiceDate);
+		invoiceDate.addEventListener("change", syncInvoiceDate);
 
 	});
 </script>

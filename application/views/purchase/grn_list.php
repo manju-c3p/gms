@@ -1,3 +1,7 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.tailwindcss.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.tailwindcss.min.js"></script>
 <!-- Header -->
 <div class="flex items-center justify-between bg-gray-200 px-4 py-3 rounded-t-lg">
 
@@ -106,13 +110,42 @@
 
 						<td class="px-4 py-2">
 
-							<a 
+							<a
 								href="<?php echo base_url() . 'index.php/Purchase/print_grn/' . $row->grn_id . '/1'; ?>"
 								class="text-blue-600 hover:text-blue-800">
 
 								<i class="fa fa-print"></i>
 
 							</a>
+
+							<!-- Edit Button -->
+							<!-- <a
+								href="<?php echo base_url() . 'index.php/Purchase/edit_grn/' . $row->grn_id; ?>"
+								class="text-green-600 hover:text-green-800">
+								<i class="fa fa-edit"></i>
+							</a> -->
+
+							<?php
+							$grn_date = strtotime($row->grn_date);
+							$today = strtotime(date('Y-m-d'));
+							$days_diff = ($today - $grn_date) / (60 * 60 * 24);
+							?>
+
+							<?php if ($days_diff <= 15) { ?>
+								<!-- Editable -->
+								<a href="<?php echo base_url() . 'index.php/Purchase/edit_grn/' . $row->grn_id; ?>"
+									class="text-green-600 hover:text-green-800"
+									title="Edit GRN">
+									<i class="fa fa-edit"></i>
+								</a>
+							<?php } else { ?>
+								<!-- View only -->
+								<a href="<?php echo base_url() . 'index.php/Purchase/view_grn/' . $row->grn_id; ?>"
+									class="text-yellow-600 hover:text-blue-800"
+									title="View GRN">
+									<i class="fa fa-eye"></i>
+								</a>
+							<?php } ?>
 
 						</td>
 
@@ -133,52 +166,70 @@
 <script>
 	$(document).ready(function() {
 
+		// $('#datatable').DataTable({
+
+		// 	pageLength: 10,
+
+		// 	responsive: true,
+
+		// 	autoWidth: false,
+
+		// 	ordering: true,
+
+		// 	paging: true,
+
+		// 	searching: true,
+
+		// 	info: true,
+
+		// 	dom: '<"flex flex-col md:flex-row md:items-center md:justify-between mb-3"Bf>rt<"flex flex-col md:flex-row md:justify-between mt-3"lip>',
+
+		// 	buttons: [
+
+		// 		{
+		// 			extend: 'excel',
+		// 			text: 'Export Excel',
+		// 			className: 'bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700'
+		// 		},
+
+		// 		{
+		// 			extend: 'print',
+		// 			text: 'Print',
+		// 			className: 'bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700'
+		// 		}
+
+		// 	],
+
+		// 	language: {
+
+		// 		search: "",
+		// 		searchPlaceholder: "Search GRN...",
+
+		// 		paginate: {
+		// 			previous: "Prev",
+		// 			next: "Next"
+		// 		}
+
+		// 	}
+
+		// });
 		$('#datatable').DataTable({
-
 			pageLength: 10,
-
+			lengthMenu: [
+				[5, 10, 25, -1],
+				[5, 10, 25, "All"]
+			],
 			responsive: true,
 
-			autoWidth: false,
-
-			ordering: true,
-
-			paging: true,
-
-			searching: true,
-
-			info: true,
-
-			dom: '<"flex flex-col md:flex-row md:items-center md:justify-between mb-3"Bf>rt<"flex flex-col md:flex-row md:justify-between mt-3"lip>',
-
-			buttons: [
-
-				{
-					extend: 'excel',
-					text: 'Export Excel',
-					className: 'bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700'
-				},
-
-				{
-					extend: 'print',
-					text: 'Print',
-					className: 'bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700'
-				}
-
-			],
+			// Move search box to the RIGHT
+			dom: "<'flex justify-between items-center mb-3'l<f>>" +
+				"t" +
+				"<'flex justify-between items-center mt-3'p>",
 
 			language: {
-
 				search: "",
-				searchPlaceholder: "Search GRN...",
-
-				paginate: {
-					previous: "Prev",
-					next: "Next"
-				}
-
+				searchPlaceholder: "Search ..."
 			}
-
 		});
 
 

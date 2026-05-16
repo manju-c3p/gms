@@ -91,9 +91,13 @@ class Supplier extends CI_Controller
 	{
 		$supplier_id = $this->input->post('supplier_id');
 
+		$email = $this->input->post('supplier_email');
+		$email = !empty($email) ? $email : NULL;
+
 		$supplier_data = [
 			'supplier_name'   => $this->input->post('supplier_name'),
-			'email_id'  => $this->input->post('supplier_email'),
+			'supplier_code' => $this->input->post('supplier_code'),
+			'email_id'  => $email,
 			'contact_no'  => $this->input->post('contact_number'),
 			'billing_address' => $this->input->post('supplier_address'),
 			'trn_no'          => $this->input->post('trn_no')
@@ -179,5 +183,51 @@ class Supplier extends CI_Controller
 
 		$this->session->set_flashdata('success', 'Data Updated Successfully..');
 		redirect('Supplier/view_unit_list');
+	}
+	// ======================================================================================
+	public function repair_supplier_ledgers()
+	{
+		$suppliers = $this->db->get('supplier_master')->result();
+
+		foreach ($suppliers as $sup) {
+
+			// Expected correct account name
+			$correct_name = $sup->supplier_name . ' SUP' . str_pad($sup->supplier_id, 4, '0', STR_PAD_LEFT);
+
+			// Check if ledger exists
+			$ledger = $this->db->where('supplier_id', $sup->supplier_id)
+				->get('general_ledger')
+				->row();
+
+			if (!$ledger) {
+				// ❌ Missing → CREATE
+				$data = [
+					'account_name'     => $correct_name,
+					'group_no'         => 29, // Sundry Creditors
+					'supplier_id'      => $sup->supplier_id,
+					'opening_balance'  => 0.00,
+					'opening_bal_type' => 'Cr', // Suppliers usually Credit
+					'isdeleteable'     => 'N',
+					'date'             => date('Y-m-d H:i:s')
+				];
+
+				$this->db->insert('general_ledger', $data);
+
+				log_message('error', 'Ledger CREATED for supplier: ' . $sup->supplier_id);
+			} else {
+				// ⚠️ Exists → CHECK NAME
+				if (trim($ledger->account_name) !== trim($correct_name)) {
+
+					$this->db->where('account_id', $ledger->account_id)
+						->update('general_ledger', [
+							'account_name' => $correct_name
+						]);
+
+					log_message('error', 'Ledger UPDATED for supplier: ' . $sup->supplier_id);
+				}
+			}
+		}
+
+		return true;
 	}
 }

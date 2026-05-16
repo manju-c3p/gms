@@ -383,7 +383,7 @@
 							<th class="border px-3 py-2 text-right w-28">Unit Price</th>
 							<th class="border px-3 py-2 text-center w-24">Markup %</th>
 							<th class="border px-3 py-2 text-right w-28">Selling Price</th>
-							<th class="border px-3 py-2 text-center w-24">Discount</th>
+							<th class="border px-3 py-2 text-center w-24">Discount%</th>
 							<th class="border px-3 py-2 text-center w-24">Dis-Amount</th>
 							<th class="border px-3 py-2 text-right w-32">Total Price</th>
 							<th class="border px-3 py-2 text-center w-20">Action</th>
@@ -604,7 +604,7 @@
 							<th class="border px-3 py-2 text-right w-28">Unit Price</th>
 							<th class="border px-3 py-2 text-center w-24">Markup %</th>
 							<th class="border px-3 py-2 text-right w-28">Selling Price</th>
-							<th class="border px-3 py-2 text-center w-24">Discount</th>
+							<th class="border px-3 py-2 text-center w-24">Discount%</th>
 							<th class="border px-3 py-2 text-center w-24">Dis-Amount</th>
 							<th class="border px-3 py-2 text-right w-32">Total Price</th>
 							<th class="border px-3 py-2 text-center w-20">Action</th>
@@ -832,7 +832,7 @@
 							<th class="border px-3 py-2 text-right w-28">Unit Price</th>
 							<th class="border px-3 py-2 text-center w-24">Markup %</th>
 							<th class="border px-3 py-2 text-right w-28">Selling Price</th>
-							<th class="border px-3 py-2 text-center w-24">Discount</th>
+							<th class="border px-3 py-2 text-center w-24">Discount%</th>
 							<th class="border px-3 py-2 text-center w-24">Dis-Amount</th>
 							<th class="border px-3 py-2 text-right w-32">Total Price</th>
 							<th class="border px-3 py-2 text-center w-20">Action</th>
@@ -2200,7 +2200,7 @@
 	/* ===============================
 	   PART ROW CALCULATION
 	================================ */
-	function updatePartRow(row) {
+	function updatePartRow11(row) {
 
 		const qty = num(row.querySelector(".partQty")?.value || 1);
 		const unit = num(row.querySelector(".unitPrice")?.value);
@@ -2210,6 +2210,37 @@
 		const price = sell > 0 ? sell : unit;
 
 		let total = (qty * price) - disc;
+		if (total < 0) total = 0;
+
+		row.querySelector(".rowTotal").value = total.toFixed(2);
+	}
+
+	function updatePartRow(row) {
+		const qty = num(row.querySelector(".partQty")?.value);
+		const unit = num(row.querySelector(".unitPrice")?.value);
+		const sell = num(row.querySelector(".sellPrice")?.value);
+
+		const discperEl = row.querySelector(".discount");
+		const discAmtEl = row.querySelector(".discountamt");
+
+		let discper = num(discperEl?.value);
+		let disc = num(discAmtEl?.value);
+
+		const price = sell > 0 ? sell : unit;
+		const subtotal = qty * price;
+
+		// ✅ If percentage is entered → calculate discount amount
+		if (discper > 0) {
+			disc = (subtotal * discper) / 100;
+			if (discAmtEl) discAmtEl.value = disc.toFixed(2);
+		}
+		// ✅ If amount is entered manually → derive percentage (optional)
+		else if (disc > 0 && subtotal > 0) {
+			discper = (disc / subtotal) * 100;
+			if (discperEl) discperEl.value = discper.toFixed(2);
+		}
+
+		let total = subtotal - disc;
 		if (total < 0) total = 0;
 
 		row.querySelector(".rowTotal").value = total.toFixed(2);
@@ -2360,6 +2391,22 @@
 		const qty = num(row.querySelector(".partQty").value);
 
 		const selling = unit + (unit * mark / 100);
+
+
+		// ============================================================
+
+
+		const discOut = row.querySelector(".discountamt");
+
+		let val = num(row.querySelector(".discount").value);
+		let discAmt = 0;
+
+		discAmt = (qty * selling) * (val / 100);
+
+		discOut.value = discAmt.toFixed(2);
+
+
+		// ===============================================================================
 
 		row.querySelector(".sellPrice").value = selling.toFixed(2);
 		row.querySelector(".rowTotal").value = (selling * qty).toFixed(2);

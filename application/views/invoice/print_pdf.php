@@ -149,7 +149,8 @@
             <b>Vehicle Details</b><br>
             <b>Plate No:</b> <?= $invoice->registration_no ?><br>
             <b>Model:</b> <?= $invoice->brand ?> <?= $invoice->model ?><br>
-            <b>VIN:</b> <?= $invoice->chassis_no ?>
+            <b>VIN:</b> <?= $invoice->chassis_no ?><br>
+			 <b>KM's:</b> <?= $invoice->km_in ?>
         </td>
 
     </tr>
@@ -255,11 +256,26 @@
 			</tr>
 
 			<?php $i = 1;
-			foreach ($parts as $p): ?>
+			foreach ($parts as $p): 
+			$patype = "";
+				if ($p->labeling == "1") {
+					if ($p->part_type == "New Parts") {
+						$patype = "Original";
+					} else if ($p->part_type == "Aftermarket Parts") {
+						$patype = "Aftermarket";
+					} else if ($p->part_type == "Used Parts") {
+						$patype = "Used";
+					}
+				}
+			?>
 
 				<tr>
 					<td><?= $i++ ?></td>
-					<td><?= $p->part_name ?></td>
+					<td><?= $p->part_name ?>
+				<?= !empty($patype) ? "($patype)" : "" ?><br>
+						<?= !empty($p->partremarks) ? $p->partremarks : "" ?>
+				
+				</td>
 					<td><?= $p->quantity ?></td>
 					<td class="right"><?= number_format($p->unit_price, 2) ?></td>
 					<td class="right"><?= number_format($p->disamount ?? 0, 2) ?></td>

@@ -97,7 +97,7 @@ class Hr_model extends CI_Model
 			$this->session->set_flashdata('error', 'Leave record already exists for the selected employee and dates.');
 		} else {
 			// Record does not exist, insert into the database
-		
+
 			$this->db->insert('employee_leave', $data);
 			$insert_id = $this->db->insert_id();
 			$query = $insert_id;
@@ -245,31 +245,65 @@ class Hr_model extends CI_Model
 		return $id;
 	}
 
+	function get_employee_leave_by_id12($id)
+	{
+		$query = $this->db->query("
+					SELECT 
+						j.*, u.*,
+					u.department_id,u.designation_id,u.mobile,
+						u.employee_name AS user_name, 
+						plm.use_paid_leave,
+						lm.*,
+						lm.remark as approve_remark,
+						j.end_date as enddate
+					FROM employee_leave j
+					JOIN employees u ON j.employee_id = u.employee_id
+					LEFT JOIN paid_leave_master plm 
+						ON j.employee_id = plm.emp_id 
+						AND YEAR(plm.p_date) = YEAR(CURDATE())
+						LEFT JOIN leave_approval lm 
+						ON j.leave_id = lm.approval_leave_id 
+					WHERE j.leave_id = '$id'
+					ORDER BY j.application_date DESC
+				");
+		return $query->result();
+	}
+
 	function get_employee_leave_by_id($id)
 	{
 		$query = $this->db->query("
         SELECT 
             j.*, 
-          u.department,u.contact_no,
-            u.username AS user_name, 
+            u.*,
+            u.department_id,
+            u.designation_id,
+            u.mobile,
+            u.employee_name AS user_name, 
             plm.use_paid_leave,
-			lm.*,
-			lm.remark as approve_remark,
-			j.end_date as enddate
+            lm.*,
+            lm.remark as approve_remark,
+            j.end_date as enddate,
+            lc.category_name AS leave_type_name
         FROM employee_leave j
-        JOIN users u ON j.employee_id = u.id
+        JOIN employees u 
+            ON j.employee_id = u.employee_id
+
+        LEFT JOIN leave_category lc 
+            ON j.leave_type = lc.leave_cat_id   -- ✅ THIS IS THE FIX
+
         LEFT JOIN paid_leave_master plm 
             ON j.employee_id = plm.emp_id 
             AND YEAR(plm.p_date) = YEAR(CURDATE())
-			LEFT JOIN leave_approval lm 
+
+        LEFT JOIN leave_approval lm 
             ON j.leave_id = lm.approval_leave_id 
+
         WHERE j.leave_id = '$id'
         ORDER BY j.application_date DESC
     ");
+
 		return $query->result();
 	}
-
-
 
 
 	function get_employee_leave_approveal_record($id)
@@ -301,23 +335,20 @@ class Hr_model extends CI_Model
 		 e.application_date,
         e.reason,
         e.outside_contact,
-        u.username,
-        u.department,
+        u.employee_name,
+  
         la.leave_status,
         la.admin_md,
         la.hr,
         la.ceo
     ");
 		$this->db->from('employee_leave AS e');
-		$this->db->join('users AS u', 'e.employee_id = u.id', 'inner');
+		$this->db->join('employees AS u', 'e.employee_id = u.employee_id', 'inner');
 		$this->db->join('leave_approval AS la', 'e.leave_id = la.approval_leave_id', 'left');
 
-		// // Manager filter
-		// if (!empty($user_id)) {
-		// 	$this->db->where('u.reporting_mngr', $user_id);
-		// }
 
-		$this->db->order_by('e.application_date', 'DESC');
+
+		$this->db->order_by('e.leave_id', 'DESC');
 		return $this->db->get()->result();
 	}
 
@@ -457,7 +488,7 @@ class Hr_model extends CI_Model
 			$ci->load->helper('log');
 			add_log_entry($user_se_id, 2, $page_name[1], 'leave_approval', 'app_id', $insert_id);
 
-			add_notification($insert_id, $employee, ($status == 1 ? "Leave Approved" : "Leave Rejected"), "Hr/view_leave_corner_application_list");
+			// add_notification($insert_id, $employee, ($status == 1 ? "Leave Approved" : "Leave Rejected"), "Hr/view_leave_corner_application_list");
 		}
 
 		return $insert_id;
@@ -720,7 +751,7 @@ class Hr_model extends CI_Model
 							$timestamp1 = time();
 							$file_tmp = $_FILES["documents_res"]["tmp_name"][$key];
 							$other_file = $timestamp1 . "_" . $filename;
-							move_uploaded_file($file_tmp, "/home/webadmin/gen/Hundredmedia/public/uploded_documents/" . $other_file);
+							move_uploaded_file($file_tmp, "uploads/resignation/" . $other_file);
 
 							$data1 = array(
 								'resig_id' => $insert_id,
@@ -778,6 +809,7 @@ class Hr_model extends CI_Model
 		$this->db->where('resig_id', $id);
 		$res = $this->db->update('employee_resignation', $data);
 
+
 		if ($id) {
 			if (!empty($_FILES["documents_res"])) {
 				$allowedExts = array("jpeg", "jpg", "png", "doc", "pdf");
@@ -789,7 +821,7 @@ class Hr_model extends CI_Model
 							$timestamp1 = time();
 							$file_tmp = $_FILES["documents_res"]["tmp_name"][$key];
 							$other_file = $timestamp1 . "_" . $filename;
-							move_uploaded_file($file_tmp, "/home/webadmin/gen/Hundredmedia/public/uploded_documents/" . $other_file);
+							move_uploaded_file($file_tmp, "uploads/resignation/" . $other_file);
 
 							$data1 = array(
 								'resig_id' => $id,
@@ -827,7 +859,7 @@ class Hr_model extends CI_Model
 			log_message('error', $current_url);
 			$created_id = $this->session->userdata('user_id');
 			$this->load->helper('log');
-			$notice = add_notification_in_master($id, $current_url, "$ra_code Resignation Update successfully", "Hr/edit_emp_regignation/$id");
+			// $notice = add_notification_in_master($id, $current_url, "$ra_code Resignation Update successfully", "Hr/edit_emp_regignation/$id");
 
 			/////////////////////////////////////////end notification manage////////////////////////////////////////////
 			/* end notification */
@@ -841,7 +873,7 @@ class Hr_model extends CI_Model
 
 	function get_employee_resignation_list()
 	{
-		$query = $this->db->query("select r.*, u.username as name from employee_resignation r, users u where r.employee_id=u.id order by resignation_date desc ");
+		$query = $this->db->query("select r.*, u.employee_name as name from employee_resignation r, employees u where r.employee_id=u.employee_id order by resignation_date desc ");
 		return $query->result();
 	}
 
@@ -857,13 +889,13 @@ class Hr_model extends CI_Model
 	function get_resignation_active_list()
 	{
 		$query = $this->db->query("
-        SELECT *, id
-        FROM users
-        WHERE id NOT IN (
+        SELECT *, employee_id
+        FROM employees
+        WHERE employee_id NOT IN (
             SELECT employee_id
             FROM employee_resignation
         )
-        ORDER BY username
+        ORDER BY employee_name
     ");
 		return $query->result();
 	}
@@ -884,7 +916,7 @@ class Hr_model extends CI_Model
 	{
 		$query = $this->db->query("SELECT r.*, u.*
 								   FROM employee_resignation AS r
-								    JOIN users AS u ON r.employee_id = u.id
+								    JOIN employees AS u ON r.employee_id = u.employee_id
 								   WHERE resig_id = '$id'
 								   ORDER BY r.resignation_date DESC");
 
@@ -957,7 +989,7 @@ class Hr_model extends CI_Model
 			$ci = get_instance();
 			$ci->load->helper('log');
 			$log_msg = add_log_entry($user_se_id, 2, $page_name[1], 'employee_document_details', 'emp_docId', $id);
-			$notice = add_notification($id, $passport_relese, "Release Passport Updated", "Hr/edit_passport_release/$id");
+			// $notice = add_notification($id, $passport_relese, "Release Passport Updated", "Hr/edit_passport_release/$id");
 
 			return true;
 		} else {
@@ -973,7 +1005,7 @@ class Hr_model extends CI_Model
 	}
 	function get_passport_release_list_by_id($id)
 	{
-		$query = $this->db->query("SELECT e.*, u.*,e.remark as rem FROM employee_document_details AS e JOIN users AS u ON e.emp_id = u.id WHERE e.status = 'passport release' AND emp_docId = '$id'ORDER BY e.emp_docId DESC LIMIT 1");
+		$query = $this->db->query("SELECT e.*, u.*,e.remark as rem FROM employee_document_details AS e JOIN employees AS u ON e.emp_id = u.employee_id WHERE e.status = 'passport release' AND emp_docId = '$id'ORDER BY e.emp_docId DESC LIMIT 1");
 		return $query->result();
 	}
 
@@ -981,7 +1013,7 @@ class Hr_model extends CI_Model
 
 	function get_user_record_by_id($id)
 	{
-		$query = $this->db->query("SELECT u.*, e.* FROM users u JOIN employee_document_details e ON u.user_id = e.emp_id WHERE e.emp_docId = '$id' AND document_name ='passport' ORDER BY emp_docId DESC LIMIT 1");
+		$query = $this->db->query("SELECT u.*, e.* FROM employees u JOIN employee_document_details e ON u.employee_id = e.emp_id WHERE e.emp_docId = '$id' AND document_name ='passport' ORDER BY emp_docId DESC LIMIT 1");
 		return $query->result();
 	}
 
@@ -1163,7 +1195,7 @@ class Hr_model extends CI_Model
 
 
 
-	function add_emp_attendance_data()
+	function add_emp_attendance_dataold()
 	{
 		$checked_users = isset($_POST['checkbox']) ? $_POST['checkbox'] : array();
 		$insert_id = null;
@@ -1203,12 +1235,61 @@ class Hr_model extends CI_Model
 
 		return $insert_id;
 	}
+	function add_emp_attendance_data()
+	{
+		$checked_users = isset($_POST['checkbox']) ? $_POST['checkbox'] : array();
 
+		if (empty($_POST['user_id'])) {
+			return false;
+		}
+
+		$attendance_date = date('Y-m-d', strtotime($this->input->post('attendance_date')));
+
+		$insert_id = null;
+
+		foreach ($_POST['user_id'] as $index => $user_id) {
+
+			// decide attendance status
+			if (in_array($user_id, $checked_users)) {
+				$status = $this->input->post('attendance');   // usually 'P'
+				$in_time  = isset($_POST['in_time'][$index]) ? $_POST['in_time'][$index] : null;
+				$out_time = isset($_POST['out_time'][$index]) ? $_POST['out_time'][$index] : null;
+			} else {
+				$status = 'A';     // 🔥 ABSENT AUTO
+				$in_time = null;
+				$out_time = null;
+			}
+
+			// prevent duplicate entry same date
+			$this->db->where('employee_id', $user_id);
+			$this->db->where('Attendance_date', $attendance_date);
+			$exists = $this->db->get('employee_attendance')->row();
+
+			if (!$exists) {
+
+				$data = array(
+					'employee_id' => $user_id,
+					'Attendance_date' => $attendance_date,
+					'attendence' => $status,
+					'in_time' => $in_time,
+					'out_time' => $out_time,
+					'created_by' => $this->session->userdata('user_id'),
+					'created_date' => date('Y-m-d H:i:s'),
+					'type' => 'M'
+				);
+
+				$this->db->insert('employee_attendance', $data);
+				$insert_id = $this->db->insert_id();
+			}
+		}
+
+		return $insert_id;
+	}
 
 
 	function get_emp_attendance_list()
 	{
-		$query = $this->db->query("select r.*,u.user_code, u.user_name as name from employee_attendance r, users u where r.employee_id=u.user_id order by Attendance_date desc ");
+		$query = $this->db->query("select r.*,u.employee_code, u.employee_name as name from employee_attendance r, employees u where r.employee_id=u.employee_id order by Attendance_date desc ");
 		return $query->result();
 	}
 
@@ -1233,22 +1314,38 @@ class Hr_model extends CI_Model
 	{
 		$today = date('Y-m-d');
 
+		// 	$sql = "
+		//     SELECT 
+		//         ea.*,
+		//         u.id,
+		//         u.username AS name,
+		//         cr.username AS created_by_user
+		//     FROM users u
+		//     LEFT JOIN employee_attendance ea
+		//         ON ea.employee_id = u.id
+		//         AND ea.Attendance_date = ?
+		//         AND ea.type != 'I'
+		//     LEFT JOIN users cr
+		//         ON cr.id = ea.created_by
+		//     WHERE u.status = 'Active'
+		//     ORDER BY u.username ASC
+		// ";
 		$sql = "
-        SELECT 
-            ea.*,
-            u.id,
-            u.username AS name,
-            cr.username AS created_by_user
-        FROM users u
-        LEFT JOIN employee_attendance ea
-            ON ea.employee_id = u.id
-            AND ea.Attendance_date = ?
-            AND ea.type != 'I'
-        LEFT JOIN users cr
-            ON cr.id = ea.created_by
-        WHERE u.status = 'Active'
-        ORDER BY u.username ASC
-    ";
+    SELECT 
+        ea.*,
+        e.employee_id,
+        e.employee_name AS name,
+        cr.employee_name AS created_by_user
+    FROM employees e
+    LEFT JOIN employee_attendance ea
+        ON ea.employee_id = e.employee_id
+        AND ea.Attendance_date = ?
+        AND ea.type != 'I'
+    LEFT JOIN employees cr
+        ON cr.employee_id = ea.created_by
+    WHERE e.status = 'Active'
+    ORDER BY e.employee_name ASC
+";
 
 		$query = $this->db->query($sql, [$today]);
 
@@ -1442,13 +1539,12 @@ class Hr_model extends CI_Model
 			if ($attendance_type == 'I') {
 
 				$sql = "
-                SELECT ea.*,  u.id, u.username AS name, NULL AS created_by_user
-                FROM users u
+                SELECT ea.*,  u.employee_id, u.employee_name AS name, NULL AS created_by_user
+                FROM employees u
                 LEFT JOIN employee_attendance ea
-                    ON ea.ivms_id = u.ivms_id
-                    AND ea.Attendance_date BETWEEN ? AND ?
+                    ON ea.Attendance_date BETWEEN ? AND ?
                     AND ea.type = 'I'
-                WHERE u.id = ?
+                WHERE u.employee_id = ?
                   AND u.status = 'Active'
                 ORDER BY ea.Attendance_date DESC
             ";
@@ -1456,15 +1552,15 @@ class Hr_model extends CI_Model
 			} else {
 
 				$sql = "
-                SELECT ea.*,  u.id, u.username AS name, cr.username AS created_by_user
-                FROM users u
+                SELECT ea.*,  u.employee_id, u.employee_name AS name, cr.employee_name AS created_by_user
+                FROM employees u
                 LEFT JOIN employee_attendance ea
-                    ON ea.employee_id = u.id
+                    ON ea.employee_id = u.employee_id
                     AND ea.Attendance_date BETWEEN ? AND ?
                     AND ea.type = ?
-                LEFT JOIN users cr
-                    ON cr.id = ea.created_by
-                WHERE u.id = ?
+                LEFT JOIN employees cr
+                    ON cr.employee_id = ea.created_by
+                WHERE u.employee_id = ?
                   AND u.status = 'Active'
                 ORDER BY ea.Attendance_date DESC
             ";
@@ -1477,26 +1573,25 @@ class Hr_model extends CI_Model
 
 			$sql = "
             (
-                SELECT ea.*,  u.id, u.username AS name, cr.username AS created_by_user
-                FROM users u
+                SELECT ea.*,  u.employee_id, u.employee_name AS name, cr.employee_name AS created_by_user
+                FROM employees u
                 LEFT JOIN employee_attendance ea
-                    ON ea.employee_id = u.id
+                    ON ea.employee_id = u.employee_id
                     AND ea.Attendance_date BETWEEN ? AND ?
                     AND ea.type != 'I'
-                LEFT JOIN users cr
-                    ON cr.id = ea.created_by
-                WHERE u.id = ?
+                LEFT JOIN employees cr
+                    ON cr.employee_id = ea.created_by
+                WHERE u.employee_id = ?
                   AND u.status = 'Active'
             )
             UNION ALL
             (
-                SELECT ea.*,  u.id, u.username AS name, NULL AS created_by_user
-                FROM users u
+                SELECT ea.*,  u.employee_id, u.employee_name AS name, NULL AS created_by_user
+                FROM employees u
                 LEFT JOIN employee_attendance ea
-                    ON ea.ivms_id = u.ivms_id
-                    AND ea.Attendance_date BETWEEN ? AND ?
+                    ON ea.Attendance_date BETWEEN ? AND ?
                     AND ea.type = 'I'
-                WHERE u.user_id = ?
+                WHERE u.employee_id = ?
                   AND u.status = 'Active'
             )
             ORDER BY Attendance_date DESC
@@ -1511,11 +1606,10 @@ class Hr_model extends CI_Model
 			if ($attendance_type == 'I') {
 
 				$sql = "
-                SELECT ea.*,  u.id, u.username AS name, NULL AS created_by_user
-                FROM users u
+                SELECT ea.*,  u.employee_id, u.employee_name AS name, NULL AS created_by_user
+                FROM employees u
                 LEFT JOIN employee_attendance ea
-                    ON ea.ivms_id = u.ivms_id
-                    AND ea.Attendance_date BETWEEN ? AND ?
+                    ON  ea.Attendance_date BETWEEN ? AND ?
                     AND ea.type = 'I'
                 WHERE u.status = 'Active'
                 ORDER BY ea.Attendance_date DESC
@@ -1524,15 +1618,15 @@ class Hr_model extends CI_Model
 			} else {
 
 				$sql = "
-                SELECT ea.*, u.user_code, u.user_id, u.user_name AS name, cr.user_name AS created_by_user
-                FROM users u
+                SELECT ea.*, u.employee_code, u.employee_id, u.employee_name AS name, cr.employee_name AS created_by_user
+                FROM employees u
                 LEFT JOIN employee_attendance ea
-                    ON ea.employee_id = u.user_id
+                    ON ea.employee_id = u.employee_id
                     AND ea.Attendance_date BETWEEN ? AND ?
                     AND ea.type = ?
-                LEFT JOIN users cr
-                    ON cr.user_id = ea.created_by
-                WHERE u.active = 0
+                LEFT JOIN employees cr
+                    ON cr.employee_id = ea.created_by
+                WHERE u.status = 'Active'
                 ORDER BY ea.Attendance_date DESC
             ";
 				$params = [$from, $to, $attendance_type];
@@ -1544,25 +1638,24 @@ class Hr_model extends CI_Model
 
 			$sql = "
             (
-                SELECT ea.*, u.user_code, u.user_id, u.user_name AS name, cr.user_name AS created_by_user
-                FROM users u
+                SELECT ea.*, u.employee_code, u.employee_id, u.employee_name AS name, cr.employee_name AS created_by_user
+                FROM employees u
                 LEFT JOIN employee_attendance ea
-                    ON ea.employee_id = u.user_id
+                    ON ea.employee_id = u.employee_id
                     AND ea.Attendance_date BETWEEN ? AND ?
                     AND ea.type != 'I'
-                LEFT JOIN users cr
-                    ON cr.user_id = ea.created_by
-                WHERE u.active = 0
+                LEFT JOIN employees cr
+                    ON cr.employee_id = ea.created_by
+                WHERE u.status = 'Active'
             )
             UNION ALL
             (
-                SELECT ea.*, u.user_code, u.user_id, u.user_name AS name, NULL AS created_by_user
-                FROM users u
+                SELECT ea.*, u.employee_code, u.employee_id, u.employee_name AS name, NULL AS created_by_user
+                FROM employees u
                 LEFT JOIN employee_attendance ea
-                    ON ea.ivms_id = u.ivms_id
-                    AND ea.Attendance_date BETWEEN ? AND ?
+                    ON ea.Attendance_date BETWEEN ? AND ?
                     AND ea.type = 'I'
-                WHERE u.active = 0
+                WHERE u.status = 'Active'
             )
             ORDER BY Attendance_date DESC
         ";
@@ -1732,32 +1825,44 @@ ORDER BY Attendance_date DESC
 	// 	return $query->result();
 	// }
 
-function get_emp_attendance()
-{
-    $a_date_input = $this->input->post('a_date');
+	function get_emp_attendance()
+	{
+		$a_date_input = $this->input->post('a_date');
 
-    if (!empty($a_date_input)) {
-        $a_date = date('Y-m-d', strtotime($a_date_input));
-    } else {
-        $a_date = date('Y-m-d'); // default to today
-    }
+		if (!empty($a_date_input)) {
+			$a_date = date('Y-m-d', strtotime($a_date_input));
+		} else {
+			$a_date = date('Y-m-d'); // default to today
+		}
 
-    $sql = "
-        SELECT u.id, u.username
-        FROM users u
-        WHERE u.status = 'Active'
-        AND u.id NOT IN (
-            SELECT ea.employee_id
-            FROM employee_attendance ea
-            WHERE ea.Attendance_date = ?
-            AND ea.employee_id IS NOT NULL
-        )
-        ORDER BY u.username ASC
-    ";
+		// $sql = "
+		//     SELECT u.id, u.username
+		//     FROM users u
+		//     WHERE u.status = 'Active'
+		//     AND u.id NOT IN (
+		//         SELECT ea.employee_id
+		//         FROM employee_attendance ea
+		//         WHERE ea.Attendance_date = ?
+		//         AND ea.employee_id IS NOT NULL
+		//     )
+		//     ORDER BY u.username ASC
+		// ";
+		$sql = "
+    SELECT e.employee_id, e.employee_name
+    FROM employees e
+    WHERE e.status = 'Active'
+    AND e.employee_id NOT IN (
+        SELECT ea.employee_id
+        FROM employee_attendance ea
+        WHERE ea.Attendance_date = ?
+        AND ea.employee_id IS NOT NULL
+    )
+    ORDER BY e.employee_name ASC
+";
 
-    $query = $this->db->query($sql, [$a_date]);
-    return $query->result();
-}
+		$query = $this->db->query($sql, [$a_date]);
+		return $query->result();
+	}
 
 
 
@@ -2031,7 +2136,7 @@ function get_emp_attendance()
 								$timestamp1 = time();
 								$file_tmp = $_FILES["documents"]["tmp_name"][$i];
 								$other_file = $timestamp1 . "_" . $_FILES['documents']['name'][$i];
-								move_uploaded_file($file_tmp, "/home/webadmin/gen/Hundredmedia/public/uploded_documents/" . $other_file);
+								move_uploaded_file($file_tmp, "uploads/corporatefiles/" . $other_file);
 								$data1 = array(
 									'cop_id' => $insert_id,
 									'employee_id' => $this->session->userdata('user_id'),
@@ -2074,7 +2179,125 @@ function get_emp_attendance()
 		return $insert_id;
 	}
 
-	function update_corporate_file_data($id)
+	public function update_corporate_file_data($id)
+	{
+		/* ===============================
+       1. UPDATE MAIN CORPORATE FILE
+    =============================== */
+		$data = array(
+			'document_name' => $this->input->post('doc_name'),
+			'card_no'       => $this->input->post('card_no'),
+			'expiry_date'   => date('Y-m-d', strtotime($this->input->post('exp_date'))),
+			'remark'        => $this->input->post('remark'),
+		);
+
+		$this->db->where('cop_id', $id);
+		$res = $this->db->update('corporate_file', $data);
+
+
+		/* ===============================
+       2. DELETE REMOVED FILES
+    =============================== */
+		$existing_ids = $this->input->post('existing_files'); // remaining files from UI
+
+		if (!empty($existing_ids)) {
+
+			$this->db->where('cop_id', $id);
+			$this->db->where_not_in('doc_id', $existing_ids);
+			$files_to_delete = $this->db->get('employee_corporate_documents')->result();
+
+			// delete physical files
+			foreach ($files_to_delete as $f) {
+				$path = "uploads/corporatefiles/" . $f->document_path;
+				if (file_exists($path)) {
+					unlink($path);
+				}
+			}
+
+			// delete from DB
+			$this->db->where('cop_id', $id);
+			$this->db->where_not_in('doc_id', $existing_ids);
+			$this->db->delete('employee_corporate_documents');
+		} else {
+			// if all files removed
+			$files = $this->db->get_where('employee_corporate_documents', ['cop_id' => $id])->result();
+
+			foreach ($files as $f) {
+				$path = "uploads/corporatefiles/" . $f->document_path;
+				if (file_exists($path)) {
+					unlink($path);
+				}
+			}
+
+			$this->db->delete('employee_corporate_documents', ['cop_id' => $id]);
+		}
+
+
+		/* ===============================
+       3. UPLOAD NEW FILES
+    =============================== */
+		if (!empty($_FILES['documents']['name'][0])) {
+
+			$allowedExts = array("jpeg", "jpg", "png", "doc", "docx", "pdf");
+
+			for ($i = 0; $i < count($_FILES['documents']['name']); $i++) {
+
+				if ($_FILES['documents']['name'][$i] != '') {
+
+					$file_name = $_FILES["documents"]["name"][$i];
+					$file_tmp  = $_FILES["documents"]["tmp_name"][$i];
+					$file_size = $_FILES["documents"]["size"][$i];
+
+					$temp      = explode(".", $file_name);
+					$extension = strtolower(end($temp));
+
+					if ($file_size < 52428800 && in_array($extension, $allowedExts)) {
+
+						if ($_FILES["documents"]["error"][$i] == 0) {
+
+							// unique file name
+							$new_file = time() . "_" . uniqid() . "." . $extension;
+
+							// FIXED PATH (important)
+							$upload_path = "uploads/corporatefiles/" . $new_file;
+
+							if (move_uploaded_file($file_tmp, $upload_path)) {
+
+								$insert_data = array(
+									'cop_id'        => $id,
+									'employee_id'   => $this->session->userdata('user_id'),
+									'document_path' => $new_file,
+								);
+
+								$this->db->insert('employee_corporate_documents', $insert_data);
+							}
+						}
+					}
+				}
+			}
+		}
+
+
+		/* ===============================
+       4. LOG + RESPONSE
+    =============================== */
+		if ($res) {
+
+			// Log
+			$user_se_id = $this->session->userdata('user_id');
+			$page_name  = explode('index.php/', $_SERVER['PHP_SELF']);
+
+			$ci = get_instance();
+			$ci->load->helper('log');
+			add_log_entry($user_se_id, 2, $page_name[1], 'corporate_file', 'cop_id', $id);
+
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	function update_corporate_file_data111($id)
 	{
 		$data = array(
 			'document_name' => $this->input->post('doc_name'),
@@ -2104,7 +2327,7 @@ function get_emp_attendance()
 								$timestamp1 = time();
 								$file_tmp = $_FILES["documents"]["tmp_name"][$i];
 								$other_file = $timestamp1 . "_" . $_FILES['documents']['name'][$i];
-								move_uploaded_file($file_tmp, "/home/webadmin/gen/Hundredmedia/public/uploded_documents/" . $other_file);
+								move_uploaded_file($file_tmp, "uploads/corporatefiles" . $other_file);
 								$data1 = array(
 									'cop_id' => $id,
 									'employee_id' => $this->session->userdata('user_id'),
@@ -2358,7 +2581,13 @@ function get_emp_attendance()
 
 	function get_salary_structure_list()
 	{
-		$query = $this->db->query("select  j.*, u.username as name from salary_structure j, users u where j.emp_id=u.id  order by effective_date desc ");
+		// $query = $this->db->query("select  j.*, u.username as name from salary_structure j, users u where j.emp_id=u.id  order by effective_date desc ");
+		$query = $this->db->query("
+    SELECT j.*, e.employee_name AS name
+    FROM salary_structure j
+    JOIN employees e ON j.emp_id = e.employee_id
+    ORDER BY j.effective_date DESC
+");
 		return $query->result();
 	}
 
@@ -2383,8 +2612,8 @@ function get_emp_attendance()
 		return $query->result();
 	}
 	function get_active_basic_salary()
-{
-    $query = $this->db->query("
+	{
+		$query = $this->db->query("
         SELECT *
         FROM employees
         WHERE employee_id NOT IN (
@@ -2394,8 +2623,8 @@ function get_emp_attendance()
         ORDER BY employee_name
     ");
 
-    return $query->result();
-}
+		return $query->result();
+	}
 
 	function get_salary_structure_by_id($id)
 	{
@@ -2628,6 +2857,7 @@ function get_emp_attendance()
 			'remark' => $this->input->post('remark'),
 			'created_by' => $this->session->userdata('user_id'),
 			'created_data' => date('Y-m-d'),
+			'salary_advance_taken' => $this->input->post('advance_taken'),
 		);
 		$this->db->insert('employee_monthly_salary', $data);
 		$insert_id = $this->db->insert_id();
@@ -2655,7 +2885,7 @@ function get_emp_attendance()
 
 
 
-	function add_emp_monthly_salary()
+	function add_emp_monthly_salary13_4()
 	{
 		$checked_users = isset($_POST['checkbox']) ? $_POST['checkbox'] : array();
 
@@ -2663,10 +2893,11 @@ function get_emp_attendance()
 		if (
 			empty($_POST['nuser_id']) || empty($_POST['working_days']) || empty($_POST['leave_days']) ||
 			empty($_POST['present_days']) || empty($_POST['usep_leave']) || empty($_POST['payment_days']) ||
-			empty($_POST['t_overtime']) || empty($_POST['amt_overtime']) || empty($_POST['extra_allowances']) || empty($_POST['extra_deduction']) || empty($_POST['basic_salary']) ||
+			empty($_POST['basic_salary']) ||
 			empty($_POST['total_allowances']) || empty($_POST['total_deduction']) || empty($_POST['gross_salary']) || empty($_POST['holiday_days']) ||
 			empty($_POST['net_pay']) || empty($_POST['remark'])
 		) {
+			log_message("error", "exiting");
 			return false; // Or handle the error accordingly
 		}
 
@@ -2684,14 +2915,14 @@ function get_emp_attendance()
 				'paid_leave' => $_POST['usep_leave'][$user_index],
 				'payment_days' => $_POST['payment_days'][$user_index],
 				'company_holiday' => $_POST['holiday_days'][$user_index],
-				'overtime' => $_POST['t_overtime'][$user_index],
-				'overtime_amt' => $_POST['amt_overtime'][$user_index],
+				// 'overtime' => $_POST['t_overtime'][$user_index],
+				// 'overtime_amt' => $_POST['amt_overtime'][$user_index],
 				'basic_salary' => $_POST['basic_salary'][$user_index],
 				'total_allowance' => $_POST['total_allowances'][$user_index],
 				'total_deduction' => $_POST['total_deduction'][$user_index],
 
-				'extra_allowances' => $_POST['extra_allowances'][$user_index],
-				'extra_deduction' => $_POST['extra_deduction'][$user_index],
+				// 'extra_allowances' => $_POST['extra_allowances'][$user_index],
+				// 'extra_deduction' => $_POST['extra_deduction'][$user_index],
 
 				'gross_salary' => $_POST['gross_salary'][$user_index],
 				'net_salary' => $_POST['net_pay'][$user_index],
@@ -2788,7 +3019,7 @@ function get_emp_attendance()
 			log_message('error', $current_url);
 			$created_id = $this->session->userdata('user_id');
 			$this->load->helper('log');
-			$notice = add_notification_in_master($insert_id, $current_url, "$month_name - $year Salary Generated", "Hr/view_emp_monthly_salary_list");
+			// $notice = add_notification_in_master($insert_id, $current_url, "$month_name - $year Salary Generated", "Hr/view_emp_monthly_salary_list");
 
 			/////////////////////////////////////////end notification manage////////////////////////////////////////////
 
@@ -2797,14 +3028,254 @@ function get_emp_attendance()
 		return $insert_id;
 	}
 
+	public function add_emp_monthly_salaryold()
+	{
+		$checked_users = isset($_POST['checkbox']) ? $_POST['checkbox'] : array();
+		$all_users     = $_POST['nuser_id'];
+
+		// ✅ If none selected → take all
+		$users_to_process = !empty($checked_users) ? $checked_users : $all_users;
+
+		foreach ($users_to_process as $nuser_id) {
+
+			$user_index = array_search($nuser_id, $all_users);
+
+			// =============================
+			// 1. INSERT SALARY
+			// =============================
+			$data = array(
+				'emp_id' => $nuser_id,
+				'salary_month' => date('Y-m-01', strtotime($this->input->post('effective_date_hidden'))),
+				'working_days' => $_POST['working_days'][$user_index],
+				'leave_days' => $_POST['leave_days'][$user_index],
+				'present_days' => $_POST['present_days'][$user_index],
+				'paid_leave' => $_POST['usep_leave'][$user_index],
+				'payment_days' => $_POST['payment_days'][$user_index],
+				'company_holiday' => $_POST['holiday_days'][$user_index],
+				'basic_salary' => $_POST['basic_salary'][$user_index],
+				'total_allowance' => $_POST['total_allowances'][$user_index],
+				'total_deduction' => $_POST['total_deduction'][$user_index],
+				'gross_salary' => $_POST['gross_salary'][$user_index],
+				'net_salary' => $_POST['net_pay'][$user_index],
+				'remark' => $_POST['remark'][$user_index],
+			);
+
+			$this->db->insert('employee_monthly_salary', $data);
+			$salary_id = $this->db->insert_id();
+
+			// =============================
+			// 2. INSERT SALARY DETAILS
+			// =============================
+			$q = $this->db->query("
+            SELECT sd.* 
+            FROM salary_structure sm 
+            JOIN salary_structure_details sd ON sm.sid = sd.sid 
+            WHERE sm.emp_id = $nuser_id
+        ");
+
+			foreach ($q->result() as $p) {
+				$this->db->insert('employee_monthly_salary_details', [
+					'sid' => $salary_id,
+					'allowance_id' => $p->allowance_id,
+					'amount' => $p->amount
+				]);
+			}
+
+			// =============================
+			// 3. ACCOUNTING ENTRY (PER EMPLOYEE)
+			// =============================
+
+			$net_salary = $_POST['net_pay'][$user_index];
+
+			if ($net_salary > 0) {
+
+				// 🔹 Debit (Salary Expense)
+				$this->db->insert('voucher_transaction', [
+					'voucher_date' => date('Y-m-01', strtotime($this->input->post('effective_date_hidden'))),
+					'voucher_type' => 'MS',
+					'account_id' => $_POST['inv_debtor'][0], // Salary Expense
+					'amount' => $net_salary,
+					'drcr_type' => 'Dr',
+					'trans_id' => $salary_id,
+					'trans_type' => 'MS',
+					'customer_id' => $nuser_id, // ✅ IMPORTANT
+					'recordCreatedBy' => $this->session->userdata('user_id')
+				]);
+
+				// 🔹 Credit (Salary Payable)
+				$this->db->insert('voucher_transaction', [
+					'voucher_date' => date('Y-m-01', strtotime($this->input->post('effective_date_hidden'))),
+					'voucher_type' => 'MS',
+					'account_id' => $_POST['inv_creditor'][0], // Salary Payable
+					'amount' => $net_salary,
+					'drcr_type' => 'Cr',
+					'trans_id' => $salary_id,
+					'trans_type' => 'MS',
+					'customer_id' => $nuser_id, // ✅ IMPORTANT
+					'recordCreatedBy' => $this->session->userdata('user_id')
+				]);
+			}
+		}
+
+		return true;
+	}
+
+	// =======================================================
+	public function generate_salvoucher_code($prefix)
+	{
+		$year = date('y');
+		$prefix_full = $prefix . '/' . $year . '/';
+
+		$this->db->like('voucher_code', $prefix_full, 'after');
+		$this->db->order_by('voucher_code', 'DESC');
+		$this->db->limit(1);
+
+		$query = $this->db->get('voucher_transaction');
+
+		if ($query->num_rows() > 0) {
+			$last_code = $query->row()->voucher_code;
+			$last_no = (int) substr($last_code, -5);
+			$next_no = $last_no + 1;
+		} else {
+			$next_no = 1;
+		}
+
+		return $prefix_full . str_pad($next_no, 5, '0', STR_PAD_LEFT);
+	}
 
 
 
+	public function add_emp_monthly_salary()
+	{
+		$this->db->trans_start();
+
+		$checked_users = isset($_POST['checkbox']) ? $_POST['checkbox'] : [];
+		$all_users     = $_POST['nuser_id'];
+
+		$users_to_process = !empty($checked_users) ? $checked_users : $all_users;
+
+		// ✅ Generate ONE voucher for batch
+		$voucher_no = $this->generate_salvoucher_code('SAL');
+
+		$salary_date = date('Y-m-01', strtotime($this->input->post('effective_date_hidden')));
+		$user_id     = $this->session->userdata('user_id');
+
+		foreach ($users_to_process as $nuser_id) {
+
+			$user_index = array_search($nuser_id, $all_users);
+
+			// =============================
+			// 1. INSERT SALARY MASTER
+			// =============================
+			$data = [
+				'emp_id'           => $nuser_id,
+				'salary_month'     => $salary_date,
+				'working_days'     => $_POST['working_days'][$user_index],
+				'leave_days'       => $_POST['leave_days'][$user_index],
+				'present_days'     => $_POST['present_days'][$user_index],
+				'paid_leave'       => $_POST['usep_leave'][$user_index],
+				'payment_days'     => $_POST['payment_days'][$user_index],
+				'company_holiday'  => $_POST['holiday_days'][$user_index],
+				'basic_salary'     => $_POST['basic_salary'][$user_index],
+				'total_allowance'  => $_POST['total_allowances'][$user_index],
+				'total_deduction'  => $_POST['total_deduction'][$user_index],
+				'gross_salary'     => $_POST['gross_salary'][$user_index],
+				'net_salary'       => $_POST['net_pay'][$user_index],
+				'remark'           => $_POST['remark'][$user_index],
+				'salary_advance_taken' =>  $_POST['advance_taken'][$user_index],
+			];
+
+			$this->db->insert('employee_monthly_salary', $data);
+			$salary_id = $this->db->insert_id();
+
+			// =============================
+			// 2. INSERT SALARY DETAILS
+			// =============================
+			$q = $this->db->query("
+            SELECT sd.* 
+            FROM salary_structure sm 
+            JOIN salary_structure_details sd ON sm.sid = sd.sid 
+            WHERE sm.emp_id = $nuser_id
+        ");
+
+			foreach ($q->result() as $p) {
+				$this->db->insert('employee_monthly_salary_details', [
+					'sid'          => $salary_id,
+					'allowance_id' => $p->allowance_id,
+					'amount'       => $p->amount
+				]);
+			}
+		}
+
+		// ========================== Accounts Entry =========================
+
+		/// debit entry 
+		for ($i = 0; $i < count($_POST['inv_debtor']); $i++) {
+			$debtor = $_POST['inv_debtor'][$i];
+			$dr_amount = $_POST['inv_dr_amount'][$i];
+			if ($dr_amount > 0) {
+				$data = array(
+					// 'voucher_code' => $AccountCode,
+					'voucher_date' => date('Y-m-01', strtotime($this->input->post('effective_date_hidden'))),
+					'voucher_type' => 'MS',
+					/// po invoice  entry
+					// 'customer_id' => $this->input->post('supplier_id'),
+					'account_id' => $debtor,
+					'amount' => $dr_amount,
+					'drcr_type' => 'Dr',
+					'trans_id' => $salary_id,
+					'trans_type' => 'MS',
+					'recordCreatedBy' => $this->session->userdata('user_id')
+				);
+				$this->db->insert('voucher_transaction', $data);
+				$vid = $this->db->insert_id();
+			}
+		}
+		//credit entry
+		for ($i = 0; $i < count($_POST['inv_creditor']); $i++) {
+			$creditor = $_POST['inv_creditor'][$i];
+			$cr_amount = $_POST['inv_cr_amount'][$i];
+			if ($cr_amount > 0) {
+				$data = array(
+					// 'voucher_code' => $AccountCode,
+					'voucher_date' => date('Y-m-01', strtotime($this->input->post('effective_date_hidden'))),
+					'voucher_type' => 'MS',
+					/// po invoice  entry
+					// 'customer_id' => $this->input->post('supplier_id'),
+					'account_id' => $creditor,
+					'amount' => $cr_amount,
+					'drcr_type' => 'Cr',
+					'trans_id' => $salary_id,
+					'trans_type' => 'MS',
+					'recordCreatedBy' => $this->session->userdata('user_id')
+				);
+				$this->db->insert('voucher_transaction', $data);
+				$vid = $this->db->insert_id();
+			}
+		}
+		if ($salary_id) {
+			$user_se_id = $this->session->userdata('user_id');
+			$page_name = explode('index.php/', $_SERVER['PHP_SELF']);
+			$ci = get_instance();
+			$ci->load->helper('log');
+			add_log_entry($user_se_id, 1, $page_name[1], 'employee_monthly_salary', 'sid', $salary_id);
+		}
+		// ==========================================
+
+
+		$this->db->trans_complete();
+
+		return $this->db->trans_status();
+	}
+
+
+	// ====================================================================
 
 
 	function get_emp_monthly_salary()
 	{
-		$query = $this->db->query("select * from employee_monthly_salary s, users u where s.emp_id=u.user_id order by salary_month  desc");
+		// $query = $this->db->query("select * from employee_monthly_salary s, users u where s.emp_id=u.user_id order by salary_month  desc");
+		$query = $this->db->query("select * from employee_monthly_salary s, employees u where s.emp_id=u.employee_id order by salary_month  desc");
 		return $query->result();
 	}
 
@@ -2818,13 +3289,39 @@ function get_emp_attendance()
 		$data['from'] = $from_date;
 		$data['to'] = $to_date;
 
-		$query = $this->db->query("select one.*, two.account_id from (SELECT s.*, user_id,u.user_code, u.user_name FROM employee_monthly_salary s, users u WHERE s.emp_id = u.user_id AND s.salary_month BETWEEN '{$data['from']}' AND '{$data['to']}'  ORDER BY s.salary_month DESC)as one left join(select * from general_ledger where group_no=38)as two on(one.user_id=two.employee_id)");
+		// $query = $this->db->query("select one.*, two.account_id from (SELECT s.*, employee_id,u.employee_code, u.employee_name FROM employee_monthly_salary s, employees u WHERE s.emp_id = u.employee_id AND s.salary_month BETWEEN '{$data['from']}' AND '{$data['to']}'  ORDER BY s.salary_month DESC)as one left join(select * from general_ledger where group_no=38)as two on(one.employee_id=two.employee_id)");
+		$query = $this->db->query("
+			SELECT 
+				one.*, 
+				two.account_id 
 
+			FROM
+			(
+				SELECT 
+					s.*, 
+					u.employee_id,
+					u.employee_code, 
+					u.employee_name 
+
+				FROM employee_monthly_salary s
+
+				LEFT JOIN employees u 
+					ON s.emp_id = u.employee_id
+
+				WHERE s.salary_month BETWEEN '{$data['from']}' AND '{$data['to']}'
+
+				ORDER BY s.salary_month DESC
+
+			) AS one
+
+			LEFT JOIN general_ledger two 
+				ON one.employee_id = two.employee_id
+		");
 		return $query->result();
 	}
 
 
-	function get_emp_monthly_salary_data()
+	function get_emp_monthly_salary_dataoldone()
 	{
 		// $effective_date_hidden = $this->input->post('effective_date_hidden');
 		// $month_year = date('Y-m', strtotime($effective_date_hidden));
@@ -2842,109 +3339,431 @@ function get_emp_attendance()
 
 
 		$query = $this->db->query("
-		SELECT 
-		one.*,
-		one.total_deductions,
-		two.username, 
-		
-		two.id,
-		
-		dept.department_name,
-		
-		doc_det.posession,
+							SELECT 
+							one.*,
+							one.total_deductions,
+							two.username, 
+							
+							two.id,
+							
+							dept.department_name,
+							
+							doc_det.posession,
 
-		COALESCE(six.paid_days, 0) AS paid_days, 
-		COALESCE(six.use_paid_leave, 0) AS use_paid_leave,
-		COALESCE(nine.totalp_leave, 0) AS totalp_leave,
-		COALESCE(five.overtime, 0) AS total_overtime,
-		COALESCE(eight.absent_count, 0) AS absent_count,
-		COALESCE(five.attendance, 0) AS present_count,
-		COALESCE(eleven.compoff_count, 0) AS compoff_count,
-		COALESCE(ten.paid_leave_count, 0) AS paid_leave_count
-	FROM 
-		users AS two 
-	LEFT JOIN 
-		(SELECT emp_id, gross_salary, basic_salary, total_allowances, total_deductions, effective_date
-		 FROM salary_structure
-		 WHERE effective_date IN (
-			 SELECT MAX(effective_date)
-			 FROM salary_structure
-			 GROUP BY emp_id
-		 )) AS one 
-	     ON two.id = one.emp_id
-	
-
-
-
-
-		LEFT JOIN 
-(SELECT employee_id, sum(attendance) as attendance, sum(overtime) as overtime from (select id as employee_id, count(*) as attendance, sum(if (timestampdiff(minute,in_time,out_time)>600, timestampdiff(minute,in_time,out_time)-600,0)) as overtime from employee_attendance e, users u where  e.type='I' and Attendance_date between '$start_date' AND '$end_date' group by id UNION ALL select employee_id, count(*) as attendance, sum(if (timestampdiff(minute,in_time,out_time)>600, timestampdiff(minute,in_time,out_time)-600,0)) as overtime from employee_attendance where type!='I' and Attendance_date between '$start_date' AND '$end_date' group by employee_id) as total_attendance group by employee_id)as five ON two.id = five.employee_id
-
-	LEFT JOIN 
-		(SELECT employee_id, COUNT(attendence) AS absent_count 
-		 FROM employee_attendance 
-		 WHERE attendence = 'A' 
-		   AND Attendance_date BETWEEN '$start_date' AND '$end_date' 
-		 GROUP BY employee_id) AS eight 
-	ON two.id = eight.employee_id 
+							COALESCE(six.paid_days, 0) AS paid_days, 
+							COALESCE(six.use_paid_leave, 0) AS use_paid_leave,
+							COALESCE(nine.totalp_leave, 0) AS totalp_leave,
+							COALESCE(five.overtime, 0) AS total_overtime,
+							COALESCE(eight.absent_count, 0) AS absent_count,
+							COALESCE(five.attendance, 0) AS present_count,
+							COALESCE(eleven.compoff_count, 0) AS compoff_count,
+							COALESCE(ten.paid_leave_count, 0) AS paid_leave_count
+						FROM 
+							users AS two 
+						LEFT JOIN 
+							(SELECT emp_id, gross_salary, basic_salary, total_allowances, total_deductions, effective_date
+							FROM salary_structure
+							WHERE effective_date IN (
+								SELECT MAX(effective_date)
+								FROM salary_structure
+								GROUP BY emp_id
+							)) AS one 
+							ON two.id = one.emp_id
+						
 
 
 
 
-	LEFT JOIN 
-		(SELECT employee_id, COUNT(use_paid_leave) AS paid_leave_count 
-		 FROM employee_attendance 
-		 WHERE use_paid_leave = 'PL' 
-		   AND Attendance_date BETWEEN '$start_date' AND '$end_date' 
-		 GROUP BY employee_id) AS ten 
-	ON two.id = ten.employee_id 
-	LEFT JOIN 
-		(SELECT employee_id, COUNT(use_paid_leave) AS compoff_count 
-		 FROM employee_attendance 
-		 WHERE use_paid_leave = 'CMP' 
-		   AND Attendance_date BETWEEN '$start_date' AND '$end_date' 
-		 GROUP BY employee_id) AS eleven 
-	ON two.id = eleven.employee_id 
+							LEFT JOIN 
+					(SELECT employee_id, sum(attendance) as attendance, sum(overtime) as overtime from (select id as employee_id, count(*) as attendance, sum(if (timestampdiff(minute,in_time,out_time)>600, timestampdiff(minute,in_time,out_time)-600,0)) as overtime from employee_attendance e, users u where  e.type='I' and Attendance_date between '$start_date' AND '$end_date' group by id UNION ALL select employee_id, count(*) as attendance, sum(if (timestampdiff(minute,in_time,out_time)>600, timestampdiff(minute,in_time,out_time)-600,0)) as overtime from employee_attendance where type!='I' and Attendance_date between '$start_date' AND '$end_date' group by employee_id) as total_attendance group by employee_id)as five ON two.id = five.employee_id
+
+						LEFT JOIN 
+							(SELECT employee_id, COUNT(attendence) AS absent_count 
+							FROM employee_attendance 
+							WHERE attendence = 'A' 
+							AND Attendance_date BETWEEN '$start_date' AND '$end_date' 
+							GROUP BY employee_id) AS eight 
+						ON two.id = eight.employee_id 
 
 
-	LEFT JOIN (
-			SELECT 
-				pm.emp_id, 
-				SUM(pt.paid_days) AS paid_days , sum(pt.use_paid_leave) as use_paid_leave
-			FROM paid_leave_master pm
-			 JOIN paid_leave_transaction pt 
-				ON pm.paid_id = pt.paid_id_master
-			WHERE YEAR(pm.p_date) = $year
-			GROUP BY pm.emp_id
-		) AS six
-			ON two.id = six.emp_id
 
 
-LEFT JOIN 
-            (SELECT emp_id, SUM(paid_leave) AS totalp_leave 
-             FROM employee_monthly_salary 
-             GROUP BY emp_id) AS nine 
-            ON two.id = nine.emp_id 
-
-LEFT JOIN 
-            (SELECT  department_name,department_id 
-             FROM departments 
-             group by department_id ) AS dept 
-            ON two.department = dept.department_id  
-
-LEFT JOIN 
-            (SELECT  posession,emp_id
-             FROM employee_document_details where document_name='visa' 
-              GROUP BY emp_id) AS doc_det 
-            ON two.id = doc_det.emp_id 
+						LEFT JOIN 
+							(SELECT employee_id, COUNT(use_paid_leave) AS paid_leave_count 
+							FROM employee_attendance 
+							WHERE use_paid_leave = 'PL' 
+							AND Attendance_date BETWEEN '$start_date' AND '$end_date' 
+							GROUP BY employee_id) AS ten 
+						ON two.id = ten.employee_id 
+						LEFT JOIN 
+							(SELECT employee_id, COUNT(use_paid_leave) AS compoff_count 
+							FROM employee_attendance 
+							WHERE use_paid_leave = 'CMP' 
+							AND Attendance_date BETWEEN '$start_date' AND '$end_date' 
+							GROUP BY employee_id) AS eleven 
+						ON two.id = eleven.employee_id 
 
 
-	WHERE 
-		two.status ='Active' AND two.id NOT IN (SELECT emp_id FROM employee_monthly_salary WHERE month(salary_month) = '$month' and year(salary_month) = '$year')
-	ORDER BY 
-		two.id ASC;
-	
-");
+						LEFT JOIN (
+								SELECT 
+									pm.emp_id, 
+									SUM(pt.paid_days) AS paid_days , sum(pt.use_paid_leave) as use_paid_leave
+								FROM paid_leave_master pm
+								JOIN paid_leave_transaction pt 
+									ON pm.paid_id = pt.paid_id_master
+								WHERE YEAR(pm.p_date) = $year
+								GROUP BY pm.emp_id
+							) AS six
+								ON two.id = six.emp_id
+
+
+					LEFT JOIN 
+								(SELECT emp_id, SUM(paid_leave) AS totalp_leave 
+								FROM employee_monthly_salary 
+								GROUP BY emp_id) AS nine 
+								ON two.id = nine.emp_id 
+
+					LEFT JOIN 
+								(SELECT  department_name,department_id 
+								FROM departments 
+								group by department_id ) AS dept 
+								ON two.department = dept.department_id  
+
+					LEFT JOIN 
+								(SELECT  posession,emp_id
+								FROM employee_document_details where document_name='visa' 
+								GROUP BY emp_id) AS doc_det 
+								ON two.id = doc_det.emp_id 
+
+
+						WHERE 
+							two.status ='Active' AND two.id NOT IN (SELECT emp_id FROM employee_monthly_salary WHERE month(salary_month) = '$month' and year(salary_month) = '$year')
+						ORDER BY 
+							two.id ASC;
+						
+					");
+
+		return $query->result();
+	}
+
+	function get_emp_monthly_salary_data13_4()
+	{
+		// $effective_date_hidden = $this->input->post('effective_date_hidden');
+		// $month_year = date('Y-m', strtotime($effective_date_hidden));
+		$effective_date = $this->input->post('effective_date');
+		$selected_month_year = date('Y-m', strtotime($effective_date));
+		$id = $this->input->post('user_id');
+
+		// Additional conditions based on the selected month and year
+		$start_date = date('Y-m-01', strtotime($selected_month_year));
+		$end_date = date('Y-m-t', strtotime($selected_month_year));
+
+		$year = date('Y', strtotime($effective_date));
+		$month = date('m', strtotime($effective_date));
+
+
+
+		$query = $this->db->query("
+						SELECT 
+							one.*,
+							one.total_deductions,
+							two.employee_name, 
+							two.employee_id,
+							two.employee_code,
+							dept.department_name,
+							doc_det.posession,
+
+							COALESCE(six.paid_days, 0) AS paid_days, 
+							COALESCE(six.use_paid_leave, 0) AS use_paid_leave,
+							COALESCE(nine.totalp_leave, 0) AS totalp_leave,
+							COALESCE(five.overtime, 0) AS total_overtime,
+							COALESCE(eight.absent_count, 0) AS absent_count,
+							COALESCE(five.attendance, 0) AS present_count,
+							COALESCE(eleven.compoff_count, 0) AS compoff_count,
+							COALESCE(ten.paid_leave_count, 0) AS paid_leave_count
+
+						FROM employees AS two 
+
+						LEFT JOIN 
+							(SELECT emp_id, gross_salary, basic_salary, total_allowances, total_deductions, effective_date
+							FROM salary_structure
+							WHERE effective_date IN (
+								SELECT MAX(effective_date)
+								FROM salary_structure
+								GROUP BY emp_id
+							)) AS one 
+						ON two.employee_id = one.emp_id
+
+
+						LEFT JOIN 
+						(
+						SELECT employee_id, SUM(attendance) AS attendance, SUM(overtime) AS overtime 
+						FROM 
+						(
+							SELECT employee_id, COUNT(*) AS attendance,
+							SUM(IF (TIMESTAMPDIFF(MINUTE,in_time,out_time) > 600,
+								TIMESTAMPDIFF(MINUTE,in_time,out_time) - 600,0)) AS overtime
+							FROM employee_attendance
+							WHERE type='I'
+							AND Attendance_date BETWEEN '$start_date' AND '$end_date'
+							GROUP BY employee_id
+
+							UNION ALL
+
+							SELECT employee_id, COUNT(*) AS attendance,
+							SUM(IF (TIMESTAMPDIFF(MINUTE,in_time,out_time) > 600,
+								TIMESTAMPDIFF(MINUTE,in_time,out_time) - 600,0)) AS overtime
+							FROM employee_attendance
+							WHERE type!='I'
+							AND Attendance_date BETWEEN '$start_date' AND '$end_date'
+							GROUP BY employee_id
+
+						) AS total_attendance
+						GROUP BY employee_id
+						) AS five 
+						ON two.employee_id = five.employee_id
+
+
+						LEFT JOIN 
+							(SELECT employee_id, COUNT(attendence) AS absent_count 
+							FROM employee_attendance 
+							WHERE attendence = 'A' 
+							AND Attendance_date BETWEEN '$start_date' AND '$end_date' 
+							GROUP BY employee_id) AS eight 
+						ON two.employee_id = eight.employee_id 
+
+
+						LEFT JOIN 
+							(SELECT employee_id, COUNT(use_paid_leave) AS paid_leave_count 
+							FROM employee_attendance 
+							WHERE use_paid_leave = 'PL' 
+							AND Attendance_date BETWEEN '$start_date' AND '$end_date' 
+							GROUP BY employee_id) AS ten 
+						ON two.employee_id = ten.employee_id 
+
+
+						LEFT JOIN 
+							(SELECT employee_id, COUNT(use_paid_leave) AS compoff_count 
+							FROM employee_attendance 
+							WHERE use_paid_leave = 'CMP' 
+							AND Attendance_date BETWEEN '$start_date' AND '$end_date' 
+							GROUP BY employee_id) AS eleven 
+						ON two.employee_id = eleven.employee_id 
+
+
+						LEFT JOIN (
+							SELECT 
+								pm.emp_id, 
+								SUM(pt.paid_days) AS paid_days,
+								SUM(pt.use_paid_leave) AS use_paid_leave
+							FROM paid_leave_master pm
+							JOIN paid_leave_transaction pt 
+								ON pm.paid_id = pt.paid_id_master
+							WHERE YEAR(pm.p_date) = $year
+							GROUP BY pm.emp_id
+						) AS six
+						ON two.employee_id = six.emp_id
+
+
+						LEFT JOIN 
+							(SELECT emp_id, SUM(paid_leave) AS totalp_leave 
+							FROM employee_monthly_salary 
+							GROUP BY emp_id) AS nine 
+						ON two.employee_id = nine.emp_id 
+
+
+						LEFT JOIN 
+							(SELECT department_id, department_name 
+							FROM departments) AS dept 
+						ON two.department_id = dept.department_id  
+
+
+						LEFT JOIN 
+							(SELECT posession, emp_id
+							FROM employee_document_details 
+							WHERE document_name='visa') AS doc_det 
+						ON two.employee_id = doc_det.emp_id 
+
+
+						WHERE 
+						two.status ='Active' 
+						AND two.employee_id NOT IN 
+						(
+							SELECT emp_id 
+							FROM employee_monthly_salary 
+							WHERE MONTH(salary_month) = '$month' 
+							AND YEAR(salary_month) = '$year'
+						)
+
+						ORDER BY two.employee_id ASC
+						");
+
+		return $query->result();
+	}
+	public function get_emp_monthly_salary_data()
+	{
+		$effective_date = $this->input->post('effective_date');
+
+		$selected_month_year = date('Y-m', strtotime($effective_date));
+
+		$start_date = date('Y-m-01', strtotime($selected_month_year));
+		$end_date   = date('Y-m-t', strtotime($selected_month_year));
+
+		$year  = date('Y', strtotime($effective_date));
+		$month = date('m', strtotime($effective_date));
+
+		$query = $this->db->query("
+        SELECT 
+            one.*,
+            two.employee_name, 
+            two.employee_id,
+            two.employee_code,
+            dept.department_name,
+            doc_det.posession,
+
+            COALESCE(six.paid_days, 0) AS paid_days, 
+            COALESCE(six.use_paid_leave, 0) AS use_paid_leave,
+            COALESCE(nine.totalp_leave, 0) AS totalp_leave,
+            COALESCE(five.overtime, 0) AS total_overtime,
+            COALESCE(eight.absent_count, 0) AS absent_count,
+            COALESCE(five.attendance, 0) AS present_count,
+            COALESCE(eleven.compoff_count, 0) AS compoff_count,
+            COALESCE(ten.paid_leave_count, 0) AS paid_leave_count
+
+        FROM employees AS two 
+
+        LEFT JOIN 
+        (
+            SELECT emp_id, gross_salary, basic_salary, total_allowances, total_deductions
+            FROM salary_structure
+            WHERE effective_date IN (
+                SELECT MAX(effective_date)
+                FROM salary_structure
+                GROUP BY emp_id
+            )
+        ) AS one 
+        ON two.employee_id = one.emp_id
+
+        -- ✅ FINAL ATTENDANCE LOGIC
+        LEFT JOIN 
+        (
+            SELECT 
+                employee_id,
+
+                SUM(
+                    CASE 
+                        WHEN total_minutes >= 420 THEN 1
+                        WHEN total_minutes >= 180 THEN 0.5
+                        ELSE 0
+                    END
+                ) AS attendance,
+
+                SUM(
+                    CASE 
+                        WHEN total_minutes > 420 THEN total_minutes - 420
+                        ELSE 0
+                    END
+                ) AS overtime
+
+            FROM (
+                -- 🔥 PER DAY CALCULATION (IMPORTANT)
+                SELECT 
+                    employee_id,
+                    Attendance_date,
+
+                    SUM(
+                        CASE 
+                            -- ✅ Deduct break ONLY for full-day
+                            WHEN TIMESTAMPDIFF(MINUTE, in_time, out_time) >= 420 
+                                THEN TIMESTAMPDIFF(MINUTE, in_time, out_time) - 60
+                            ELSE TIMESTAMPDIFF(MINUTE, in_time, out_time)
+                        END
+                    ) AS total_minutes
+
+                FROM employee_attendance
+                WHERE Attendance_date BETWEEN '$start_date' AND '$end_date'
+                GROUP BY employee_id, Attendance_date
+
+            ) daily
+
+            GROUP BY employee_id
+        ) AS five 
+        ON two.employee_id = five.employee_id
+
+        LEFT JOIN 
+        (
+            SELECT employee_id, COUNT(*) AS absent_count 
+            FROM employee_attendance 
+            WHERE attendence = 'A' 
+            AND Attendance_date BETWEEN '$start_date' AND '$end_date' 
+            GROUP BY employee_id
+        ) AS eight 
+        ON two.employee_id = eight.employee_id 
+
+        LEFT JOIN 
+        (
+            SELECT employee_id, COUNT(*) AS paid_leave_count 
+            FROM employee_attendance 
+            WHERE use_paid_leave = 'PL' 
+            AND Attendance_date BETWEEN '$start_date' AND '$end_date' 
+            GROUP BY employee_id
+        ) AS ten 
+        ON two.employee_id = ten.employee_id 
+
+        LEFT JOIN 
+        (
+            SELECT employee_id, COUNT(*) AS compoff_count 
+            FROM employee_attendance 
+            WHERE use_paid_leave = 'CMP' 
+            AND Attendance_date BETWEEN '$start_date' AND '$end_date' 
+            GROUP BY employee_id
+        ) AS eleven 
+        ON two.employee_id = eleven.employee_id 
+
+        LEFT JOIN (
+            SELECT 
+                pm.emp_id, 
+                SUM(pt.paid_days) AS paid_days,
+                SUM(pt.use_paid_leave) AS use_paid_leave
+            FROM paid_leave_master pm
+            JOIN paid_leave_transaction pt 
+                ON pm.paid_id = pt.paid_id_master
+            WHERE YEAR(pm.p_date) = $year
+            GROUP BY pm.emp_id
+        ) AS six
+        ON two.employee_id = six.emp_id
+
+        LEFT JOIN 
+        (
+            SELECT emp_id, SUM(paid_leave) AS totalp_leave 
+            FROM employee_monthly_salary 
+            GROUP BY emp_id
+        ) AS nine 
+        ON two.employee_id = nine.emp_id 
+
+        LEFT JOIN departments AS dept 
+        ON two.department_id = dept.department_id  
+
+        LEFT JOIN 
+        (
+            SELECT posession, emp_id
+            FROM employee_document_details 
+            WHERE document_name='visa'
+        ) AS doc_det 
+        ON two.employee_id = doc_det.emp_id 
+
+        WHERE 
+            two.status ='Active' 
+            AND two.employee_id NOT IN 
+            (
+                SELECT emp_id 
+                FROM employee_monthly_salary 
+                WHERE MONTH(salary_month) = '$month' 
+                AND YEAR(salary_month) = '$year'
+            )
+
+        ORDER BY two.employee_id ASC
+    ");
 
 		return $query->result();
 	}
@@ -2960,8 +3779,7 @@ LEFT JOIN
 		$query = $this->db->query("
         SELECT COUNT(*) AS holiday_count
         FROM holiday_master
-        WHERE h_date BETWEEN '$start_date' AND '$end_date'
-    ");
+        WHERE h_date BETWEEN '$start_date' AND '$end_date'");
 
 		// Return the holiday count (result is a single row with the count)
 		return $query->row()->holiday_count;
@@ -3042,7 +3860,7 @@ LEFT JOIN
 
 	function get_employee_monthlypayslip_by_id($sid)
 	{
-		$query = $this->db->query("select one.*,  two.dept_name, three.designation_name from (select e.*, joining_date,user_name, dept_id,desig_id, user_code, contact_no from employee_monthly_salary e, users u where e.emp_id=u.user_id and sid=$sid )as one left join(select * from department_master)as two on(one.dept_id=two.dept_id) left join(select * from designation_master)as three on(one.desig_id=three.did)");
+		$query = $this->db->query("select one.*,  two.department_name, three.designation_name from (select e.*, joining_date,employee_name, department_id,designation_id, employee_code, mobile from employee_monthly_salary e, employees u where e.emp_id=u.employee_id and sid=$sid )as one left join(select * from departments)as two on(one.department_id=two.department_id) left join(select * from designations)as three on(one.designation_id=three.designation_id )");
 		return $query->result();
 	}
 	function get_monthly_salary_details($sid)
@@ -3243,20 +4061,40 @@ LEFT JOIN
 	function get_paid_leave_list()
 	{
 		$current_year = date('Y');
-		$query = $this->db->query("select r.*, u.username as name from paid_leave_master r, users u where r.emp_id=u.id and YEAR(p_date) = $current_year order by p_date desc ");
+		// $query = $this->db->query("
+		// 	SELECT r.*, e.employee_name AS name
+		// 	FROM paid_leave_master r
+		// 	JOIN employees e ON r.emp_id = e.employee_id
+		// 	WHERE YEAR(r.p_date) = ?
+		// 	ORDER BY r.p_date DESC
+		// ", [$current_year]);
+		$query = $this->db->query("
+				SELECT 
+					r.*,
+					e.employee_name AS name,
+					COALESCE(SUM(t.paid_days), 0) AS total_paid_days
+				FROM paid_leave_master r
+				JOIN employees e 
+					ON r.emp_id = e.employee_id
+				LEFT JOIN paid_leave_transaction t 
+					ON t.paid_id_master = r.paid_id
+				WHERE YEAR(r.p_date) = ?
+				GROUP BY r.paid_id
+				ORDER BY r.p_date DESC
+			", [$current_year]);
 		return $query->result();
 	}
 
 	function filter_paid_leave_list($current_year)
 	{
-		$query = $this->db->query("select r.*, u.user_name as name from paid_leave_master r, users u where r.emp_id=u.user_id and YEAR(p_date) = $current_year order by p_date desc ");
+		$query = $this->db->query("select r.*, u.employee_name as name from paid_leave_master r, employees u where r.emp_id=u.employee_id  and YEAR(p_date) = $current_year order by p_date desc ");
 		return $query->result();
 	}
 	function get_paid_leave_by_id($id)
 	{
 		$query = $this->db->query("SELECT r.*, u.*,r.end_date as p_end_date
 								   FROM paid_leave_master AS r
-								   INNER JOIN users AS u ON r.emp_id = u.id
+								   INNER JOIN employees AS u ON r.emp_id = u.employee_id
 								   WHERE paid_id = '$id'
 								   ORDER BY r.p_date DESC");
 
@@ -3273,16 +4111,26 @@ LEFT JOIN
 	{
 		$current_year = date('Y');
 
+		// $query = $this->db->query("
+		// 		SELECT *, id
+		// 		FROM users
+		// 		WHERE id NOT IN (
+		// 			SELECT emp_id
+		// 			FROM paid_leave_master
+		// 			WHERE YEAR(p_date) = $current_year
+		// 		)
+		// 		ORDER BY username
+		// 	");
 		$query = $this->db->query("
-				SELECT *, id
-				FROM users
-				WHERE id NOT IN (
-					SELECT emp_id
-					FROM paid_leave_master
-					WHERE YEAR(p_date) = $current_year
+				SELECT e.*, e.employee_id
+				FROM employees e
+				WHERE e.employee_id NOT IN (
+					SELECT pl.emp_id
+					FROM paid_leave_master pl
+					WHERE YEAR(pl.p_date) = ?
 				)
-				ORDER BY username
-			");
+				ORDER BY e.employee_name
+			", [$current_year]);
 		return $query->result();
 	}
 
@@ -6883,16 +7731,16 @@ LEFT JOIN
 	{
 		$this->db->select("
         j.*, 
-        u.user_name, u.user_code, u.dept_id, u.desig_id, 
-        d.dept_name, 
+        u.employee_name, u.employee_code, u.department_id , u.designation_id , 
+        d.department_name, 
         des.designation_name,
         lm.leave_status,
         lm.remark AS approve_remark
     ");
 		$this->db->from('employee_leave j');
-		$this->db->join('users u', 'j.employee_id = u.user_id', 'inner');
-		$this->db->join('department_master d', 'u.dept_id = d.dept_id', 'left');
-		$this->db->join('designation_master des', 'u.desig_id = des.did', 'left');
+		$this->db->join('employees u', 'j.employee_id = u.employee_id ', 'inner');
+		$this->db->join('departments d', 'u.department_id  = d.department_id', 'left');
+		$this->db->join('designations des', 'u.designation_id  = des.designation_id ', 'left');
 		$this->db->join('leave_approval lm', 'j.leave_id = lm.approval_leave_id', 'left');
 
 		// Filter by selected month (on start_date)
@@ -6902,7 +7750,7 @@ LEFT JOIN
 
 		// Filter by department if selected
 		if (!empty($dept_id)) {
-			$this->db->where('u.dept_id', $dept_id);
+			$this->db->where('u.department_id', $dept_id);
 		}
 
 		$this->db->order_by('j.start_date', 'ASC');
@@ -6940,19 +7788,19 @@ LEFT JOIN
 	{
 		$this->db->select("
         a.*, 
-        u.user_code, 
-        u.user_name, 
-        d.dept_name,
-		u.user_id, 
+        u.employee_code, 
+        u.employee_name, 
+        d.department_name,
+		u.employee_id, 
         des.designation_name
     ");
 		$this->db->from('employee_attendance a');
 
 		// Conditional join: use employee_id if not null, otherwise ivms_id
-		$this->db->join('users u', 'u.user_id = a.employee_id OR (a.employee_id IS NULL AND u.ivms_id = a.ivms_id)', 'right');
+		$this->db->join('employees u', 'u.employee_id  = a.employee_id', 'right');
 
-		$this->db->join('department_master d', 'u.dept_id = d.dept_id', 'left');
-		$this->db->join('designation_master des', 'u.desig_id = des.did', 'left');
+		$this->db->join('departments d', 'u.department_id  = d.department_id ', 'left');
+		$this->db->join('designations des', 'u.designation_id  = des.designation_id ', 'left');
 
 		// Filter by date range
 		$this->db->where('a.Attendance_date >=', $from_date);
@@ -6960,7 +7808,7 @@ LEFT JOIN
 
 		// Optional department filter
 		if (!empty($dept_id)) {
-			$this->db->where('u.dept_id', $dept_id);
+			$this->db->where('u.department_id', $dept_id);
 		}
 
 		$this->db->order_by('a.Attendance_date', 'ASC');
@@ -7889,4 +8737,111 @@ LEFT JOIN
 
 	//////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////
+
+	public function get_salary_advancesold()
+	{
+		$this->db->select('a.*, e.employee_name, e.employee_code');
+		$this->db->from('employee_salary_advance a');
+		$this->db->join('employees e', 'e.employee_id = a.emp_id', 'left');
+		$this->db->order_by('a.advance_id', 'desc');
+		return $this->db->get()->result();
+	}
+	public function get_salary_advances()
+	{
+		$this->db->select('
+        a.*, 
+        e.employee_name, 
+        e.employee_code,
+        vt.voucher_code');
+
+		$this->db->from('employee_salary_advance a');
+
+		$this->db->join('employees e', 'e.employee_id = a.emp_id', 'left');
+
+		// Join only one voucher row
+		$this->db->join(
+			'voucher_transaction vt',
+			'vt.trans_id = a.advance_id 
+        AND vt.trans_type = "SA"
+        AND vt.drcr_type = "Dr"',
+			'left'
+		);
+
+		$this->db->order_by('a.advance_id', 'desc');
+
+		return $this->db->get()->result();
+	}
+	public function get_salary_advance_by_id($id)
+	{
+		return $this->db->where('advance_id', $id)
+			->get('employee_salary_advance')
+			->row();
+	}
+	public function get_employee_advance_monthly($emp_id, $start_date, $end_date)
+	{
+		$this->db->select('IFNULL(SUM(amount),0) as total_advance');
+		$this->db->from('employee_salary_advance');
+		$this->db->where('emp_id', $emp_id);
+		$this->db->where('advance_date >=', $start_date);
+		$this->db->where('advance_date <=', $end_date);
+		// $this->db->where('status', 'Approved'); // if you use status logic
+
+		$query = $this->db->get();
+		return $query->row()->total_advance;
+	}
+
+	public function get_salary_advance_by_id_details_old($id)
+	{
+		$this->db->select('
+        sa.*,
+        e.employee_name,
+        e.employee_code,
+        e.mobile,
+        e.joining_date,
+        e.department_id,
+        e.designation_id
+    ');
+
+		$this->db->from('employee_salary_advance sa');
+		$this->db->join('employees e', 'e.employee_id = sa.emp_id', 'left');
+
+		$this->db->where('sa.advance_id', $id);
+
+		return $this->db->get()->row();
+	}
+
+	public function get_salary_advance_by_id_details($id)
+	{
+		$this->db->select('
+        sa.*,
+        e.employee_name,
+        e.employee_code,
+        e.mobile,
+        e.joining_date,
+        e.department_id,
+        e.designation_id,
+        vt.voucher_code,
+        vt.voucher_date
+    ');
+
+		$this->db->from('employee_salary_advance sa');
+
+		$this->db->join(
+			'employees e',
+			'e.employee_id = sa.emp_id',
+			'left'
+		);
+
+		$this->db->join(
+			'voucher_transaction vt',
+			'vt.trans_id = sa.advance_id 
+		AND vt.trans_type = "SA"
+		AND vt.drcr_type = "Dr"',
+			'left'
+		);
+
+		$this->db->where('sa.advance_id', $id);
+
+		return $this->db->get()->row();
+	}
 }

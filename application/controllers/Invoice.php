@@ -9,6 +9,7 @@ class Invoice extends CI_Controller
 		$this->load->model('Invoice_model');
 		$this->load->model('Jobcard_model');
 		$this->load->model('Accounts_model');
+		$this->load->model('Advance_model');
 		$this->load->helper('amount');
 	}
 	public function generate()
@@ -43,7 +44,8 @@ class Invoice extends CI_Controller
 		$data['userid'] = $this->session->userdata('user_id');
 
 		$data['invoices'] = $this->Invoice_model->get_all_invoices_with_payment();
-		// log_message('error', 'Invoice List: ' . print_r($data['invoices'], true));
+		log_message('error', 'Invoice List: ' . print_r($data['invoices'], true));
+		
 		$data['main_content'] = 'invoice/index';
 		$this->load->view('includes/template', $data);
 	}
@@ -71,39 +73,55 @@ class Invoice extends CI_Controller
 
 		$invoice_type = $this->input->post('invoice_type'); // Proforma / Tax
 		// log_message('error', $invoice_type);
-		// if ($invoice_type === 'Proforma') {
-		// 	if ($this->Invoice_model->has_proforma($quotation_id)) {
 
-		// 		$this->session->set_flashdata(
-		// 			'error',
-		// 			'Proforma invoice already exists for this quotation'
-		// 		);
 
-		// 		redirect('invoice/generate'); // go back to same page
-		// 		return;
-		// 	}
-		// }
+		$invoice_no = $this->generate_invoice_no($invoice_type, $jobcard_id);
 
-		$invoice_no = $this->generate_invoice_no($invoice_type);
+		if ($this->input->post('adv_paid') > 0) {
+			$status = "Advance Paid";
+		} else {
+			$status = "Unpaid";
+		}
 
 		$invoice_id = $this->Invoice_model->create_invoice([
 			'jobcard_id'      => $this->input->post('jobcard_id'),
 			'quotation_id'    => $quotation_id,
 			'invoice_type'    => $this->input->post('invoice_type'),
-			'invoice_date'    => date('Y-m-d'),
+			'invoice_date'    => $this->input->post('invoice_date_hidden'),
 			'subtotal'        => $this->input->post('subtotal'),
 			'tax_amount'      => $this->input->post('tax_amount'),
 			'discount_amount' => $this->input->post('discount_amount'),
 			'grand_total'     => $this->input->post('grand_total'),
-			'status'          => 'Unpaid',
+			'status'          => $status,
 			'remarks'         => $this->input->post('remarks'),
 			'invoice_no'      => $invoice_no,
 			'customer_id'     => $this->input->post('customer_id'), // used only in model
+			'adv_paid'         => $this->input->post('adv_paid'),
+			'balance_after_invoice'  => $this->input->post('balance_total'),
+			// 'add_dis_percentage'     => $this->input->post('adddiscount_amount_per'),
+			// 'add_dis_amount'     => $this->input->post('adddiscount_amount'),
 		]);
 
 		// 2. Save invoice items from jobcard
 		// $this->Invoice_model->insert_invoice_items($invoice_id, $this->input->post('jobcard_id'));
 		$this->Invoice_model->insert_invoice_items_from_post($invoice_id);
+
+		
+		$advance_used = (float)$this->input->post('adv_paid');
+
+		if ($advance_used > 0) {
+
+			$result = $this->Invoice_model->auto_adjust_advance($quotation_id, $advance_used);
+
+			if (!$result['status']) {
+				echo json_encode([
+					'status' => false,
+					'message' => $result['msg'],
+					'remaining' => $result['remaining']
+				]);
+				exit;
+			}
+		}
 
 		// 3. Redirect to view page
 		redirect('invoice/view/' . $invoice_id);
@@ -124,6 +142,7 @@ class Invoice extends CI_Controller
 	{
 		// $jobcard = $this->Jobcard_model->get_jobcard_with_details($jobcard_id);
 		$jobcard = $this->Jobcard_model->get_jobcard_full_details_quotation($jobcard_id);
+		log_message('error', 'Jobcard Data: ' . print_r($jobcard, true));
 		echo json_encode($jobcard);
 	}
 
@@ -180,9 +199,11 @@ class Invoice extends CI_Controller
 	}
 	public function print_invoice($invoice_id)
 	{
-		$data['title'] = 'Invoice View';
+		// $data['title'] = 'Invoice View';
 		$data = $this->Invoice_model->get_invoice_full($invoice_id);
-
+		// echo "<pre>";
+		// print_r($data);
+		// exit;
 		// $data['main_content'] = 'invoice/print';
 		$this->load->view('invoice/print', $data);
 	}
@@ -345,7 +366,7 @@ class Invoice extends CI_Controller
 	}
 
 
-	public function generate_invoice_no($invoice_type)
+	public function generate_invoice_no9_4($invoice_type)
 	{
 		$year = date('Y');
 		// log_message('error', $invoice_type);
@@ -361,6 +382,44 @@ class Invoice extends CI_Controller
 
 		if ($last) {
 			$last_no = intval(substr($last->invoice_no, -4));
+			$new_no  = str_pad($last_no + 1, 4, '0', STR_PAD_LEFT);
+		} else {
+			$new_no = '0001';
+		}
+
+		return "$prefix-$year-$new_no";
+	}
+
+	public function generate_invoice_no($invoice_type, $jobcard_id)
+	{
+		// 🔍 Step 1: Check existing invoice for SAME jobcard + type
+		$existing = $this->db
+			->where('jobcard_id', $jobcard_id)
+			->where('invoice_type', $invoice_type)
+			->get('invoices')
+			->row();
+
+		if ($existing) {
+			return $existing->invoice_no; // ✅ already exists → reuse
+		}
+
+		// 🔢 Step 2: Generate new invoice number
+		$year = date('Y');
+
+		// Prefix
+		$prefix = ($invoice_type === 'PI') ? 'PI' : 'TI';
+
+		// Get last invoice of same type
+		$last = $this->db
+			->like('invoice_no', "$prefix-$year-", 'after')
+			->order_by('invoice_id', 'DESC')
+			->limit(1)
+			->get('invoices')
+			->row();
+
+		if ($last) {
+			$parts = explode('-', $last->invoice_no);
+			$last_no = intval(end($parts));
 			$new_no  = str_pad($last_no + 1, 4, '0', STR_PAD_LEFT);
 		} else {
 			$new_no = '0001';
@@ -463,8 +522,14 @@ class Invoice extends CI_Controller
 			'remarks'         => $this->input->post('remarks'),
 			'subtotal'        => $this->input->post('subtotal'),
 			'tax_amount'      => $this->input->post('tax_amount'),
-			'discount_amount' => $this->input->post('discount_amount'),
+			'discount_amount' => $this->input->post('normal_discount_amount'),
 			'grand_total'     => $this->input->post('grand_total'),
+			'invoice_date'    => $this->input->post('invoice_date'),
+			'adv_paid'         => $this->input->post('adv_paid'),
+			'balance_after_invoice'     => $this->input->post('balance_total'),
+			// 'add_dis_percentage'     => $this->input->post('adddiscount_amount_per'),
+			// 'add_dis_amount'     => $this->input->post('adddiscount_amount'),
+			
 		];
 
 		$this->Invoice_model->update_invoice($invoice_id, $header);
@@ -473,15 +538,20 @@ class Invoice extends CI_Controller
 		$this->Invoice_model->delete_invoice_items($invoice_id);
 
 		/*
-    ====================================
-    SAVE SERVICES
-    ====================================
-    */
+		====================================
+		SAVE SERVICES
+		====================================
+		*/
 		$srv_names = $this->input->post('srv_name');
 		$srv_costs = $this->input->post('srv_cost');
+		$srv_check_open = $this->input->post('srv_check_open');
 
 		if ($srv_names) {
 			foreach ($srv_names as $k => $name) {
+				// ❌ Skip if unchecked
+				if (!isset($srv_check_open[$k])) {
+					continue;
+				}
 
 				$data = [
 					'invoice_id' => $invoice_id,
@@ -497,24 +567,31 @@ class Invoice extends CI_Controller
 		}
 
 		/*
-    ====================================
-    SAVE PARTS
-    ====================================
-    */
+		====================================
+		SAVE PARTS
+		====================================
+		*/
 
 		$part_names  = $this->input->post('part_name');
 		$part_qty    = $this->input->post('part_qty');
 		$part_price  = $this->input->post('part_price');
 		$part_dis    = $this->input->post('part_dis');
 		$part_total  = $this->input->post('part_total');
-
+		$part_id  = $this->input->post('part_id');
+		$part_check_open = $this->input->post('part_check_open');
 		if ($part_names) {
 			foreach ($part_names as $k => $name) {
+
+				// ❌ Skip if unchecked
+				if (!isset($part_check_open[$k])) {
+					continue;
+				}
 
 				$data = [
 					'invoice_id' => $invoice_id,
 					'item_type'  => 'Part',
 					'item_name'  => $name,
+					'source_jobcard_item_id'  => $part_id[$k],
 					'quantity'   => $part_qty[$k],
 					'unit_price' => $part_price[$k],
 					'disamount'  => $part_dis[$k],
@@ -526,16 +603,21 @@ class Invoice extends CI_Controller
 		}
 
 		/*
-    ====================================
-    SAVE SUBLET
-    ====================================
-    */
+		====================================
+		SAVE SUBLET
+		====================================
+		*/
 
 		$sub_names = $this->input->post('sub_name');
 		$sub_costs = $this->input->post('sub_cost');
+		$sub_check_open = $this->input->post('sub_check_open');
 
 		if ($sub_names) {
 			foreach ($sub_names as $k => $name) {
+				// ❌ Skip if unchecked
+				if (!isset($sub_check_open[$k])) {
+					continue;
+				}
 
 				$data = [
 					'invoice_id' => $invoice_id,
@@ -551,5 +633,132 @@ class Invoice extends CI_Controller
 		}
 
 		redirect('Invoice');
+	}
+	// ==============================function for updating part, service id on source_jobcard_item_id field ====================some are missing======
+	public function fix_missing_part_links()
+	{
+		// 1️⃣ Get invoice items where part_id is missing
+		$items = $this->db
+			->select('item_id, item_name')
+			->from('invoice_items')
+			->where('item_type', 'Part')
+			->where('source_jobcard_item_id IS NULL', null, false)
+			->get()
+			->result();
+
+		foreach ($items as $item) {
+
+			// 2️⃣ Try to find matching part
+			$part = $this->db
+				->select('part_id')
+				->from('spare_parts')
+				->where('LOWER(part_name)', strtolower(trim($item->item_name)))
+				->get()
+				->row();
+
+			if ($part) {
+				// 3️⃣ Update invoice_items with correct part_id
+				$this->db->where('item_id', $item->item_id);
+				$this->db->update('invoice_items', [
+					'source_jobcard_item_id' => $part->part_id
+				]);
+
+				echo "Updated Item ID: {$item->item_id} → Part ID: {$part->part_id}<br>";
+			} else {
+				echo "No match for Item ID: {$item->item_id} ({$item->item_name})<br>";
+			}
+		}
+
+		echo "DONE";
+	}
+
+
+	// ==================== function for updating quptation items table id ========================
+	public function update_invoice_items_quotation_id()
+	{
+		$this->db->trans_start();
+
+		/* ==============================
+	   1. SERVICES
+	============================== */
+		$sql1 = "
+		UPDATE invoice_items ii
+		JOIN invoices inv ON inv.invoice_id = ii.invoice_id
+		JOIN job_cards jc ON jc.jobcard_id = inv.jobcard_id
+		JOIN quotations q ON q.quotation_id = jc.quotation_id
+		JOIN quotation_services qs 
+			ON qs.quotation_id = q.quotation_id
+			AND qs.service_id = ii.source_jobcard_item_id
+		SET ii.quotation_item_id = qs.id
+		WHERE ii.item_type = 'Service'
+		AND ii.quotation_item_id IS NULL
+	";
+		$this->db->query($sql1);
+		$services_updated = $this->db->affected_rows();
+
+
+		/* ==============================
+	   2. PARTS
+	============================== */
+		$sql2 = "
+		UPDATE invoice_items ii
+		JOIN invoices inv ON inv.invoice_id = ii.invoice_id
+		JOIN job_cards jc ON jc.jobcard_id = inv.jobcard_id
+		JOIN quotations q ON q.quotation_id = jc.quotation_id
+		JOIN quotation_parts qp 
+			ON qp.quotation_id = q.quotation_id
+			AND qp.part_id = ii.source_jobcard_item_id
+		SET ii.quotation_item_id = qp.id
+		WHERE ii.item_type = 'Part'
+		AND ii.quotation_item_id IS NULL
+	";
+		$this->db->query($sql2);
+		$parts_updated = $this->db->affected_rows();
+
+
+		/* ==============================
+	   3. SUBLET (optional attempt)
+	============================== */
+		// Only if you have item_name stored in invoice_items
+		$sql3 = "
+		UPDATE invoice_items ii
+		JOIN invoices inv ON inv.invoice_id = ii.invoice_id
+		JOIN job_cards jc ON jc.jobcard_id = inv.jobcard_id
+		JOIN quotations q ON q.quotation_id = jc.quotation_id
+		JOIN quotation_job_descriptions qjd 
+			ON qjd.quotation_id = q.quotation_id
+			AND qjd.description = ii.item_name
+		SET ii.quotation_item_id = qjd.id
+		WHERE ii.item_type = 'Sublet'
+		AND ii.quotation_item_id IS NULL
+	";
+		$this->db->query($sql3);
+		$sublet_updated = $this->db->affected_rows();
+
+
+		$this->db->trans_complete();
+
+		/* ==============================
+	   4. RESULT OUTPUT
+	============================== */
+
+		if ($this->db->trans_status() === FALSE) {
+			echo "❌ Update Failed";
+			return;
+		}
+
+		echo "<pre>";
+		echo "✅ Invoice Items Updated Successfully\n\n";
+		echo "Services Updated: " . $services_updated . "\n";
+		echo "Parts Updated: " . $parts_updated . "\n";
+		echo "Sublet Updated: " . $sublet_updated . "\n";
+
+		// Remaining unmatched
+		$remaining = $this->db
+			->where('quotation_item_id IS NULL', null, false)
+			->count_all_results('invoice_items');
+
+		echo "Remaining Unmatched: " . $remaining . "\n";
+		echo "</pre>";
 	}
 }

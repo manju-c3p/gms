@@ -80,7 +80,7 @@ class Quotation_model extends CI_Model
 			'customer_approval'       => $est->customer_approval,
 			'customer_estimated_price' => $est->customer_estimated_price,
 			'revision_no'             => $revisionNo,
-			'parent_quotation_id'     => $parent_quotation_id,
+			'parent_quotation_id' => isset($parent_quotation_id) ? $parent_quotation_id : "",
 			'status'                  => 'Draft',
 			'remarks'                 => $est->remarks,
 			'created_at'              => date('Y-m-d H:i:s'),
@@ -357,6 +357,12 @@ class Quotation_model extends CI_Model
 		if (isset($data['srvice_discount'])) {
 			$updateData['srvice_discount'] = $data['srvice_discount'];
 		}
+		if (isset($data['sublet_discount'])) {
+			$updateData['sublet_discount'] = $data['sublet_discount'];
+		}
+		if (isset($data['quotation_date'])) {
+			$updateData['quotation_date'] = $data['quotation_date'];
+		}
 
 
 		// Amounts (force numeric safety)
@@ -522,6 +528,7 @@ class Quotation_model extends CI_Model
 
 			// ✅ STEP 1 — Calculate subtotal
 			$jsubtotal = 0;
+			$total_discount =0;
 
 			foreach ($data['job_amount'] as $t) {
 				$jsubtotal += (float)$t;
@@ -553,9 +560,10 @@ class Quotation_model extends CI_Model
 				} else {
 
 					$service_jdiscount = round(
-						($service_jtotal / $jsubtotal) * $total_discount,
+						($service_jtotal / $jsubtotal) * $total_jdiscount,
 						2
 					);
+					
 
 					$distributed_jdiscount += $service_jdiscount;
 				}
@@ -684,7 +692,7 @@ class Quotation_model extends CI_Model
 			'customer_id'    => $q->customer_id,
 			'vehicle_id'     => $q->vehicle_id,
 			'jobcard_date'   => date('Y-m-d'),
-			'status'         => 'Pending',
+			'status'         => 'Draft',
 			'created_by'     => $this->session->userdata('user_id') ?? null,
 			'created_at'     => date('Y-m-d H:i:s'),
 			'jobcard_no' => $jobcard_no

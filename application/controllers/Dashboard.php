@@ -27,9 +27,12 @@ class Dashboard extends CI_Controller
 		$data['InProgress_job_cards_count'] = $this->Dashboard_model->get_inprogress_job_cards_count();
 		$data['finished_job_cards_count'] = $this->Dashboard_model->get_finished_job_cards_count();
 
-		$data['purchase_order_count'] = $this->Dashboard_model->get_purchase_order_count();
-		$data['grn_count'] = $this->Dashboard_model->get_grn_count();
-		$data['purchase_return_count'] = $this->Dashboard_model->get_purchase_return_count();
+		// $data['purchase_order_count'] = $this->Dashboard_model->get_purchase_order_count();
+		$data['total_purchase_amount'] = $this->Dashboard_model->get_total_purchase_amount();
+		$data['parts_po']   = $this->Dashboard_model->get_parts_po_summary();
+		$data['service_po'] = $this->Dashboard_model->get_service_po_summary();
+		// $data['grn_count'] = $this->Dashboard_model->get_grn_count();
+		// $data['purchase_return_count'] = $this->Dashboard_model->get_purchase_return_count();
 
 		$data['customer_count'] = $this->Dashboard_model->get_customers_count();
 		$data['vehicles_count'] = $this->Dashboard_model->get_vehicles_count();
@@ -40,6 +43,8 @@ class Dashboard extends CI_Controller
 		$data['jobcardProgress'] = $this->Dashboard_model->get_jobcard_job_completion();
 		$data['revenueSummary'] = $this->Dashboard_model->get_revenue_summary();
 		$data['total_revenue'] = $this->Dashboard_model->get_total_revenue();
+		$data['balances'] = $this->Dashboard_model->get_cash_bank_balances();
+		log_message('error', print_r($data['balances'], true));
 
 		// $data['jobcardProgress1'] = $this->Dashboard_model->get_jobcard_job_progress();
 		// $data['jobcardReport'] =  $this->Dashboard_model->get_jobcard_time_report();

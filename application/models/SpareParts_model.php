@@ -2,10 +2,71 @@
 class SpareParts_model extends CI_Model
 {
 
+	// public function add_part($data)
+	// {
+	// 	return $this->db->insert('spare_parts', $data);
+
+	
+	// }
+
 	public function add_part($data)
-	{
-		return $this->db->insert('spare_parts', $data);
-	}
+{
+    $this->db->trans_start(); // ✅ start transaction
+
+    /* =====================================================
+       1. Insert spare part
+    ===================================================== */
+    $this->db->insert('spare_parts', $data);
+    $part_id = $this->db->insert_id();
+
+    $opening_qty   = isset($data['opening_qty']) ? $data['opening_qty'] : 0;
+    $stock_unit_id = $data['stock_unit_id'];
+
+    /* =====================================================
+       2. Insert stock_in (only if opening qty > 0)
+    ===================================================== */
+    $stock_in_id = null;
+
+    if ($opening_qty > 0) {
+        $this->db->insert('stock_in', [
+            'part_id'    => $part_id,
+            'qty'        => $opening_qty,
+            'date_in'    => date('Y-m-d'),
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        $stock_in_id = $this->db->insert_id();
+    }
+
+    /* =====================================================
+       3. Insert stock_ledger
+    ===================================================== */
+    $this->db->insert('stock_ledger', [
+        'part_id'      => $part_id,
+        'txn_type'     => 'OPENING',
+        'qty'          => $opening_qty,
+        'unit_id'      => $stock_unit_id,
+        'reference_id' => $stock_in_id, // can be null if no opening stock
+        'reference_no' => 'OPENING-STOCK',
+        'remarks'      => 'Opening stock initialization',
+        'txn_date'     => date('Y-m-d H:i:s'),
+        'created_at'   => date('Y-m-d H:i:s'),
+        'created_by'   => $this->session->userdata('user_id')
+    ]);
+
+    /* =====================================================
+       4. Insert stock_summary
+    ===================================================== */
+    $this->db->insert('stock_summary', [
+        'part_id'       => $part_id,
+        'current_stock' => $opening_qty,
+        'updated_at'    => date('Y-m-d H:i:s')
+    ]);
+
+    $this->db->trans_complete(); // ✅ commit / rollback
+
+    return $this->db->trans_status();
+}
 
 	public function update_part($part_id, $data)
 	{
@@ -140,7 +201,7 @@ class SpareParts_model extends CI_Model
 	public function insert_part($data, $opening_qty = 0)
 	{
 		$this->db->trans_start(); // ✅ start transaction
-
+		$stockunit = $data['stock_unit_id'];
 		// 1️⃣ Insert spare part
 		$this->db->insert('spare_parts', $data);
 		$part_id = $this->db->insert_id();
@@ -153,6 +214,8 @@ class SpareParts_model extends CI_Model
 			'date_in'   => date('Y-m-d'),
 			'created_at' => date('Y-m-d H:i:s')
 		]);
+
+		$stock_in_id = $this->db->insert_id();
 		// }
 
 		/* stock_ledger */
@@ -160,7 +223,7 @@ class SpareParts_model extends CI_Model
 			'part_id'      => $part_id,
 			'txn_type'     => 'OPENING',
 			'qty'          => 0,
-			'unit_id'      => $stock_unit_id,
+			'unit_id'      => $stockunit,
 			'reference_id' => $stock_in_id,
 			'reference_no' => 'OPENING-STOCK',
 			'remarks'      => 'Opening stock initialization',

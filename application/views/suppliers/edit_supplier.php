@@ -20,7 +20,7 @@
                 Supplier Code <span class="text-red-500">*</span>
             </label>
 
-            <input type="text"
+            <input type="text"  name="supplier_code"
                    value="<?php echo $supplier->supplier_code; ?>"
                    readonly
                    class="md:col-span-3 border rounded-lg px-4 py-2 bg-gray-100 text-gray-500 cursor-not-allowed">

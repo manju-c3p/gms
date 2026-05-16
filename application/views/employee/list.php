@@ -19,7 +19,7 @@ href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
             <thead class="bg-gray-100">
                 <tr>
                     <th class="border p-2">#</th>
-                    <th class="border p-2">Code</th>
+                    <!-- <th class="border p-2">Code</th> -->
                     <th class="border p-2">Name</th>
                     <th class="border p-2">Mobile</th>
                     <th class="border p-2">Department</th>
@@ -34,7 +34,7 @@ href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
                 <?php $i=1; foreach($employees as $emp): ?>
                 <tr class="hover:bg-gray-50">
                     <td class="border p-2"><?= $i++ ?></td>
-                    <td class="border p-2"><?= $emp->employee_code ?></td>
+                    <!-- <td class="border p-2"><?= $emp->employee_code ?></td> -->
                     <td class="border p-2"><?= $emp->employee_name ?></td>
                     <td class="border p-2"><?= $emp->mobile ?></td>
                     <td class="border p-2"><?= $emp->department_name ?></td>

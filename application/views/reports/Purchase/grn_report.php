@@ -1,6 +1,28 @@
 <?php 
 $user = $this->session->userdata('user_id');
 ?>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
+
+<style>
+	.select2-container {
+    width: 100% !important;
+}
+
+.select2-dropdown {
+    width: 420px !important;
+}
+
+.select2-results__option {
+    white-space: nowrap;
+}
+
+.select2-selection__rendered {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+</style>
 <form id="main" method="post" action="<?php echo base_url().'index.php/'; ?>Reports/get_grn_report" autocomplete="off" enctype="multipart/form-data">
 
     <!-- page content -->
@@ -44,7 +66,7 @@ $user = $this->session->userdata('user_id');
 
                     <select name="supplier_id"
                         id="supplier_id"
-                        class="border border-gray-300 rounded px-3 py-2 focus:ring focus:ring-blue-200 focus:border-blue-400 select2"
+                        class="border border-gray-300 rounded px-3 py-2 focus:ring focus:ring-blue-200 focus:border-blue-400  select2 debtor-select"
                         tabindex="2">
 
                         <option value="">-select-</option>
@@ -70,7 +92,7 @@ $user = $this->session->userdata('user_id');
                     </button>
 
 
-                    <a href=""
+                    <a href="javascript:void(0)"
                         onclick="printgrnReport()"
                         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow flex items-center gap-2">
 
@@ -213,5 +235,12 @@ function printgrnReport() {
     window.open(printUrl, '_blank');
 
 }
+$(document).ready(function() {
+		$('.debtor-select').select2({
+			width: '100%'
+		});
+
+
+	});
 
 </script>

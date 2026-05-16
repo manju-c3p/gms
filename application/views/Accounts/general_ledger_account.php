@@ -1,6 +1,7 @@
- <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+<!-- <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script> -->
 
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
  
  <!-- Basic Form Start -->
 <div class="p-6 max-w-5xl">
@@ -62,9 +63,9 @@
                     Select Customer
                 </label>
                 <select name="CUS"
-                        id="inward_from"
+                        id="customer_select"
                         onchange="check_account_name_exist();"
-                        class="w-full rounded-lg border border-gray-300 px-4 py-2">
+                        class="w-full rounded-lg border border-gray-300 px-4 py-2 select2 debtor-select">
                     <option value="">Select</option>
                     <?php foreach ($customer_records as $row): ?>
                         <option value="<?= $row->occu_name . ',' . $row->occupier_id; ?>">
@@ -80,9 +81,9 @@
                     Select Vendor / Supplier
                 </label>
                 <select name="SUPP"
-                        id="inward_from"
+                        id="supplier_select"
                         onchange="check_account_name_exist();"
-                        class="w-full rounded-lg border border-gray-300 px-4 py-2">
+                        class="w-full rounded-lg border border-gray-300 px-4 py-2 select2 credit-select">
                     <option value="">Select</option>
                     <?php foreach ($supplier_records as $row): ?>
                         <option value="<?= $row->supplier_name . ',' . $row->supplier_id; ?>">
@@ -186,110 +187,39 @@ function check_acc_code_exist(post_value, table_name, column_name, input_name)
 	}
 }
 
-// function show_list_div(acc_type)
-//   {
-  	
-  	
-// 	  if(acc_type == 'CUS')
-//   	 {
-  	 	
-//   		document.getElementById("show_visitor").style.display='block';
-//   		document.getElementById("show_vendor").style.display='none';
-//   		document.getElementById("show_other").style.display='none';
-//   	 }
-//   	 else if (acc_type == 'SUPP')
-//   	 {
-  	 	
-//   		document.getElementById("show_visitor").style.display='none';
-//   		document.getElementById("show_vendor").style.display='block';
-//   		document.getElementById("show_other").style.display='none';
-  		
-//   	 }
-//   	 else if (acc_type == 'OTHER')
-//   	 {
-  	 	
-//   		document.getElementById("show_visitor").style.display='none';
-//   		document.getElementById("show_vendor").style.display='none';
-//   		document.getElementById("show_other").style.display='block';
-  		
-//   	 }
-//   	 multi_select();
-//   }
+
+// function show_list_div(acc_type) {
+//     $('#show_visitor, #show_vendor, #show_other').addClass('hidden');
+
+//     if (acc_type === 'CUS') $('#show_visitor').removeClass('hidden');
+//     else if (acc_type === 'SUPP') $('#show_vendor').removeClass('hidden');
+//     else if (acc_type === 'OTHER') $('#show_other').removeClass('hidden');
+// }
 function show_list_div(acc_type) {
     $('#show_visitor, #show_vendor, #show_other').addClass('hidden');
 
-    if (acc_type === 'CUS') $('#show_visitor').removeClass('hidden');
-    else if (acc_type === 'SUPP') $('#show_vendor').removeClass('hidden');
-    else if (acc_type === 'OTHER') $('#show_other').removeClass('hidden');
+    if (acc_type === 'CUS') {
+        $('#show_visitor').removeClass('hidden');
+
+        // ✅ INIT AFTER SHOW
+        $('.debtor-select').select2({
+            width: '100%'
+        });
+
+    } else if (acc_type === 'SUPP') {
+        $('#show_vendor').removeClass('hidden');
+
+        // ✅ INIT AFTER SHOW
+        $('.credit-select').select2({
+            width: '100%'
+        });
+
+    } else if (acc_type === 'OTHER') {
+        $('#show_other').removeClass('hidden');
+    }
 }
 
-// $('#gen_ledger').validate({
-// 		rules : {
-// 		  account_type: {
-// 				required : true,
-// 		  },
-// 		  ac_code: {
-// 				required : true,
-// 				maxlength: 9,
-// 		  },
-// 		  ac_name: {
-// 			required : true,
-// 		  },
-// 		  ac_group: {
-// 				required : true,
-// 		  },
-// 		  opening_bal: {
-// 				required : true,
-// 				number : true,
-				
-// 			},
-// 		 dr_cr_type: {
-// 				required : true,
-// 			},
-// 		},
 
-// 		messages : {
-
-// 			account_type : {
-// 				required : "Please Select Account type",
-// 			},
-
-// 			ac_code : {
-// 				required : "Please enter Account Code",
-// 			},
-			 
-// 			 ac_name: {
-// 				required : "Please enter Account Name",
-// 			},
-			
-// 			ac_group : {
-// 				required : "Please Select Account Group ",
-// 			},
-			
-// 			Opening_bal : {
-// 				required : "Please enter Opening Balance ",
-// 			},
-// 		},
-// 		highlight : function(element) {
-// 			var id_attr = "#" + $(element).attr("id") + "1";
-// 			$(element).closest('.form-group').removeClass('has-success').addClass('has-error');
-// 			$(id_attr).removeClass('glyphicon glyphicon-ok').addClass('glyphicon glyphicon-remove');
-// 		},
-// 		unhighlight : function(element) {
-// 			var id_attr = "#" + $(element).attr("id") + "1";
-// 			$(element).closest('.form-group').removeClass('has-error').addClass('has-success');
-// 			$(id_attr).removeClass('glyphicon glyphicon-remove').addClass('glyphicon glyphicon-ok');
-// 		},
-// 		errorElement : 'span',
-// 		errorClass : 'help-block',
-// 		errorPlacement : function(error, element) {
-// 			if (element.length) {
-// 				error.insertAfter(element);
-// 			} else {
-// 				error.insertAfter(element);
-// 			}
-// 		}
-// });
 	$('#gen_ledger').validate({
     rules: {
         account_type: { required: true },
@@ -315,27 +245,64 @@ function show_list_div(acc_type) {
     }
 });
 
-	function check_account_name_exist()
-	{
-       var inward_from=document.getElementById('inward_from').value;
-	   inward_from_name=$("#inward_from option:selected").text();
+	// function check_account_name_exist()
+	// {
+    //    var inward_from=document.getElementById('inward_from').value;
+	//    inward_from_name=$("#inward_from option:selected").text();
 	  
-       $.ajax
-       ({
-			url: "<?php echo site_url('ajax_validation/check_account_name_exist'); ?>",
-			type: 'POST',
-			dataType: "json",
-			data: {ac_name: inward_from_name},
-			success: function(msg) {
-				//alert(msg);
-				if(msg !=0)
-				{
-					alert("Account Name Already Exits");
-					$('#inward_from').val('');
-				}
+    //    $.ajax
+    //    ({
+	// 		url: "<?php echo site_url('ajax_validation/check_account_name_exist'); ?>",
+	// 		type: 'POST',
+	// 		dataType: "json",
+	// 		data: {ac_name: inward_from_name},
+	// 		success: function(msg) {
+	// 			//alert(msg);
+	// 			if(msg !=0)
+	// 			{
+	// 				alert("Account Name Already Exits");
+	// 				$('#inward_from').val('');
+	// 			}
 				
-		}
-		});
-	}
+	// 	}
+	// 	});
+	// }
+function check_account_name_exist()
+{
+    let inward_from = '';
+    let inward_from_name = '';
+
+    // ✅ Check which dropdown is visible
+    if (!$('#show_visitor').hasClass('hidden')) {
+        inward_from = $('#customer_select').val();
+        inward_from_name = $('#customer_select option:selected').text();
+    } 
+    else if (!$('#show_vendor').hasClass('hidden')) {
+        inward_from = $('#supplier_select').val();
+        inward_from_name = $('#supplier_select option:selected').text();
+    }
+
+    if (inward_from !== '') {
+        $.ajax({
+            url: "<?php echo site_url('ajax_validation/check_account_name_exist'); ?>",
+            type: 'POST',
+            dataType: "json",
+            data: { ac_name: inward_from_name },
+            success: function(msg) {
+                if (msg != 0) {
+                    alert("Account Name Already Exists");
+
+                    // ✅ Reset correct field
+                    if (!$('#show_visitor').hasClass('hidden')) {
+                        $('#customer_select').val('').trigger('change');
+                    } else {
+                        $('#supplier_select').val('').trigger('change');
+                    }
+                }
+            }
+        });
+    }
+}
 
 </script>
+

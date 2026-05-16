@@ -19,7 +19,7 @@
 		</span>
 
 	</div><br>
-	<form action="<?php echo base_url() . 'index.php/accounts/add_debit_note_details'; ?>"
+	<form action="<?php echo base_url() . 'index.php/Accounts/add_debit_note_details'; ?>"
 		id="receipt"
 		method="post"
 		name="receipt"
@@ -33,14 +33,14 @@
 
 			<div class="md:col-span-2">
 				<div class="flex items-center border rounded-lg px-2 py-1">
-					<input type="text"
+					<input type="date"
 						id="v_date"
 						name="v_date"
-						value="<?php echo date('d-m-Y') ?>"
+						value="<?php echo date('Y-m-d') ?>"
 						required
 						tabindex="1"
 						class="w-full text-sm outline-none datepicker1">
-					<i class="fa fa-calendar text-gray-500"></i>
+					<!-- <i class="fa fa-calendar text-gray-500"></i> -->
 				</div>
 			</div>
 		</div>

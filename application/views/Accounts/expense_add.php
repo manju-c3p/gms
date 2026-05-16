@@ -1,6 +1,6 @@
 <?php //$this->load->helper('myopeningbalance_helper');?>
 <div class="card-body">
-	<form class="form-horizontal" action="<?php echo base_url().'index.php/accounts/add_expense_details'; ?>" id="receipt" method="post" name="receipt" >
+	<form class="form-horizontal" action="<?php echo base_url().'index.php/Accounts/add_expense_details'; ?>" id="receipt" method="post" name="receipt" >
 	    <div class="form-group row">
 	    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-2 col-form-label"> Payment Date <span style="color: red;"> * </span></label>
 	  		<div class="col-xs-12 col-sm-9 col-md-3 col-lg-3" role='group'>

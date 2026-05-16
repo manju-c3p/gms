@@ -9,7 +9,7 @@
 		<!-- HEADER -->
 		<div class="flex justify-between items-center mb-6">
 			<div>
-				
+
 				<p class="text-gray-500">Welcome , <b><?php echo $username; ?></b></p>
 			</div>
 		</div>
@@ -71,11 +71,13 @@
 				<div class="flex justify-between items-center mb-4">
 
 					<div>
-						<p class="text-sm text-gray-500">Purchase Order</p>
+						<a href="<?= base_url('index.php/Purchase/purchase_order_list') ?>">
+							<p class="text-sm text-gray-500">Purchase Order</p>
 
-						<h2 class="text-xl font-bold text-gray-800">
-							<?= $purchase_order_count; ?>
-						</h2>
+							<h2 class="text-xl font-bold text-gray-800">
+								AED <?= $total_purchase_amount; ?>
+							</h2>
+						</a>
 					</div>
 
 					<!-- Icon -->
@@ -89,16 +91,18 @@
 				<div class="border-t pt-3 grid grid-cols-2 text-sm">
 
 					<div>
-						<p class="text-gray-400">GRN Count</p>
+						<!-- <p class="text-gray-400">GRN Count</p> -->
 						<p class="font-semibold text-green-600">
-							<?= $grn_count; ?>
+							Parts PO: <?= $parts_po->count ?? 0 ?>
+							(AED <?= number_format($parts_po->total ?? 0, 2) ?>)
 						</p>
 					</div>
 
 					<div>
-						<p class="text-gray-400">Purchase Return</p>
+						<!-- <p class="text-gray-400">Purchase Return</p> -->
 						<p class="font-semibold text-red-500">
-							<?= $purchase_return_count; ?>
+							Service PO: <?= $service_po->count ?? 0 ?>
+							(AED <?= number_format($service_po->total ?? 0, 2) ?>)
 						</p>
 					</div>
 
@@ -202,6 +206,56 @@
 
 
 		</div>
+		<div class="grid grid-cols-1 gap-6 mb-8">
+
+
+			<div class="bg-white rounded-2xl shadow p-6 border-l-4 border-green-600 w-full">
+
+				<!-- Header -->
+				<div class="flex justify-between items-center">
+
+					<div>
+						<p class="text-sm text-gray-500">Cash / Bank Balance</p>
+
+						<h2 class="text-2xl font-bold <?= (array_sum(array_column($balances, 'balance')) < 0) ? 'text-red-600' : 'text-gray-800'; ?>">
+							AED <?= number_format(array_sum(array_column($balances, 'balance')), 2) ?>
+						</h2>
+					</div>
+
+					<div class="p-4 bg-green-100 rounded-2xl text-green-600 text-2xl">
+						💰
+					</div>
+
+				</div>
+
+				<!-- Divider -->
+				<div class="border-t my-4"></div>
+
+				<!-- Ledger Cards -->
+				<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+
+					<?php foreach ($balances as $b) { ?>
+
+						<div class="bg-gray-50 hover:bg-gray-100 transition rounded-xl p-4 shadow-sm border">
+
+							<p class="text-xs text-gray-500 mb-1 truncate">
+								<?= $b->account_name ?>
+							</p>
+
+							<p class="text-lg font-bold <?= ($b->balance < 0) ? 'text-red-500' : 'text-green-600'; ?>">
+								AED <?= number_format($b->balance, 2) ?>
+							</p>
+
+						</div>
+
+					<?php } ?>
+
+				</div>
+
+			</div>
+
+
+		</div>
 
 		<!-- MODULE SHORTCUT CARDS -->
 		<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -230,7 +284,7 @@
 					'title' => 'Inventory & Spare Parts',
 					'desc'  => 'Stock & usage tracking',
 					'icon'  => '📦',
-					'url'   => base_url('index.php/spareparts')
+					'url'   => base_url('index.php/SpareParts')
 				],
 				[
 					'title' => 'Job Cards / Work Orders',

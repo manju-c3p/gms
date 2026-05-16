@@ -33,9 +33,9 @@
 					<option value="">Select</option>
 
 					<?php foreach ($user_records as $s) { ?>
-						<option <?php if ($this->session->userdata('id') == $s->id) echo 'selected'; ?>
-							value="<?php echo $s->id ?>">
-							<?php echo $s->username; ?>
+						<option <?php if ($this->session->userdata('id') == $s->employee_id) echo 'selected'; ?>
+							value="<?php echo $s->employee_id ?>">
+							<?php echo $s->employee_name; ?>
 						</option>
 					<?php } ?>
 
@@ -165,7 +165,7 @@
 										id="documents_res"
 										name="documents_res[]"
 										tabindex="6"
-										type="file">
+										type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx">
 
 								</div>
 

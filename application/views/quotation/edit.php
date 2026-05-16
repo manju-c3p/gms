@@ -2,6 +2,7 @@
 
 	<form method="post" action="<?= base_url('index.php/Quotation/update'); ?>" class="p-6 bg-white">
 		<input type="hidden" name="quotation_id" value="<?= $quotation->quotation_id ?>">
+		<?php echo $quotation->status ?>
 
 		<!-- ================================ -->
 
@@ -24,13 +25,23 @@
 			<!-- Action Buttons -->
 			<div class="flex flex-col sm:flex-row sm:flex-wrap gap-2 justify-center lg:justify-end">
 				<!-- CREATE -->
-				<button type="button"
-					id="createBtn"
-					onclick="enableCreateMode()"
-					class="w-full sm:w-auto px-6 py-2 bg-green-600 text-white rounded">
-					Create Quotation
-				</button>
+				
+					<button type="button"
+						id="createBtn"
+						onclick="enableCreateMode()"
+						class="w-full sm:w-auto px-6 py-2 bg-green-600 text-white rounded">
+						Create Quotation
+					</button>
+				
 
+				<!-- SAVE (For Create) -->
+			
+					<button type="submit"
+						id="saveBtn"
+						class="hidden w-full sm:w-auto px-6 py-2 bg-green-700 text-white rounded">
+						Save
+					</button>
+				
 				<!-- EDIT -->
 				<button type="button"
 					id="editBtn"
@@ -39,13 +50,7 @@
 					Edit
 				</button>
 
-				<!-- SAVE (For Create) -->
-				<button type="submit"
-					id="saveBtn"
-					class="hidden w-full sm:w-auto px-6 py-2 bg-green-700 text-white rounded">
-					Save
-				</button>
-
+				
 				<!-- UPDATE (For Edit) -->
 				<button type="submit"
 					id="updateBtn"
@@ -67,12 +72,19 @@
 					View &amp; Print
 				</a>
 
-				<a href="<?= base_url('index.php/Jobcard/edit_by_quotation/' . $quotation->quotation_id . '/' . $quotation->estimation_id) ?>"
+				<!-- <a href="<?= base_url('index.php/Jobcard/edit_by_quotation/' . $quotation->quotation_id . '/' . $quotation->estimation_id) ?>"
 					class="w-full sm:w-auto text-center px-6 py-2 bg-green-400 text-white rounded">
 					Job Card
+				</a> -->
+
+				<a href="javascript:void(0);"
+				onclick="openJobCard('<?= trim($quotation->status) ?>',
+									'<?= base_url('index.php/Jobcard/edit_by_quotation/' . $quotation->quotation_id . '/' . $quotation->estimation_id) ?>')"
+				class="w-full sm:w-auto text-center px-6 py-2 bg-green-400 text-white rounded">
+				Job Card
 				</a>
 
-				<a href="<?= base_url('index.php/Appointment'); ?>"
+				<a href="<?= base_url('index.php/Quotation'); ?>"
 					class="w-full sm:w-auto text-center px-6 py-2 bg-gray-300 rounded">
 					Cancel
 				</a>
@@ -142,8 +154,8 @@
 						<tr>
 							<td class="border p-2 font-medium">Date</td>
 							<td class="border p-2">
-								<input type="date" class="editable w-full border rounded px-2 py-1 bg-gray-100"
-									value="<?= date('Y-m-d') ?>">
+								<input type="date" name="quote_date" class="editable w-full border rounded px-2 py-1 bg-gray-100"
+									value="<?= $quotation->quotation_date ?>">
 							</td>
 
 							<td class="border p-2 font-medium">Time</td>
@@ -435,7 +447,7 @@
 		<!-- New Parts -->
 		<div class="mb-10">
 			<h4 class="text-lg font-semibold text-blue-700 mb-3">
-				Original Parts / Consumables
+				Original Parts / Consumablesb
 			</h4>
 			<button type="button" id="addNewPart"
 				class="mb-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hidden">
@@ -3052,4 +3064,19 @@
 
 		disableEditMode();
 	}
+</script>
+<script>
+function openJobCard(status, url)
+{
+    status = status.trim().toLowerCase();
+
+    if(status === 'approved')
+    {
+        window.location.href = url;
+    }
+    else
+    {
+        alert('Please Save / Approve the Quotation First');
+    }
+}
 </script>

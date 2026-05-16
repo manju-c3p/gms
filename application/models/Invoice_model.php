@@ -65,21 +65,94 @@ class Invoice_model extends CI_Model
 			->get()
 			->result();
 	}
+	// public function get_invoice_parts($invoice_id)
+	// {
+	// 	return $this->db
+	// 		->select('
+	//         ii.item_id,
+	//         ii.item_name,
+	//         ii.quantity,
+	//         ii.unit_price,
+	//         ii.total_price,
+	//         ii.disamount,
+
+	//         sp.part_code,
+	//         sp.part_name,
+	//         sp.part_type,
+	//         sp.warrenty
+	//     ')
+	// 		->from('invoice_items ii')
+
+	// 		->join(
+	// 			'spare_parts sp',
+	// 			'sp.part_id = ii.source_jobcard_item_id',
+	// 			'left'
+	// 		)
+
+	// 		->where('ii.invoice_id', $invoice_id)
+	// 		->where('ii.item_type', 'Part')
+
+	// 		->get()
+	// 		->result();
+	// }
 	public function get_invoice_parts($invoice_id)
-	{
-		return $this->db
-			->select('
+{
+	return $this->db
+		->select('
             ii.item_id,
+            COALESCE(sp.part_name, ii.item_name) as part_name,
             ii.item_name,
             ii.quantity,
-            ii.unit_price,
+            ii.unit_price as invoiceprice,
             ii.total_price,
             ii.disamount,
 
             sp.part_code,
-            sp.part_name,
             sp.part_type,
-            sp.warrenty
+            sp.warrenty,
+			sp.labeling,
+			sp.*,
+			ii.source_jobcard_item_id,
+			qp.partremarks
+        ')
+		->from('invoice_items ii')
+
+		->join(
+			'spare_parts sp',
+			'sp.part_id = ii.source_jobcard_item_id',
+			'left'
+		)
+
+		->join(
+			'quotation_parts qp',
+			'qp.id = ii.quotation_item_id',
+			'left'
+		)
+
+		->where('ii.invoice_id', $invoice_id)
+		->where('LOWER(ii.item_type)', 'part')
+
+		->get()
+		->result();
+}
+	public function get_invoice_parts123131($invoice_id)
+	{
+		return $this->db
+			->select('
+            ii.item_id,
+            COALESCE(sp.part_name, ii.item_name) as part_name,
+            ii.item_name,
+            ii.quantity,
+            ii.unit_price as invoiceprice,
+            ii.total_price,
+            ii.disamount,
+
+            sp.part_code,
+            sp.part_type,
+            sp.warrenty,
+			sp.labeling,
+			sp.*,
+			ii.source_jobcard_item_id
         ')
 			->from('invoice_items ii')
 
@@ -90,7 +163,7 @@ class Invoice_model extends CI_Model
 			)
 
 			->where('ii.invoice_id', $invoice_id)
-			->where('ii.item_type', 'Part')
+			->where('LOWER(ii.item_type)', 'part')
 
 			->get()
 			->result();
@@ -127,12 +200,151 @@ class Invoice_model extends CI_Model
 	// 		->get('invoice_payments')
 	// 		->result();
 	// }
-	public function get_invoice_payments($invoice_id)
+	public function get_invoice_paymentsold($invoice_id)
 	{
 		return $this->db
 			->select('voucher_id, voucher_code, voucher_date, amount, payment_type, narration, customer_id')
 			->from('voucher_transaction')
 			->where('trans_id', $invoice_id)
+			->where('voucher_type', 'R')
+			->where('drcr_type', 'Cr')
+			->where('cancel', 0)
+			->order_by('voucher_date', 'ASC')
+			->get()
+			->result();
+	}
+
+	public function get_invoice_payments14_5($invoice_id)
+{
+    // Get invoice and quotation details
+    $invoice = $this->db
+        ->select('i.invoice_no, i.quotation_id, i.jobcard_id')
+        ->from('invoices i')
+        ->where('i.invoice_id', $invoice_id)
+        ->get()
+        ->row();
+
+    $invoice_no   = !empty($invoice) ? $invoice->invoice_no : '';
+    $quotation_id = !empty($invoice) ? $invoice->quotation_id : 0;
+ $jobcard_id = !empty($invoice) ? $invoice->jobcard_id : 0;
+
+
+    return $this->db
+        ->select('voucher_id, voucher_code, voucher_date, amount, payment_type, narration, customer_id')
+        ->from('voucher_transaction')
+        ->group_start()
+            ->where('invoice_code', $invoice_no)
+            ->or_group_start()
+                ->where('trans_id', $quotation_id)
+                ->where('trans_type', 'R')
+            ->group_end()
+        ->group_end()
+        ->where('voucher_type', 'R')
+        ->where('drcr_type', 'Cr')
+        ->where('cancel', 0)
+        ->order_by('voucher_date', 'ASC')
+        ->get()
+        ->result();
+}
+
+public function get_invoice_payments($invoice_id)
+{
+    // Get invoice, quotation and customer details
+    $invoice = $this->db
+        ->select('i.invoice_no, i.quotation_id, i.jobcard_id, jc.customer_id')
+        ->from('invoices i')
+        ->join('job_cards jc', 'jc.jobcard_id = i.jobcard_id')
+        ->where('i.invoice_id', $invoice_id)
+        ->get()
+        ->row();
+
+    $invoice_no   = !empty($invoice) ? $invoice->invoice_no : '';
+    $quotation_id = !empty($invoice) ? $invoice->quotation_id : 0;
+    $jobcard_id   = !empty($invoice) ? $invoice->jobcard_id : 0;
+    $customer_id  = !empty($invoice) ? $invoice->customer_id : 0;
+
+    // Get customer account id from general ledger
+    $ledger = $this->db
+        ->select('account_id')
+        ->from('general_ledger')
+        ->where('customer_id', $customer_id)
+        ->get()
+        ->row();
+
+    $account_id = !empty($ledger) ? $ledger->account_id : 0;
+
+    return $this->db
+        ->select('voucher_id, voucher_code, voucher_date, amount, payment_type, narration, customer_id')
+        ->from('voucher_transaction')
+        ->group_start()
+            ->where('invoice_code', $invoice_no)
+            ->or_group_start()
+                ->where('trans_id', $quotation_id)
+                ->where('trans_type', 'R')
+            ->group_end()
+        ->group_end()
+        ->where('account_id', $account_id)
+        ->where('voucher_type', 'R')
+        ->where('drcr_type', 'Cr')
+        ->where('cancel', 0)
+        ->order_by('voucher_date', 'ASC')
+        ->get()
+        ->result();
+}
+
+	// public function get_invoice_payments($invoice_id)
+	// {
+	// 	// Get customer id from invoice -> jobcard
+	// 	$invoice = $this->db
+	// 		->select('jc.customer_id')
+	// 		->from('invoices i')
+	// 		->join('job_cards jc', 'jc.jobcard_id = i.jobcard_id')
+	// 		->where('i.invoice_id', $invoice_id)
+	// 		->get()
+	// 		->row();
+
+	// 	$customer_id = !empty($invoice) ? $invoice->customer_id : 0;
+
+	// 	// Get customer account id from general ledger
+	// 	$ledger = $this->db
+	// 		->select('account_id')
+	// 		->from('general_ledger')
+	// 		->where('customer_id', $customer_id)
+	// 		->get()
+	// 		->row();
+
+	// 	$account_id = !empty($ledger) ? $ledger->account_id : 0;
+
+	// 	return $this->db
+	// 		->select('voucher_id, voucher_code, voucher_date, amount, payment_type, narration, customer_id')
+	// 		->from('voucher_transaction')
+	// 		->where('trans_id', $invoice_id)
+	// 		->where('account_id', $account_id)
+	// 		->where('voucher_type', 'R')
+	// 		->where('drcr_type', 'Cr')
+	// 		->where('cancel', 0)
+	// 		->order_by('voucher_date', 'ASC')
+	// 		->get()
+	// 		->result();
+	// }
+
+	public function get_invoice_payments_new($invoice_id)
+	{
+		// Get invoice number/code
+		$invoice = $this->db
+			->select('invoice_no')
+			->from('invoices')
+			->where('invoice_id', $invoice_id)
+			->get()
+			->row();
+
+		$invoice_code = !empty($invoice) ? $invoice->invoice_no : '';
+
+		return $this->db
+			->select('voucher_id, voucher_code, voucher_date, amount, payment_type, narration, customer_id')
+			->from('voucher_transaction')
+			->where('trans_id', $invoice_id)
+			->where('invoice_code', $invoice_code)
 			->where('voucher_type', 'R')
 			->where('drcr_type', 'Cr')
 			->where('cancel', 0)
@@ -261,7 +473,7 @@ class Invoice_model extends CI_Model
 
 			$AccountCode = $invoice_no;
 
-			$vdate = $this->input->post('invdate');
+			$vdate = $this->input->post('invoice_date_hidden');
 			$vtime = date('h:i:s');
 
 			/// debit entry 
@@ -282,6 +494,7 @@ class Invoice_model extends CI_Model
 						'trans_type' => 'S',
 						'recordCreatedBy' => $this->session->userdata('user_id'),
 						'invoice_code' => $AccountCode,
+						'invoice_amount' => $dr_amount,
 					);
 					$this->db->insert('voucher_transaction', $data);
 					$vid = $this->db->insert_id();
@@ -306,12 +519,60 @@ class Invoice_model extends CI_Model
 						'trans_type' => 'S',
 						'recordCreatedBy' => $this->session->userdata('user_id'),
 						'invoice_code' => $AccountCode,
+						'invoice_amount' => $cr_amount,
 					);
 					$this->db->insert('voucher_transaction', $data);
 					$vid = $this->db->insert_id();
 				}
 			}
 
+			// ======================== advance voucher entry ==========================
+
+			// $advance = $this->input->post('advance_paid') ?? 0;
+			// $advance = floatval($advance);
+			// if ($advance > 0) {
+
+			// 	$code_prefix = "ADV/" . date('y') . "/";
+			// 	$this->load->model('Accounts_model');
+			// 	$num = $this->Accounts_model->get_account_code_count_for_advance($code_prefix, 'ADV') + 1;
+			// 	$advance_code = $code_prefix . sprintf("%05d", $num);
+
+			// 	$cash_account = '23'; // or fixed ledger id
+			// 	$data = array(
+			// 		'voucher_code' => $advance_code,
+			// 		'voucher_date' => date('Y-m-d h:i:s', strtotime("$vdate $vtime")),
+			// 		'voucher_type' => 'R', // Receipt
+			// 		'customer_id' => $customer_id,
+			// 		'account_id' => $cash_account,
+			// 		'amount' => $advance,
+			// 		'drcr_type' => 'Dr',
+			// 		'trans_id' => $insertid,
+			// 		'trans_type' => 'ADV',
+			// 		'recordCreatedBy' => $this->session->userdata('user_id'),
+			// 		'invoice_code' => $AccountCode,
+			// 		'invoice_amount' => $advance,
+			// 	);
+			// 	$this->db->insert('voucher_transaction', $data);
+
+
+			// 	$customer_ledger = $_POST['inv_debtor'][0]; // usually first debtor is customer
+			// 	$data = array(
+			// 		'voucher_code' => $advance_code,
+			// 		'voucher_date' => date('Y-m-d h:i:s', strtotime("$vdate $vtime")),
+			// 		'voucher_type' => 'R',
+			// 		'customer_id' => $customer_id,
+			// 		'account_id' => $customer_ledger,
+			// 		'amount' => $advance,
+			// 		'drcr_type' => 'Cr',
+			// 		'trans_id' => $insertid,
+			// 		'trans_type' => 'ADV',
+			// 		'recordCreatedBy' => $this->session->userdata('user_id'),
+			// 		'invoice_code' => $AccountCode,
+			// 		'invoice_amount' => $advance,
+			// 	);
+			// 	$this->db->insert('voucher_transaction', $data);
+			// }
+			// ======================== advance voucher entry ==========================
 			// if ($vid) {
 			// 	$user_se_id = $this->session->userdata('session_id');
 			// 	$uid = $this->session->userdata('user_id');
@@ -369,7 +630,7 @@ class Invoice_model extends CI_Model
 		}
 	}
 
-	public function insert_invoice_items_from_post($invoice_id)
+	public function insert_invoice_items_from_postuu($invoice_id)
 	{
 
 		/* ================= SERVICES ================= */
@@ -377,6 +638,7 @@ class Invoice_model extends CI_Model
 		$services = $this->input->post('service_name');
 
 		if (!empty($services)) {
+			$qsid = $this->input->post('qs_ids');
 			$sid = $this->input->post('service_ids');
 			// log_message('error', print_r($sid, true));
 			$names      = $this->input->post('service_name');
@@ -394,17 +656,19 @@ class Invoice_model extends CI_Model
 					'quantity'    => 1,
 					'unit_price'  => $prices[$i],
 					'total_price' => $prices[$i],
-					'disamount'   => $discounts[$i] ?? 0
+					'disamount'   => $discounts[$i] ?? 0,
+					'quotation_item_id' => $qsid[$i]
 				]);
 			}
 		}
-
+		echo $this->db->last_query();
 
 		/* ================= PARTS ================= */
 
 		$parts = $this->input->post('part_name');
 
 		if (!empty($parts)) {
+			$qpid = $this->input->post('qp_ids');
 			$paid = $this->input->post('part_id');
 			$names   = $this->input->post('part_name');
 			$qty     = $this->input->post('part_qty');
@@ -423,7 +687,8 @@ class Invoice_model extends CI_Model
 					'quantity'    => $qty[$i],
 					'unit_price'  => $price[$i],
 					'total_price' => $total[$i],
-					'disamount'   => $disc[$i] ?? 0
+					'disamount'   => $disc[$i] ?? 0,
+					'quotation_item_id' => $qpid[$i]
 				]);
 			}
 		}
@@ -434,6 +699,7 @@ class Invoice_model extends CI_Model
 		$descs = $this->input->post('desc_name');
 
 		if (!empty($descs)) {
+			$qjdid = $this->input->post('qjd_ids');
 			$deid = $this->input->post('desc_id');
 			$names = $this->input->post('desc_name');
 			$amt   = $this->input->post('desc_amount');
@@ -448,7 +714,108 @@ class Invoice_model extends CI_Model
 					'item_name'   => $names[$i],
 					'quantity'    => 1,
 					'unit_price'  => $amt[$i],
-					'total_price' => $amt[$i]
+					'total_price' => $amt[$i],
+					'quotation_item_id' => $qjdid[$i]
+				]);
+			}
+		}
+
+		return true;
+	}
+
+	public function insert_invoice_items_from_post($invoice_id)
+	{
+		/* ================= SERVICES ================= */
+
+		$selected_services = $this->input->post('services');
+
+		if (!empty($selected_services)) {
+
+			$qsid = $this->input->post('qs_ids');
+			$sid  = $this->input->post('service_ids');
+			$names = $this->input->post('service_name');
+			$prices = $this->input->post('service_price');
+			$discounts = $this->input->post('service_discount');
+
+			foreach ($selected_services as $service_id) {
+
+				$i = array_search($service_id, $sid);
+				if ($i === false) continue;
+
+				$this->db->insert('invoice_items', [
+					'invoice_id'  => $invoice_id,
+					'source_jobcard_item_id' => $sid[$i],
+					'item_type'   => 'Service',
+					'item_name'   => $names[$i] ?? '',
+					'quantity'    => 1,
+					'unit_price'  => $prices[$i] ?? 0,
+					'total_price' => $prices[$i] ?? 0,
+					'disamount'   => $discounts[$i] ?? 0,
+					'quotation_item_id' => $qsid[$i] ?? null
+				]);
+			}
+		}
+
+
+		/* ================= PARTS ================= */
+
+		$selected_parts = $this->input->post('parts');
+
+		if (!empty($selected_parts)) {
+
+			$qpid = $this->input->post('qp_ids');
+			$paid = $this->input->post('part_id');
+			$names = $this->input->post('part_name');
+			$qty   = $this->input->post('part_qty');
+			$price = $this->input->post('part_price');
+			$total = $this->input->post('part_total');
+			$disc  = $this->input->post('part_discount');
+
+			foreach ($selected_parts as $part_id) {
+
+				$i = array_search($part_id, $paid);
+				if ($i === false) continue;
+
+				$this->db->insert('invoice_items', [
+					'invoice_id'  => $invoice_id,
+					'source_jobcard_item_id' => $paid[$i],
+					'item_type'   => 'Part',
+					'item_name'   => $names[$i] ?? '',
+					'quantity'    => $qty[$i] ?? 0,
+					'unit_price'  => $price[$i] ?? 0,
+					'total_price' => $total[$i] ?? 0,
+					'disamount'   => $disc[$i] ?? 0,
+					'quotation_item_id' => $qpid[$i] ?? null
+				]);
+			}
+		}
+
+
+		/* ================= SUBLET ================= */
+
+		$selected_desc = $this->input->post('descs');
+
+		if (!empty($selected_desc)) {
+
+			$qjdid = $this->input->post('qjd_ids');
+			$deid  = $this->input->post('desc_id');
+			$names = $this->input->post('desc_name');
+			$amt   = $this->input->post('desc_amount');
+
+			foreach ($selected_desc as $desc_id) {
+
+				$i = array_search($desc_id, $deid);
+				if ($i === false) continue;
+
+				$this->db->insert('invoice_items', [
+					'invoice_id'  => $invoice_id,
+					'item_type'   => 'Sublet',
+					'source_jobcard_item_id' => $deid[$i],
+					'item_name'   => $names[$i] ?? '',
+					'quantity'    => 1,
+					'unit_price'  => $amt[$i] ?? 0,
+					'total_price' => $amt[$i] ?? 0,
+					'quotation_item_id' => $qjdid[$i] ?? null
 				]);
 			}
 		}
@@ -566,7 +933,8 @@ class Invoice_model extends CI_Model
 
 		return true;
 	}
-	public function get_all_invoices_with_payment()
+	// =====================================================
+	public function get_all_invoices_with_payment2_4_26()
 	{
 		$this->db->select("
         i.invoice_id,
@@ -576,6 +944,7 @@ class Invoice_model extends CI_Model
         i.status,
         c.name AS customer_name,
         v.registration_no,
+		vt.amount,
         IFNULL(SUM(vt.amount),0) AS paid_amount ");
 
 		$this->db->from('invoices i');
@@ -588,13 +957,46 @@ class Invoice_model extends CI_Model
 			'voucher_transaction vt',
 			"vt.invoice_code = i.invoice_no 
         AND vt.drcr_type = 'Cr'
-        AND vt.trans_type = 'R'",
+        AND vt.trans_type IN ('R','ADV')",
+			'left'
+		);
+
+
+		$this->db->group_by('i.invoice_id');
+		$this->db->order_by('i.invoice_id', 'DESC');
+
+		return $this->db->get()->result();
+	}
+	public function get_all_invoices_with_payment2222()
+	{
+		$this->db->select("
+				i.invoice_id,
+				i.invoice_no,
+				i.invoice_date,
+				i.grand_total,
+				i.status,
+				c.name AS customer_name,
+				v.registration_no,
+				IFNULL(SUM(CASE 
+					WHEN vt.drcr_type = 'Cr' AND vt.trans_type IN ('R','ADV') 
+					THEN vt.amount 
+					ELSE 0 END), 0) AS paid_amount
+			");
+
+		$this->db->from('invoices i');
+
+		$this->db->join('job_cards j', 'j.jobcard_id = i.jobcard_id', 'left');
+		$this->db->join('customers c', 'c.customer_id = j.customer_id', 'left');
+		$this->db->join('vehicles v', 'v.vehicle_id = j.vehicle_id', 'left');
+
+		$this->db->join(
+			'voucher_transaction vt',
+			"vt.invoice_code = i.invoice_no",
 			'left'
 		);
 
 		$this->db->group_by('i.invoice_id');
 		$this->db->order_by('i.invoice_id', 'DESC');
-
 		return $this->db->get()->result();
 	}
 
@@ -620,6 +1022,96 @@ class Invoice_model extends CI_Model
 		return $this->db->get()->result();
 	}
 
+	// ****************************************************
+public function get_all_invoices_with_payment()
+{
+    $this->db->select("
+        i.invoice_id,
+        i.invoice_no,
+        i.invoice_date,
+        i.grand_total,
+        i.status,
+        c.name AS customer_name,
+        v.registration_no,
+
+        IFNULL(SUM(
+            CASE 
+                WHEN vt.drcr_type = 'Cr' 
+                AND vt.trans_type IN ('R','ADV')
+                THEN vt.amount 
+                ELSE 0 
+            END
+        ), 0) AS paid_amount
+    ");
+
+    $this->db->from('invoices i');
+
+    $this->db->join('job_cards j', 'j.jobcard_id = i.jobcard_id', 'left');
+    $this->db->join('customers c', 'c.customer_id = j.customer_id', 'left');
+    $this->db->join('vehicles v', 'v.vehicle_id = j.vehicle_id', 'left');
+
+    // Customer ledger account
+    $this->db->join(
+        'general_ledger gl',
+        'gl.customer_id = j.customer_id',
+        'left'
+    );
+
+    $this->db->join(
+        'voucher_transaction vt',
+        "(
+            (vt.invoice_code = i.invoice_no 
+            OR (vt.trans_id = j.quotation_id AND vt.trans_type = 'R'))
+            AND vt.account_id = gl.account_id
+        )",
+        'left'
+    );
+
+    $this->db->group_by('i.invoice_id');
+    $this->db->order_by('i.invoice_id', 'DESC');
+
+    return $this->db->get()->result();
+}
+	public function get_all_invoices_with_payment14_5()
+	{
+		$this->db->select("
+        i.invoice_id,
+        i.invoice_no,
+        i.invoice_date,
+        i.grand_total,
+        i.status,
+        c.name AS customer_name,
+        v.registration_no,
+
+        IFNULL(SUM(
+            CASE 
+                WHEN vt.drcr_type = 'Cr' 
+                AND vt.trans_type IN ('R','ADV')
+                THEN vt.amount 
+                ELSE 0 
+            END
+        ), 0) AS paid_amount
+    ");
+
+		$this->db->from('invoices i');
+
+		$this->db->join('job_cards j', 'j.jobcard_id = i.jobcard_id', 'left');
+		$this->db->join('customers c', 'c.customer_id = j.customer_id', 'left');
+		$this->db->join('vehicles v', 'v.vehicle_id = j.vehicle_id', 'left');
+
+		$this->db->join(
+			'voucher_transaction vt',
+			"(vt.invoice_code = i.invoice_no 
+        OR (vt.trans_id = j.quotation_id AND vt.trans_type = 'R'))",
+			'left'
+		);
+
+		$this->db->group_by('i.invoice_id');
+		$this->db->order_by('i.invoice_id', 'DESC');
+
+		return $this->db->get()->result();
+	}
+	// ======================================================================
 	public function insert_payment($data)
 	{
 		return $this->db->insert('invoice_payments', $data);
@@ -670,7 +1162,95 @@ class Invoice_model extends CI_Model
 			->where('invoice_type', 'Proforma')
 			->count_all_results('invoices') > 0;
 	}
+	// ================================================================
+	function get_debt_invoice_listdemo($customer_id, $account_id)
+	{
+		$query = $this->db->query("
+        SELECT 
+            i.invoice_id,
+            i.invoice_no,
+            i.invoice_date,
+            j.customer_id,
+            i.grand_total,
+
+            IFNULL(SUM(
+                CASE
+                    -- Receipt against invoice
+                    WHEN v.trans_id = i.invoice_id
+                    AND v.voucher_type = 'R'
+                    AND v.drcr_type = 'Cr'
+                    THEN v.amount
+
+                    -- Advance against quotation
+                    WHEN v.trans_id = j.quotation_id
+                    AND v.trans_type = 'R'
+                    AND v.drcr_type = 'Cr'
+                    THEN v.amount
+
+                    ELSE 0
+                END
+            ),0) AS paid_amt
+
+        FROM invoices i
+
+        JOIN job_cards j 
+            ON j.jobcard_id = i.jobcard_id
+            AND j.customer_id = $customer_id
+
+        LEFT JOIN voucher_transaction v 
+            ON v.cancel = 0
+            AND v.account_id = $account_id
+
+        WHERE i.invoice_type = 'TI'
+
+        GROUP BY i.invoice_id
+
+        ORDER BY i.invoice_date DESC, i.invoice_no DESC
+    ");
+
+		return $query->result();
+	}
+
+	// ***************************************************************************************
+
 	function get_debt_invoice_list($customer_id, $account_id)
+{
+    $query = $this->db->query("
+        SELECT 
+            i.invoice_id,
+            i.invoice_no,
+            i.invoice_date,
+            j.customer_id,
+            i.grand_total,
+            IFNULL(SUM(v.amount),0) AS paid_amt
+
+        FROM invoices i
+
+        JOIN job_cards j 
+            ON j.jobcard_id = i.jobcard_id
+            AND j.customer_id = $customer_id
+
+        LEFT JOIN voucher_transaction v 
+            ON (
+                    v.invoice_code = i.invoice_no
+                    OR 
+                    (v.trans_id = i.quotation_id AND v.trans_type = 'R')
+               )
+            AND v.cancel = 0
+            AND v.voucher_type = 'R'
+            AND v.drcr_type = 'Cr'
+            AND v.account_id = $account_id
+
+        WHERE i.invoice_type = 'TI'
+
+        GROUP BY i.invoice_id
+
+        ORDER BY i.invoice_date DESC, i.invoice_no DESC
+    ");
+
+    return $query->result();
+}
+	function get_debt_invoice_list111($customer_id, $account_id)
 	{
 		$query = $this->db->query("
         SELECT 
@@ -849,7 +1429,7 @@ class Invoice_model extends CI_Model
 		$customer_id  = $this->input->post('customer_id') ?? null;
 
 		$this->db->where('trans_id', $invoice_id);
-		$this->db->delete('voucher_transaction');
+		$this->db->delete('voucher_transaction'); // add one more condition trans_type="S" for sales clearing "ADV" for advance clearing
 
 		if ($type == 'TI') {
 
@@ -857,7 +1437,7 @@ class Invoice_model extends CI_Model
 
 			$AccountCode = $invoice_no;
 
-			$vdate = $this->input->post('invdate');
+			$vdate = $this->input->post('invoice_date');
 			$vtime = date('h:i:s');
 
 			/// debit entry 
@@ -878,6 +1458,7 @@ class Invoice_model extends CI_Model
 						'trans_type' => 'S',
 						'recordCreatedBy' => $this->session->userdata('user_id'),
 						'invoice_code' => $AccountCode,
+						'invoice_amount' => $dr_amount,
 					);
 					$this->db->insert('voucher_transaction', $data);
 					$vid = $this->db->insert_id();
@@ -902,11 +1483,64 @@ class Invoice_model extends CI_Model
 						'trans_type' => 'S',
 						'recordCreatedBy' => $this->session->userdata('user_id'),
 						'invoice_code' => $AccountCode,
+						'invoice_amount' => $cr_amount,
 					);
 					$this->db->insert('voucher_transaction', $data);
 					$vid = $this->db->insert_id();
 				}
 			}
+
+
+			// ==================================entry for advance if any =======================
+			// ======================== advance voucher entry ==========================
+
+			$advance = $this->input->post('advance_paid') ?? 0;
+			$advance = floatval($advance);
+			if ($advance > 0) {
+
+				$code_prefix = "ADV/" . date('y') . "/";
+				$this->load->model('Accounts_model');
+				$num = $this->Accounts_model->get_account_code_count_for_advance($code_prefix, 'ADV') + 1;
+				$advance_code = $code_prefix . sprintf("%05d", $num);
+
+				$cash_account = '23'; // or fixed ledger id
+				$data = array(
+					'voucher_code' => $advance_code,
+					'voucher_date' => date('Y-m-d h:i:s', strtotime("$vdate $vtime")),
+					'voucher_type' => 'R', // Receipt
+					'customer_id' => $customer_id,
+					'account_id' => $cash_account,
+					'amount' => $advance,
+					'drcr_type' => 'Dr',
+					'trans_id' => $invoice_id,
+					'trans_type' => 'ADV',
+					'recordCreatedBy' => $this->session->userdata('user_id'),
+					'invoice_code' => $AccountCode,
+					'invoice_amount' => $advance,
+				);
+				$this->db->insert('voucher_transaction', $data);
+
+
+				$customer_ledger = $_POST['inv_debtor'][0]; // usually first debtor is customer
+				$data = array(
+					'voucher_code' => $advance_code,
+					'voucher_date' => date('Y-m-d h:i:s', strtotime("$vdate $vtime")),
+					'voucher_type' => 'R',
+					'customer_id' => $customer_id,
+					'account_id' => $customer_ledger,
+					'amount' => $advance,
+					'drcr_type' => 'Cr',
+					'trans_id' => $invoice_id,
+					'trans_type' => 'ADV',
+					'recordCreatedBy' => $this->session->userdata('user_id'),
+					'invoice_code' => $AccountCode,
+					'invoice_amount' => $advance,
+				);
+				$this->db->insert('voucher_transaction', $data);
+			}
+			// ======================== advance voucher entry ==========================
+
+
 		}
 	}
 
@@ -1038,5 +1672,47 @@ class Invoice_model extends CI_Model
 		}
 
 		$this->db->trans_complete();
+	}
+
+	public function auto_adjust_advance($quotation_id, $used_amount)
+	{
+		$remaining = (float)$used_amount;
+
+		// Get all advances with balance (oldest first)
+		$payments = $this->db
+			->select('id, amount, adjusted_amount')
+			->from('quotation_payments')
+			->where('quotation_id', $quotation_id)
+			->order_by('created_at', 'ASC')
+			->get()
+			->result();
+
+		foreach ($payments as $p) {
+
+			$available = $p->amount - $p->adjusted_amount;
+
+			if ($available <= 0) continue;
+
+			// कितना लेना है इस row से
+			$consume = min($available, $remaining);
+
+			// Update adjusted_amount
+			$this->db->set('adjusted_amount', 'adjusted_amount + ' . $consume, false);
+			$this->db->where('id', $p->id);
+			$this->db->update('quotation_payments');
+
+			$remaining -= $consume;
+
+			if ($remaining <= 0) {
+				return ['status' => true];
+			}
+		}
+
+		// अगर advance कम पड़ा
+		return [
+			'status' => false,
+			'msg' => 'Not enough advance balance',
+			'remaining' => $remaining
+		];
 	}
 }

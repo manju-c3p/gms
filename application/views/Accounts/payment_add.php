@@ -11,13 +11,13 @@
   </h2>
 
   <!-- List Button -->
-  <a href="<?php echo base_url('index.php/accounts/view_payment_list'); ?>"
+  <a href="<?php echo base_url('index.php/Accounts/view_payment_list'); ?>"
      class="inline-flex items-center bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-md shadow">
     <i class="fa fa-list mr-2"></i> List
   </a>
 
 </div>
-	<form action="<?php echo base_url() . 'index.php/accounts/add_payment_details'; ?>"
+	<form action="<?php echo base_url() . 'index.php/Accounts/add_payment_details'; ?>"
 		  id="receipt"
 		  method="post"
 		  name="receipt"
@@ -32,14 +32,14 @@
 					Date <span class="text-red-500">*</span>
 				</label>
 				<div class="flex items-center border rounded-lg px-2 py-1">
-					<input type="text"
+					<input type="date"
 						   id="v_date"
 						   name="v_date"
-						   value="<?php echo date('d-m-Y') ?>"
+						   value="<?php echo date('Y-m-d') ?>"
 						   required
 						   tabindex="1"
 						   class="w-full text-sm outline-none datepicker1">
-					<i class="fa fa-calendar text-gray-500"></i>
+					<!-- <i class="fa fa-calendar text-gray-500"></i> -->
 				</div>
 			</div>
 
@@ -221,6 +221,10 @@
 
 
 <script>
+
+	$('form').on('submit', function () {
+	$(this).find('button[type="submit"]').prop('disabled', true);
+});
 	$(document).ready(function() {
 		// var i=1;
 		// $("#dr_add_row").click(function()
@@ -357,6 +361,17 @@
 	}
 
 	function check_total() {
+	// Check whether at least one invoice checkbox is selected
+		let checkedInvoices = $('input[name="invoiceID[]"]:checked').length;
+
+		
+
+		if ( checkedInvoices === 0) {
+			alert('Please select at least one invoice');
+			return false;
+		}
+
+
 		var dr_total = $('#debit_total').val();
 		var cr_total = $('#credit_total').val();
 		if (parseFloat(cr_total) != parseFloat(dr_total)) {
@@ -407,7 +422,7 @@
 	// 			document.getElementById('debt_list').innerHTML = '';
 	// 		}
 	// 	}
-	function get_invoice_list() {
+	function get_invoice_list111() {
 		var supplier_id = document.getElementById('debtor').value;
 	
 		console.log("Selected Supplier ID:", supplier_id);
@@ -427,10 +442,60 @@
 					alert('Failed to load GRN list: ' + error);
 				}
 			});
+			$.ajax({
+				url: "<?php echo site_url('Ajax/get_grn_list1'); ?>",
+				type: 'POST',
+				data: {
+					supplier_id: supplier_id
+				},
+				success: function(msg) {
+					document.getElementById('debt_list').innerHTML = msg;
+				},
+				error: function(xhr, status, error) {
+					console.error('AJAX error:', error);
+					alert('Failed to load GRN list: ' + error);
+				}
+			});
 		} else {
 			document.getElementById('debt_list').innerHTML = '';
 		}
 	}
+
+	function get_invoice_list() {
+    var supplier_id = document.getElementById('debtor').value;
+
+    console.log("Selected Supplier ID:", supplier_id);
+
+    if (supplier_id != '') {
+
+        // ✅ Clear first
+        document.getElementById('debt_list').innerHTML = '';
+
+        // 🔹 GRN
+        $.ajax({
+            // url: "<?php echo site_url('Ajax/get_grn_list'); ?>",
+			url: "<?php echo site_url('Ajax/get_supplier_docs'); ?>",
+            type: 'POST',
+            data: { supplier_id: supplier_id },
+            success: function(msg) {
+                document.getElementById('debt_list').innerHTML += msg;
+            }
+        });
+
+        // 🔹 Service PO
+        // $.ajax({
+        //     url: "<?php echo site_url('Ajax/get_grn_list1'); ?>",
+        //     type: 'POST',
+        //     data: { supplier_id: supplier_id },
+        //     success: function(msg) {
+        //         document.getElementById('debt_list').innerHTML += msg;
+        //     }
+        // });
+
+    } else {
+        document.getElementById('debt_list').innerHTML = '';
+    }
+}
 	// $('.datepicker1').datepicker({
 	//   format: 'dd-mm-yyyy',
 	//   autoclose: true,
@@ -515,4 +580,24 @@
 
 
 	});
+</script>
+
+<script>
+$(document).on('change', '.case', function () {
+    let checkbox = $(this);
+    let ref_id = checkbox.val();
+    let balance = parseFloat(checkbox.data('balance')) || 0;
+
+    let amountField = $('#dr_amount' + ref_id);
+
+    if (checkbox.is(':checked')) {
+        amountField.val(balance.toFixed(2));
+    } else {
+        amountField.val('');
+    }
+
+    if (typeof calculate_grand_total === 'function') {
+        calculate_grand_total();
+    }
+});
 </script>

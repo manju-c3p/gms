@@ -31,6 +31,9 @@
 					<th class="px-3 py-2 border text-left">Sr.no</th>
 					<th class="px-3 py-2 border text-left">Trans Code</th>
 					<th class="px-3 py-2 border text-left">Date</th>
+					
+					<th class="px-3 py-2 border text-left">Dr Account</th>
+					<th class="px-3 py-2 border text-left">Cr Account</th>
 					<th class="px-3 py-2 border text-left">Amount</th>
 					<th class="px-3 py-2 border text-left">Narration</th>
 					<th class="px-3 py-2 border text-left">Action</th>
@@ -61,7 +64,15 @@
 							<?php echo date('d-M-Y', strtotime($row->voucher_date)); ?>
 						</td>
 
+						
 						<td class="px-3 py-2 border font-medium">
+							<?php echo $row->dr_accounts; ?>
+						</td>
+						<td class="px-3 py-2 border font-medium">
+							<?php echo $row->cr_accounts; ?>
+						</td>
+
+						<td class="px-3 py-2 border font-medium text-right">
 							<?php echo $row->amount; ?>
 						</td>
 
@@ -128,7 +139,7 @@
 				success: function(msg) {
 					if (msg == 1) {
 						alert("Record Cancelled");
-						window.location.href = "<?php echo $_SERVER['PHP_SELF'] ?>";
+						window.location.reload();
 					} else {
 						alert("Can't Cancel record. Data already exist!!!");
 					}

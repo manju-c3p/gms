@@ -447,6 +447,7 @@
 						<?php
 						$new_total = 0;
 						$i = 1;
+						$rowtotal_new = 0;
 						$discount = 0;
 						$taxamt = 0;
 						$vatamt = 0;
@@ -454,70 +455,72 @@
 
 						?>
 						<?php if (!empty($parts_used_new)) { ?>
-						<div class="section-title">New Spare Parts</div>
+							<div class="section-title">New Spare Parts</div>
 
-						<table class="data">
+							<table class="data">
 
-							<thead>
-								<tr>
-									<th>#</th>
-									<th>Description</th>
-									<th>Unit</th>
-									<th>Qty</th>
-									<th>Dis</th>
-									<th width="20%">Amount</th>
-								</tr>
-							</thead>
-
-							<tbody>
-
-								<?php foreach ($parts_used_new as $p):
-									$new_total += $p->total_price;
-									$discount += $p->dis_amount;
-								?>
+								<thead>
 									<tr>
-										<td class="text-center"><?= $i++ ?></td>
-										<td><?= $p->part_name ?><br><?= $p->partremarks ?></td>
-										<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
-										<td class="text-center"><?= $p->qty ?></td>
-										<td class="text-center"><?= number_format($p->dis_amount, 2) ?></td>
-										<td width="20%" class="text-right"><?= number_format($p->total_price, 2) ?></td>
+										<th>#</th>
+										<th>Description</th>
+										<th>Unit</th>
+										<th>Qty</th>
+										<th>Dis</th>
+										<th width="20%">Amount</th>
 									</tr>
-								<?php endforeach; ?>
+								</thead>
 
-								<tr>
-									<td colspan="5" class="text-right"><strong>Parts Sub Total</strong></td>
-									<td width="20%" class="text-right"><strong><?= number_format($new_total, 2) ?></strong></td>
-								</tr>
-								<tr>
-									<td colspan="5" class="text-right"><strong>Total Discount</strong></td>
-									<td width="20%" class="text-right"><strong><?= number_format($discount, 2) ?></strong></td>
-								</tr>
-								<?php $taxamt = $new_total -  $discount; ?>
-								<tr>
-									<td colspan="5" class="text-right"><strong>Taxable Amount</strong></td>
-									<td width="20%" class="text-right"><strong><?= number_format($taxamt, 2) ?></strong></td>
-								</tr>
-								<?php $vatamt = $taxamt * 5 / 100;; ?>
-								<tr>
-									<td colspan="5" class="text-right"><strong>VAT (5%)</strong></td>
-									<td width="20%" class="text-right"><strong><?= number_format($vatamt, 2) ?></strong></td>
-								</tr>
-								<?php $totalparts = $taxamt + $vatamt; ?>
-								<tr>
-									<td colspan="5" class="text-right"><strong>Parts Total (Including VAT)</strong></td>
-									<td width="20%" class="text-right"><strong><?= number_format($totalparts, 2) ?></strong></td>
-								</tr>
+								<tbody>
+
+									<?php foreach ($parts_used_new as $p):
+										$rowtotal_new = $p->total_price + $p->dis_amount;
+										$new_total += $p->total_price + $p->dis_amount;
+										$discount += $p->dis_amount;
+									?>
+										<tr>
+											<td class="text-center"><?= $i++ ?></td>
+											<td><?= $p->part_name ?><br><?= $p->partremarks ?></td>
+											<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
+											<td class="text-center"><?= $p->qty ?></td>
+											<td class="text-center"><?= number_format($p->dis_amount, 2) ?></td>
+											<td width="20%" class="text-right"><?= number_format($rowtotal_new, 2) ?></td>
+										</tr>
+									<?php endforeach; ?>
+
+									<tr>
+										<td colspan="5" class="text-right"><strong>Parts Sub Total</strong></td>
+										<td width="20%" class="text-right"><strong><?= number_format($new_total, 2) ?></strong></td>
+									</tr>
+									<tr>
+										<td colspan="5" class="text-right"><strong>Total Discount</strong></td>
+										<td width="20%" class="text-right"><strong><?= number_format($discount, 2) ?></strong></td>
+									</tr>
+									<?php $taxamt = $new_total -  $discount; ?>
+									<tr>
+										<td colspan="5" class="text-right"><strong>Taxable Amount</strong></td>
+										<td width="20%" class="text-right"><strong><?= number_format($taxamt, 2) ?></strong></td>
+									</tr>
+									<?php $vatamt = $taxamt * 5 / 100;; ?>
+									<tr>
+										<td colspan="5" class="text-right"><strong>VAT (5%)</strong></td>
+										<td width="20%" class="text-right"><strong><?= number_format($vatamt, 2) ?></strong></td>
+									</tr>
+									<?php $totalparts = $taxamt + $vatamt; ?>
+									<tr>
+										<td colspan="5" class="text-right"><strong>Parts Total (Including VAT)</strong></td>
+										<td width="20%" class="text-right"><strong><?= number_format($totalparts, 2) ?></strong></td>
+									</tr>
 
 
-							</tbody>
+								</tbody>
 
-						</table>
+							</table>
 						<?php } ?>
 						<!-- ======================================= -->
 						<?php
 						$after_total = 0;
 						$i = 1;
+						$rowtotal_after = 0;
 
 						$discount1 = 0;
 						$taxamt1 = 0;
@@ -525,134 +528,136 @@
 						$totalparts1 = 0;
 						?>
 						<?php if (!empty($parts_used_after)) { ?>
-						<div class="section-title">Aftermarket Spare Parts</div>
+							<div class="section-title">Aftermarket Spare Parts</div>
 
-						<table class="data">
+							<table class="data">
 
-							<thead>
-								<tr>
-									<th>#</th>
-									<th>Description</th>
-									<th>Unit</th>
-									<th>Qty</th>
-									<th>Dis</th>
-									<th width="20%">Amount</th>
-								</tr>
-							</thead>
-
-							<tbody>
-
-								<?php foreach ($parts_used_after as $p):
-									$after_total += $p->total_price;
-									$discount1 += $p->dis_amount; ?>
+								<thead>
 									<tr>
-										<td class="text-center"><?= $i++ ?></td>
-										<td><?= $p->part_name ?><br><?= $p->partremarks ?></td>
-										<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
-										<td class="text-center"><?= $p->qty ?></td>
-										<td class="text-center"><?= number_format($p->dis_amount, 2) ?></td>
-										<td width="20%" class="text-right"><?= number_format($p->total_price, 2) ?></td>
+										<th>#</th>
+										<th>Description</th>
+										<th>Unit</th>
+										<th>Qty</th>
+										<th>Dis</th>
+										<th width="20%">Amount</th>
 									</tr>
-								<?php endforeach; ?>
+								</thead>
 
-								<tr>
-									<td colspan="5" class="text-right"><strong>Total Aftermarket Parts</strong></td>
-									<td class="text-right"><strong><?= number_format($after_total, 2) ?></strong></td>
-								</tr>
-								<tr>
-									<td colspan="5" class="text-right"><strong>Total Discount</strong></td>
-									<td class="text-right"><strong><?= number_format($discount1, 2) ?></strong></td>
-								</tr>
-								<?php $taxamt1 = $after_total -  $discount1; ?>
-								<tr>
-									<td colspan="5" class="text-right"><strong>Taxable Amount</strong></td>
-									<td class="text-right"><strong><?= number_format($taxamt1, 2) ?></strong></td>
-								</tr>
-								<?php $vatamt1 = $taxamt1 * 5 / 100;; ?>
-								<tr>
-									<td colspan="5" class="text-right"><strong>VAT (5%)</strong></td>
-									<td class="text-right"><strong><?= number_format($vatamt1, 2) ?></strong></td>
-								</tr>
-								<?php $totalparts1 = $taxamt1 + $vatamt1; ?>
-								<tr>
-									<td colspan="5" class="text-right"><strong>Parts Total (Including VAT)</strong></td>
-									<td class="text-right"><strong><?= number_format($totalparts1, 2) ?></strong></td>
-								</tr>
+								<tbody>
 
-							</tbody>
+									<?php foreach ($parts_used_after as $p):
+										$rowtotal_after = $p->total_price + $p->dis_amount;
+										$after_total += $p->total_price + $p->dis_amount;
+										$discount1 += $p->dis_amount; ?>
+										<tr>
+											<td class="text-center"><?= $i++ ?></td>
+											<td><?= $p->part_name ?><br><?= $p->partremarks ?></td>
+											<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
+											<td class="text-center"><?= $p->qty ?></td>
+											<td class="text-center"><?= number_format($p->dis_amount, 2) ?></td>
+											<td width="20%" class="text-right"><?= number_format($rowtotal_after, 2) ?></td>
+										</tr>
+									<?php endforeach; ?>
 
-						</table>
+									<tr>
+										<td colspan="5" class="text-right"><strong>Total Aftermarket Parts</strong></td>
+										<td class="text-right"><strong><?= number_format($after_total, 2) ?></strong></td>
+									</tr>
+									<tr>
+										<td colspan="5" class="text-right"><strong>Total Discount</strong></td>
+										<td class="text-right"><strong><?= number_format($discount1, 2) ?></strong></td>
+									</tr>
+									<?php $taxamt1 = $after_total -  $discount1; ?>
+									<tr>
+										<td colspan="5" class="text-right"><strong>Taxable Amount</strong></td>
+										<td class="text-right"><strong><?= number_format($taxamt1, 2) ?></strong></td>
+									</tr>
+									<?php $vatamt1 = $taxamt1 * 5 / 100;; ?>
+									<tr>
+										<td colspan="5" class="text-right"><strong>VAT (5%)</strong></td>
+										<td class="text-right"><strong><?= number_format($vatamt1, 2) ?></strong></td>
+									</tr>
+									<?php $totalparts1 = $taxamt1 + $vatamt1; ?>
+									<tr>
+										<td colspan="5" class="text-right"><strong>Parts Total (Including VAT)</strong></td>
+										<td class="text-right"><strong><?= number_format($totalparts1, 2) ?></strong></td>
+									</tr>
+
+								</tbody>
+
+							</table>
 						<?php } ?>
 						<!-- ================================================= -->
 						<?php
 						$used_total = 0;
 						$i = 1;
 
-
+						$rowtotal_used = 0;
 						$discount2 = 0;
 						$taxamt2 = 0;
 						$vatamt2 = 0;
 						$totalparts2 = 0;
 						?>
 						<?php if (!empty($parts_used_used)) { ?>
-						<div class="section-title">Used Spare Parts</div>
+							<div class="section-title">Used Spare Parts</div>
 
-						<table class="data">
+							<table class="data">
 
-							<thead>
-								<tr>
-									<th>#</th>
-									<th>Description</th>
-									<th>Unit</th>
-									<th>Qty</th>
-									<th>Dis</th>
-									<th width="20%">Amount</th>
-								</tr>
-							</thead>
-
-							<tbody>
-
-								<?php foreach ($parts_used_used as $p):
-									$used_total += $p->total_price;
-									$discount2 += $p->dis_amount;
-								?>
+								<thead>
 									<tr>
-										<td class="text-center"><?= $i++ ?></td>
-										<td><?= $p->part_name ?><br><?= $p->partremarks ?></td>
-										<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
-										<td class="text-center"><?= $p->qty ?></td>
-										<td class="text-center"><?= number_format($p->dis_amount, 2) ?></td>
-										<td width="20%" class="text-right"><?= number_format($p->total_price, 2) ?></td>
+										<th>#</th>
+										<th>Description</th>
+										<th>Unit</th>
+										<th>Qty</th>
+										<th>Dis</th>
+										<th width="20%">Amount</th>
 									</tr>
-								<?php endforeach; ?>
+								</thead>
 
-								<tr>
-									<td colspan="5" class="text-right"><strong>Total Used Parts</strong></td>
-									<td width="20%" class="text-right"><strong><?= number_format($used_total, 2) ?></strong></td>
-								</tr>
-								<tr>
-									<td colspan="5" class="text-right"><strong>Total Discount</strong></td>
-									<td width="20%" class="text-right"><strong><?= number_format($discount2, 2) ?></strong></td>
-								</tr>
-								<?php $taxamt2 = $used_total -  $discount2; ?>
-								<tr>
-									<td colspan="5" class="text-right"><strong>Taxable Amount</strong></td>
-									<td width="20%" class="text-right"><strong><?= number_format($taxamt2, 2) ?></strong></td>
-								</tr>
-								<?php $vatamt2 = $taxamt2 * 5 / 100;; ?>
-								<tr>
-									<td colspan="5" class="text-right"><strong>VAT (5%)</strong></td>
-									<td width="20%" class="text-right"><strong><?= number_format($vatamt2, 2) ?></strong></td>
-								</tr>
-								<?php $totalparts2 = $taxamt2 + $vatamt2; ?>
-								<tr>
-									<td colspan="5" class="text-right"><strong>Parts Total (Including VAT)</strong></td>
-									<td width="20%" class="text-right"><strong><?= number_format($totalparts2, 2) ?></strong></td>
-								</tr>
+								<tbody>
 
-							</tbody>
+									<?php foreach ($parts_used_used as $p):
+										$rowtotal_used = $p->total_price + $p->dis_amount;
+										$used_total += $p->total_price + $p->dis_amount;
+										$discount2 += $p->dis_amount;
+									?>
+										<tr>
+											<td class="text-center"><?= $i++ ?></td>
+											<td><?= $p->part_name ?><br><?= $p->partremarks ?></td>
+											<td class="text-right"><?= number_format($p->selling_price, 2) ?></td>
+											<td class="text-center"><?= $p->qty ?></td>
+											<td class="text-center"><?= number_format($p->dis_amount, 2) ?></td>
+											<td width="20%" class="text-right"><?= number_format($rowtotal_used, 2) ?></td>
+										</tr>
+									<?php endforeach; ?>
 
-						</table>
+									<tr>
+										<td colspan="5" class="text-right"><strong>Total Used Parts</strong></td>
+										<td width="20%" class="text-right"><strong><?= number_format($used_total, 2) ?></strong></td>
+									</tr>
+									<tr>
+										<td colspan="5" class="text-right"><strong>Total Discount</strong></td>
+										<td width="20%" class="text-right"><strong><?= number_format($discount2, 2) ?></strong></td>
+									</tr>
+									<?php $taxamt2 = $used_total -  $discount2; ?>
+									<tr>
+										<td colspan="5" class="text-right"><strong>Taxable Amount</strong></td>
+										<td width="20%" class="text-right"><strong><?= number_format($taxamt2, 2) ?></strong></td>
+									</tr>
+									<?php $vatamt2 = $taxamt2 * 5 / 100;; ?>
+									<tr>
+										<td colspan="5" class="text-right"><strong>VAT (5%)</strong></td>
+										<td width="20%" class="text-right"><strong><?= number_format($vatamt2, 2) ?></strong></td>
+									</tr>
+									<?php $totalparts2 = $taxamt2 + $vatamt2; ?>
+									<tr>
+										<td colspan="5" class="text-right"><strong>Parts Total (Including VAT)</strong></td>
+										<td width="20%" class="text-right"><strong><?= number_format($totalparts2, 2) ?></strong></td>
+									</tr>
+
+								</tbody>
+
+							</table>
 						<?php } ?>
 
 					<?php } ?>
@@ -683,7 +688,7 @@
 								$totalservice3 = 0;
 								$totaldiscount3 = 0;
 								foreach ($job_descriptions as $s): $jd_total += $s->amount;
-								$totaldiscount3 += $s->discount_amount;
+									$totaldiscount3 += $s->discount_amount;
 
 								?>
 									<tr>

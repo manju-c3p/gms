@@ -169,8 +169,8 @@
 						<tr>
 							<td class="border p-2 font-medium">Date</td>
 							<td class="border p-2">
-								<input type="date" class="w-full border rounded px-2 py-1 bg-gray-100"
-									value="<?= date('Y-m-d') ?>">
+								<input type="date" id="edate" name="edate" class="w-full border rounded px-2 py-1 bg-gray-100"
+									value="<?= $estimation->estimation_date ??  date('Y-m-d') ?>">
 							</td>
 
 							<td class="border p-2 font-medium">Time</td>
@@ -244,9 +244,9 @@
 							<td class="border p-2">
 								<select class="editable w-full border rounded px-2 py-1" name="custapproval">
 									<option value="">-- Select --</option>
-									<option value="APPROVED" <?php if($estimation->customer_approval=="APPROVED"){?> selected <?php } ?>>Approved</option>
-									<option value="PENDING" <?php if($estimation->customer_approval=="PENDING"){?> selected <?php } ?>>Pending</option>
-									<option value="REJECTED" <?php if($estimation->customer_approval=="REJECTED"){?> selected <?php } ?>>Rejected</option>
+									<option value="APPROVED" <?php if ($estimation->customer_approval == "APPROVED") { ?> selected <?php } ?>>Approved</option>
+									<option value="PENDING" <?php if ($estimation->customer_approval == "PENDING") { ?> selected <?php } ?>>Pending</option>
+									<option value="REJECTED" <?php if ($estimation->customer_approval == "REJECTED") { ?> selected <?php } ?>>Rejected</option>
 								</select>
 							</td>
 
@@ -458,7 +458,7 @@
 		<!-- New Parts -->
 		<div class="mb-10">
 			<h4 class="text-lg font-semibold text-blue-700 mb-3">
-				Original Parts / Consumables
+				Original Parts / Consumables2
 			</h4>
 
 
@@ -476,7 +476,7 @@
 							<th class="border px-3 py-2 text-right w-28">Unit Price</th>
 							<th class="border px-3 py-2 text-center w-24">Markup %</th>
 							<th class="border px-3 py-2 text-right w-28">Selling Price</th>
-							<th class="border px-3 py-2 text-center w-24">Discount</th>
+							<th class="border px-3 py-2 text-center w-24">Discount %</th>
 							<th class="border px-3 py-2 text-center w-24">Dis-Amount</th>
 							<th class="border px-3 py-2 text-right w-32">Total Price</th>
 							<th class="border px-3 py-2 text-center w-20">Action</th>
@@ -528,7 +528,7 @@
 
 									<!-- Qty -->
 									<td class="border px-2 py-2 text-center">
-										<input type="number" name="part_qty[]"
+										<input type="number" step="0.01"  name="part_qty[]"
 											class="editable partQty w-20 border rounded-lg px-2 py-1 text-center"
 											value="<?= $p->qty ?>">
 									</td>
@@ -694,7 +694,7 @@
 							<th class="border px-3 py-2 text-right w-28">Unit Price</th>
 							<th class="border px-3 py-2 text-center w-24">Markup %</th>
 							<th class="border px-3 py-2 text-right w-28">Selling Price</th>
-							<th class="border px-3 py-2 text-center w-24">Discount</th>
+							<th class="border px-3 py-2 text-center w-24">Discount %</th>
 							<th class="border px-3 py-2 text-center w-24">Dis-Amount</th>
 							<th class="border px-3 py-2 text-right w-32">Total Price</th>
 							<th class="border px-3 py-2 text-center w-20">Action</th>
@@ -744,7 +744,7 @@
 
 									<!-- Qty -->
 									<td class="border px-2 py-2 text-center">
-										<input type="number" name="part_qty[]"
+										<input type="number"  step="0.01"  name="part_qty[]"
 											class="editable partQty w-20 border rounded-lg px-2 py-1 text-center"
 											value="<?= $p->qty ?>">
 									</td>
@@ -908,7 +908,7 @@
 							<th class="border px-3 py-2 text-right w-28">Unit Price</th>
 							<th class="border px-3 py-2 text-center w-24">Markup %</th>
 							<th class="border px-3 py-2 text-right w-28">Selling Price</th>
-							<th class="border px-3 py-2 text-center w-24">Discount</th>
+							<th class="border px-3 py-2 text-center w-24">Discount %</th>
 							<th class="border px-3 py-2 text-center w-24">Dis-Amount</th>
 							<th class="border px-3 py-2 text-right w-32">Total Price</th>
 							<th class="border px-3 py-2 text-center w-20">Action</th>
@@ -958,7 +958,7 @@
 
 									<!-- Qty -->
 									<td class="border px-2 py-2 text-center">
-										<input type="number" name="part_qty[]"
+										<input type="number"  step="0.01" name="part_qty[]"
 											class="editable partQty w-20 border rounded-lg px-2 py-1 text-center"
 											value="<?= $p->qty ?>">
 									</td>
@@ -1840,7 +1840,7 @@
 
         <!-- Qty -->
         <td class="border px-2 py-2 text-center">
-            <input type="number" name="part_qty[]"
+            <input type="number" step="0.01"  name="part_qty[]"
                    class="partQty w-20 border rounded-lg px-2 py-1 text-center"
                    value="1" min="1">
         </td>
@@ -1932,22 +1932,6 @@
 		}
 
 
-// 		function calculateJobTotals() {
-// 1
-// 			let subtotal = 0;
-
-// 			document.querySelectorAll("#jobDescTable .jobAmount").forEach(el => {
-// 				subtotal += num(el.value);
-// 			});
-
-// 			const vat = subtotal * 0.05;
-// 			const totalWithVat = subtotal + vat;
-
-// 			document.getElementById("job_subtotal").value = subtotal.toFixed(2);
-// 			document.getElementById("job_taxable").value = subtotal.toFixed(2);
-// 			document.getElementById("job_vat").value = vat.toFixed(2);
-// 			document.getElementById("job_total").value = totalWithVat.toFixed(2);
-// 		}
 
 		/* ===============================
 		   BRAND CHANGE → LOAD PARTS
@@ -2011,33 +1995,45 @@
 		}
 
 	});
+
 	document.addEventListener("click", function(e) {
 
 		const btn = e.target.closest(".remove-row");
-		// alert("gh");
 		if (!btn) return;
 
 		const table = btn.closest("table");
 		const tableId = table.id;
 
 		btn.closest("tr").remove();
+
 		debounceGrandTotal();
-		updateSlNo(tableId);
+		renumberTable(tableId);
 	});
 
+	function renumberTable(tableId) {
 
+		let colIndex = 0;
 
-	function updateSlNo(tableId) {
+		if (tableId === "serviceTable") colIndex = 0;
+		if (tableId === "newPartsTable") colIndex = 1;
+		if (tableId === "aftermarketPartsTable") colIndex = 1;
+		if (tableId === "usedPartsTable") colIndex = 1;
+		if (tableId === "jobDescTable") colIndex = 0;
 
-		const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+		document.querySelectorAll(`#${tableId} tbody tr`)
+			.forEach((row, i) => {
 
-		rows.forEach((row, index) => {
-			// ✅ target SL column (2nd td)
-			row.querySelector("td:nth-child(2)").innerText = index + 1;
-		});
+				let cells = row.querySelectorAll("td");
 
-		partCounters[tableId] = rows.length;
+				if (cells[colIndex])
+					cells[colIndex].innerText = i + 1;
+
+			});
 	}
+
+
+
+
 
 
 
@@ -2170,11 +2166,6 @@
 
 	let activeServiceSelect = null;
 
-	/* Called when "-- New Service --" is selected */
-	// function openServiceModal(selectEl) {
-	// 	activeServiceSelect = selectEl;
-	// 	$('#serviceModal').removeClass('hidden').addClass('flex');
-	// }
 
 	function openServiceModal() {
 		const modal = document.getElementById('serviceModal');
@@ -2191,15 +2182,7 @@
 		$('#new_service_time').val('');
 	}
 
-	// function closeServiceModal() {
-	// 	// alert("close");
-	// 	$('#serviceModal').addClass('hidden').removeClass('flex');
 
-	// 	$('#new_service_name').val('');
-	// 	$('#new_service_type').val('SERVICE');
-	// 	$('#new_service_cost').val('');
-	// 	$('#new_service_time').val('');
-	// }
 
 
 	/* SAVE NEW SERVICE */
@@ -2284,15 +2267,10 @@
 	}
 
 
-	// Remove row + reindex
-	document.addEventListener("click", function(e) {
-		if (e.target.closest(".remove-row")) {
-			e.target.closest("tr").remove();
-			updateServiceSlNo();
-		}
-	});
+
 
 	function updateServiceSlNo() {
+
 		document
 			.querySelectorAll("#serviceTable tbody tr")
 			.forEach((row, index) => {
@@ -2302,6 +2280,7 @@
 		serviceCount =
 			document.querySelectorAll("#serviceTable tbody tr").length;
 	}
+
 
 	/* ===============================
 	   CHANGE HANDLERS
@@ -2424,18 +2403,7 @@
 	/* ===============================
 	   DELETE ROWS
 	================================ */
-	document.addEventListener("click", function(e) {
-		if (e.target.classList.contains("remove-row")) {
-			e.target.closest("tr").remove();
-			renumber("#partsTable");
-			renumber("#serviceTable");
-			renumber("#jobDescTable");
-			calculateServiceTotals();
-			calculateJobTotals();
-			calculatePartsTotals();
-			calculateGrandTotal();
-		}
-	});
+
 
 
 
@@ -2473,9 +2441,39 @@
 	/* ===============================
 	   RENUMBER UTILITY
 	================================ */
-	function renumber(tableId) {
+	function renumberold(tableId) {
+		alert("re");
+		if (tableId == "#serviceTable") {
+
+
+		}
 		document.querySelectorAll(`${tableId} tbody tr`)
 			.forEach((row, i) => row.querySelector("td").innerText = i + 1);
+	}
+
+	function renumber(tableId) {
+
+		let colIndex = 0;
+
+		// decide which column to update
+		if (tableId === "#serviceTable") {
+			colIndex = 0; // SLNO in first column
+		} else if (tableId === "#partsTable") {
+			colIndex = 1; // SLNO in second column (after checkbox)
+		} else if (tableId === "#jobDescTable") {
+			colIndex = 0; // SLNO in second column (after checkbox)
+		}
+
+
+		document.querySelectorAll(`${tableId} tbody tr`).forEach((row, i) => {
+
+			let cells = row.querySelectorAll("td");
+
+			if (cells.length > colIndex) {
+				cells[colIndex].innerText = i + 1;
+			}
+
+		});
 	}
 
 	function allowNumberAndPercent(e) {
@@ -2522,6 +2520,25 @@
 
 		const selling = unit + (unit * mark / 100);
 
+		// ============================================================
+
+
+
+		const discOut = row.querySelector(".discountamt");
+
+		let val = num(row.querySelector(".discount").value);
+		let discAmt = 0;
+
+
+
+		discAmt = (qty * selling) * (val / 100);
+
+
+		discOut.value = discAmt.toFixed(2);
+
+
+		// ===============================================================================
+
 		row.querySelector(".sellPrice").value = selling.toFixed(2);
 		row.querySelector(".rowTotal").value = (selling * qty).toFixed(2);
 		calculatePartsTotals();
@@ -2539,7 +2556,7 @@
 		const subletdistotal = document.getElementById("sublet_discount").value;
 		const sublettaxablevalue = subtotal - subletdistotal;
 		const vat = sublettaxablevalue * 0.05;
-		
+
 		const sublettotalWithVat = sublettaxablevalue + vat;
 
 		// const vat = subtotal * 0.05;
@@ -2551,7 +2568,7 @@
 	}
 	// ============================== service total calculations===========================
 
-	
+
 	function calculateServiceTotals() {
 
 		let serviceSubtotal = 0;
@@ -2575,19 +2592,7 @@
 		document.getElementById("service_total_with_vat").value = totalWithVat.toFixed(2);
 	}
 
-	// function calculateServiceTotals() {
 
-	// 	let subtotal = 0;
-	// 	document.querySelectorAll("#serviceTable .totalCost").forEach(el => {
-	// 		subtotal += num(el.value);
-	// 	});
-
-	// 	const vat = subtotal * 0.05;
-
-	// 	document.getElementById("service_total").value = subtotal.toFixed(2);
-	// 	document.getElementById("service_vat").value = vat.toFixed(2);
-	// 	document.getElementById("service_total_with_vat").value = (subtotal + vat).toFixed(2);
-	// }
 
 	// ============================== service total calculations===========================
 	function updateServiceRow(row) {
@@ -2599,22 +2604,13 @@
 		calculateServiceTotals();
 	}
 
-	// function calculatePartsTableTotal(tableId) {
-	// 	let total = 0;
 
-	// 	document.querySelectorAll(`#${tableId} .rowTotal`).forEach(el => {
-	// 		total += num(el.value);
-	// 	});
 
-	// 	document
-	// 		.querySelector(`.tablePartTotal[data-table="${tableId}"]`)
-	// 		.value = total.toFixed(2);
-	// }
-
-	function updatePartRow(row) {
+	function updatePartRow11(row) {
 		const qty = num(row.querySelector(".partQty")?.value);
 		const unit = num(row.querySelector(".unitPrice")?.value);
 		const sell = num(row.querySelector(".sellPrice")?.value);
+		const discper = num(row.querySelector(".discount")?.value);
 		const disc = num(row.querySelector(".discountamt")?.value);
 
 		const price = sell > 0 ? sell : unit;
@@ -2627,6 +2623,37 @@
 		// calculatePartsTableTotal(tableId);
 
 
+	}
+
+	function updatePartRow(row) {
+		const qty = num(row.querySelector(".partQty")?.value);
+		const unit = num(row.querySelector(".unitPrice")?.value);
+		const sell = num(row.querySelector(".sellPrice")?.value);
+
+		const discperEl = row.querySelector(".discount");
+		const discAmtEl = row.querySelector(".discountamt");
+
+		let discper = num(discperEl?.value);
+		let disc = num(discAmtEl?.value);
+
+		const price = sell > 0 ? sell : unit;
+		const subtotal = qty * price;
+
+		// ✅ If percentage is entered → calculate discount amount
+		if (discper > 0) {
+			disc = (subtotal * discper) / 100;
+			if (discAmtEl) discAmtEl.value = disc.toFixed(2);
+		}
+		// ✅ If amount is entered manually → derive percentage (optional)
+		else if (disc > 0 && subtotal > 0) {
+			discper = (disc / subtotal) * 100;
+			if (discperEl) discperEl.value = discper.toFixed(2);
+		}
+
+		let total = subtotal - disc;
+		if (total < 0) total = 0;
+
+		row.querySelector(".rowTotal").value = total.toFixed(2);
 	}
 
 
@@ -2799,20 +2826,7 @@
 	}
 
 
-// 	function calculateJobTotals() {
-// 3
-// 		let subtotal = 0;
-// 		document.querySelectorAll("#jobDescTable .jobAmount").forEach(el => {
-// 			subtotal += num(el.value);
-// 		});
 
-// 		const vat = subtotal * 0.05;
-
-// 		document.getElementById("job_subtotal").value = subtotal.toFixed(2);
-// 		document.getElementById("job_taxable").value = subtotal.toFixed(2);
-// 		document.getElementById("job_vat").value = vat.toFixed(2);
-// 		document.getElementById("job_total").value = (subtotal + vat).toFixed(2);
-// 	}
 	// ==============================================
 
 
@@ -2841,28 +2855,7 @@
 		width: '100%'
 	});
 
-	// $(document).on('select2:select', '.partSelect', function(e) {
 
-	// 	if (e.params.data.id.startsWith('add_')) {
-	// 		$(this).data('addtype', e.params.data.element.dataset.addtype);
-	// 		$(this).val(null).trigger('change');
-	// 		openAddPartModal(this);
-	// 		return;
-	// 	}
-
-	// 	const row = this.closest("tr");
-
-	// 	// ✅ ALWAYS read from Select2 event
-	// 	const optionEl = e.params.data.element;
-	// 	const price = optionEl?.dataset.price || 0;
-
-	// 	row.querySelector(".unitPrice").value = price;
-	// 	row.querySelector(".sellPrice").value = price;
-
-	// 	updatePartRow(row);
-	// 	calculatePartsTotals();
-	// 	debounceGrandTotal();
-	// });
 
 	$(document).on('select2:select', '.partSelect', function(e) {
 
@@ -3061,7 +3054,9 @@
 		const unitPrice = $('#new_part_price').val();
 		const partType = $('#new_part_type').val();
 		const labeling = $('#labeling').is(':checked') ? 1 : 0; // ✅ added
-
+		const purchaseunit = $('#purchase_unit').val();
+		const stockunit = $('#stock_unit').val();
+		const qtyperunit = $('#qty_per_purchase_unit').val();
 
 		if (partName === '') {
 			alert('Part name is required');
@@ -3076,7 +3071,10 @@
 				part_name: partName,
 				unit_price: unitPrice,
 				part_type: partType,
-				labeling: labeling
+				labeling: labeling,
+				purchaseunit:purchaseunit,
+				stockunit:stockunit,
+				qtyperunit:qtyperunit
 			},
 			success: function(res) {
 

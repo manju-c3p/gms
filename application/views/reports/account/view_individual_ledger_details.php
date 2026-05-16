@@ -1,7 +1,7 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
 <div class="bg-white shadow-xl rounded-2xl p-6 border border-gray-200">
-
+<?php $lname=''; ?>
 	<!-- FILTER SECTION -->
 	<form action="<?php echo base_url() . 'index.php/Accounts/search_individual_ledger_details/' . $account_id; ?>"
 		method="post"
@@ -12,25 +12,25 @@
 			<!-- From Date -->
 			<div>
 				<label class="block text-sm font-semibold text-gray-700 mb-1">From Date</label>
-				<input type="text"
+				<input type="date"
 					id="from_date"
 					name="from_date"
-					value="<?php echo date('d-M-Y', strtotime($from_date)); ?>"
+					value="<?= !empty($from_date) ? date('Y-m-d', strtotime($from_date)) : date('Y-m-d'); ?>"
 					required
 					class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm 
-                              focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
 			</div>
 
 			<!-- To Date -->
 			<div>
 				<label class="block text-sm font-semibold text-gray-700 mb-1">To Date</label>
-				<input type="text"
+				<input type="date"
 					id="to_date"
 					name="to_date"
-					value="<?php echo date('d-M-Y', strtotime($to_date)); ?>"
+					value="<?= !empty($to_date) ? date('Y-m-d', strtotime($to_date)) : date('Y-m-d'); ?>"
 					required
 					class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm 
-                              focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
 			</div>
 
 			<!-- Ledger -->
@@ -46,7 +46,8 @@
 					<?php foreach ($account_ledgers as $s) { ?>
 						<option <?php if ($s->account_id == $account_id) echo 'selected'; ?>
 							value="<?php echo $s->account_id; ?>">
-							<?php echo $s->account_name; ?>
+							<?php if ($s->account_id == $account_id) $lname=$s->account_name;?>
+							<?php  echo $s->account_name; ?>
 						</option>
 					<?php } ?>
 				</select>
@@ -97,8 +98,9 @@
 				<?= empty($account_id) ? 'disabled' : ''; ?>>
 				Export Excel
 			</button>
-
 		</form>
+		
+			<h1 style="font-size:24px;"><b>Ledger Name: <?php echo $lname; ?></b></h1>
 	</div>
 
 
@@ -161,7 +163,38 @@
 							<td class="px-4 py-2"><?php echo date('d-M-Y', strtotime($row->voucher_date)); ?></td>
 							<td class="px-4 py-2"><?php echo $row->narration; ?></td>
 							<td class="px-4 py-2"><?php echo $row->voucher_code; ?></td>
-							<td class="px-4 py-2"><?php echo $row->voucher_type; ?></td>
+							<td class="px-4 py-2"><?php 
+							
+							if($row->voucher_type == 'S')
+										echo 'Sales Invoice';
+						   			if($row->voucher_type == 'G')
+										echo 'PO GRN Invoice';
+									if($row->voucher_type == 'R')
+										echo 'Receipt';
+									if($row->voucher_type == 'P')
+										echo 'Payment';
+									if($row->voucher_type == 'C')
+										echo 'Credit Note';
+									if($row->voucher_type == 'D')
+										echo 'Debit Note';
+									if($row->voucher_type == 'J')
+										echo 'Journal';
+									if($row->voucher_type == 'N')
+										echo 'Contra Entry';
+									if($row->voucher_type == 'PR')
+										echo 'Purchase Return';
+									if($row->voucher_type == 'AD')
+										echo 'Supplier Advance';
+									if($row->voucher_type == 'PURCHASE_RETURN')
+										echo 'Purchase Return';
+							
+							// echo $row->voucher_type; 
+							
+							
+							
+							
+							
+							?></td>
 
 							<td class="px-4 py-2 text-right text-red-600 font-medium">
 								<?php if (strtoupper($row->drcr_type) == "DR") {
@@ -183,7 +216,7 @@
 			</tbody>
 
 			<!-- FOOTER -->
-			<tfoot class="bg-gray-100 font-semibold">
+			<!--<tfoot class="bg-gray-100 font-semibold">
 
 				<tr>
 					<td colspan="5" class="px-4 py-3 text-right">Trans Total</td>
@@ -195,8 +228,62 @@
 					</td>
 				</tr>
 
-			</tfoot>
+			</tfoot>-->
+			<tfoot>
+		               <tr bgcolor="#dddddd">
+		   			<td colspan="5"  class="px-4 py-3 text-right">Trans Total:</td>
+		   			<?php $display_total_cr=0;
+	   				if($opening_bal > 0)
+					{
+		   				$display_total_db = $debit_amount + $opening_bal;
+						$display_total_cr = $credit_amount;
+					}
+					else {
+		   			    $opening_bal=$opening_bal*-1;
+						$display_total_cr = $credit_amount+$opening_bal;
+						$display_total_db = $debit_amount;
+					}?>
 
+		   			<?php $display_total= number_format((float)($display_total_db), 2, '.', '');?>
+		   			<td  class="px-4 py-3 text-right text-red-600"><?php echo sprintf("%0.2f",$debit_amount);?></td>
+		   			<?php
+		   			if($display_total_cr < 0)
+		   				$display_total= $display_total_cr*-1;
+					else
+						$display_total= $display_total_cr;
+		   			?>
+		   			<td class="px-4 py-3 text-right text-green-600"><?php echo sprintf("%0.2f",$credit_amount);?></td>
+			   	</tr>
+		   		<?php
+
+		   			if($display_total_cr < 0)
+		   			$bal = $display_total_db - ($display_total_cr*-1);
+					else {
+						$bal = $display_total_db - ($display_total_cr);
+					}
+		   		?>
+				<?php
+				if($bal > 0):?>
+		   		<tr class="bg-blue-50 font-semibold">
+		   			<td colspan="5" class="px-4 py-2">Dr. Closing Balance</td>
+		   			<?php $display_total= $bal;?>
+	   				<td  align="right" style="font-weight: bold"><?php echo sprintf("%0.2f",($display_total))." Dr"; ?></td>
+		   			<td></td>
+		   		</tr>
+				<?php
+				else :
+				?>
+		   		 <tr class="bg-blue-50 font-semibold">
+		   			<td colspan="5" class="px-4 py-2">Cr. Closing Balance</td>
+		   			<?php $display_total= $bal*-1;?>
+					<td ></td>
+					<td  align="right" style="font-weight: bold" ><?php echo sprintf("%0.2f",($display_total))." Cr"; ?></td>
+		   		</tr>
+				<?php
+				endif;
+
+				?>
+			</tfoot>
 		</table>
 	</div>
 
@@ -291,12 +378,12 @@
 		});
 	});
 	$(function() {
-		$("#from_date").datepicker({
-			dateFormat: 'dd-mm-yy'
-		});
-		$("#to_date").datepicker({
-			dateFormat: 'dd-mm-yy'
-		});
+		// $("#from_date").datepicker({
+		// 	dateFormat: 'dd-mm-yy'
+		// });
+		// $("#to_date").datepicker({
+		// 	dateFormat: 'dd-mm-yy'
+		// });
 	});
 	// Example remove_row_cr / remove_row_dr functions
 	function remove_row_cr(id) {

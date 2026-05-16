@@ -1,571 +1,593 @@
 <!-- the datepicker input -->
 <div class="bg-white shadow rounded-lg p-6">
 	<!-- Header -->
-<div class="flex items-center justify-between bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 mb-4">
+	<div class="flex items-center justify-between bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 mb-4">
 
-    <!-- Caption / Title -->
-    <h2 class="text-lg font-semibold text-gray-800">
-        Leave Application
-    </h2>
+		<!-- Caption / Title -->
+		<h2 class="text-lg font-semibold text-gray-800">
+			Leave Application
+		</h2>
 
-    <!-- List Button -->
-    <a href="<?php echo base_url(); ?>index.php/Hr/view_leave_application_list"
-       class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded shadow">
+		<!-- List Button -->
+		<a href="<?php echo base_url(); ?>index.php/Hr/view_leave_application_list"
+			class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded shadow">
 
-        <!-- List Icon -->
-        <svg xmlns="http://www.w3.org/2000/svg"
-             class="w-4 h-4"
-             fill="none"
-             viewBox="0 0 24 24"
-             stroke="currentColor">
-            <path stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
+			<!-- List Icon -->
+			<svg xmlns="http://www.w3.org/2000/svg"
+				class="w-4 h-4"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke="currentColor">
+				<path stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M4 6h16M4 12h16M4 18h16" />
+			</svg>
 
-        List
+			List
 
-    </a>
+		</a>
 
-</div>
+	</div>
 
-    <form onsubmit="return check_duplicate_exist();"
-        id="main"
-        method="post"
-        action="<?php echo base_url() . 'index.php/'; ?>Hr/add_leave_application_data"
-        autocomplete="off"
-        enctype="multipart/form-data">
+	<form onsubmit="return check_duplicate_exist();"
+		id="main"
+		method="post"
+		action="<?php echo base_url() . 'index.php/'; ?>Hr/add_leave_application_data"
+		autocomplete="off"
+		enctype="multipart/form-data">
 
-        <!-- Employee Name -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
+		<!-- Employee Name -->
+		<div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
 
-            <label class="md:col-span-3 text-sm font-medium">
-                Employee Name:<span class="text-red-500">*</span>
-            </label>
+			<label class="md:col-span-3 text-sm font-medium">
+				Select Employee:<span class="text-red-500">*</span>
+			</label>
 
-            <div class="md:col-span-5">
+			<div class="md:col-span-5">
 
-                <?php
-                $current_user_id = $this->session->userdata('user_id');
-                $current_user_name = '';
+				<select id="employee_dropdown"
+					class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
 
-                foreach ($user_records as $s) {
-                    if ($s->id == $current_user_id) {
-                        $current_user_name = $s->username;
-                        break;
-                    }
-                }
-                ?>
+					<option value="">Select Employee</option>
 
-                <input type="text"
-                    id="employee_name"
-                    name="employee_name"
-                    value="<?php echo $current_user_name; ?>"
-                    readonly
-                    class="w-full border border-gray-300 rounded px-3 py-1 text-sm bg-gray-100">
+					<?php foreach ($user_records as $s) { ?>
+						<option value="<?php echo $s->employee_id; ?>"
+							data-name="<?php echo $s->employee_name; ?>">
+							<?php echo $s->employee_name; ?>
+						</option>
+					<?php } ?>
 
-                <input type="hidden"
-                    id="employee_id"
-                    name="employee_id"
-                    value="<?php echo $current_user_id; ?>">
+				</select>
 
-            </div>
+			</div>
 
-        </div>
+		</div>
 
 
-        <!-- Application Date -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
 
-            <label class="md:col-span-3 text-sm font-medium">
-                Application date:
-            </label>
+		<!-- Employee Name & ID -->
+		<div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
 
-            <div class="md:col-span-5">
+			<label class="md:col-span-3 text-sm font-medium">
+				Employee Name & ID :
+			</label>
 
-                <input type="date"
-                    id="application_date"
-                    name="application_date"
-                    value="<?php echo date('Y-m-d'); ?>"
-                    tabindex="2"
-                    class="w-full border border-gray-300 rounded px-3 py-1 text-sm">
+			<div class="md:col-span-5 grid grid-cols-2 gap-3">
 
-            </div>
+				<input type="text"
+					id="employee_name"
+					name="employee_name"
+					placeholder="Employee Name"
+					readonly
+					class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-gray-100">
 
-        </div>
+				<input type="text"
+					id="employee_id"
+					name="employee_id"
+					placeholder="Employee ID"
+					readonly
+					class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-gray-100">
 
+			</div>
 
-        <!-- Leave Type -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
+		</div>
 
-            <label class="md:col-span-3 text-sm font-medium">
-                Leave Type :<span class="text-red-500">*</span>
-            </label>
 
-            <div class="md:col-span-5">
 
-                <select
-                    name="ltype_id"
-                    id="ltype_id"
-                    required
-                    onchange="data_for_leave_days();"
-                    class="w-full border border-gray-300 rounded px-3 py-1 text-sm">
 
-                    <option value="">Select</option>
 
-                    <?php foreach ($category as $cat) { ?>
 
-                        <option value="<?php echo $cat->leave_cat_id ?>"
-                            data-days="<?php echo $cat->leave_days ?>">
+		<!-- Application Date -->
+		<div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
 
-                            <?php echo $cat->category_name; ?>
+			<label class="md:col-span-3 text-sm font-medium">
+				Application date:
+			</label>
 
-                        </option>
+			<div class="md:col-span-5">
 
-                    <?php } ?>
+				<input type="date"
+					id="application_date"
+					name="application_date"
+					value="<?php echo date('Y-m-d'); ?>"
+					tabindex="2"
+					class="w-full border border-gray-300 rounded px-3 py-1 text-sm">
 
-                </select>
+			</div>
 
-            </div>
+		</div>
 
-        </div>
 
+		<!-- Leave Type -->
+		<div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
 
-        <!-- Allocate Leave -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
+			<label class="md:col-span-3 text-sm font-medium">
+				Leave Type :<span class="text-red-500">*</span>
+			</label>
 
-            <label class="md:col-span-3 text-sm font-medium">
-                Allocate Leave & Use Leave :<span class="text-red-500">*</span>
-            </label>
+			<div class="md:col-span-5">
 
-            <div class="md:col-span-3">
+				<select
+					name="ltype_id"
+					id="ltype_id"
+					required
+					onchange="data_for_leave_days();"
+					class="w-full border border-gray-300 rounded px-3 py-1 text-sm">
 
-                <input type="text"
-                    id="allocated_leave"
-                    name="allocated_leave"
-                    readonly
-                    class="w-full border border-gray-300 rounded px-3 py-1 text-sm bg-gray-100">
+					<option value="">Select</option>
 
-            </div>
+					<?php foreach ($category as $cat) { ?>
 
-            <div class="md:col-span-3">
+						<option value="<?php echo $cat->leave_cat_id ?>"
+							data-days="<?php echo $cat->leave_days ?>">
 
-                <input type="text"
-                    id="avilable_leave"
-                    name="avilable_leave"
-                    readonly
-                    class="w-full border border-gray-300 rounded px-3 py-1 text-sm bg-gray-100">
+							<?php echo $cat->category_name; ?>
 
-            </div>
+						</option>
 
-        </div>
+					<?php } ?>
 
+				</select>
 
-        <!-- Normal Leave Group -->
-        <div id="normal_leave_group">
+			</div>
 
-            <!-- Leave From To -->
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
+		</div>
 
-                <label class="md:col-span-3 text-sm font-medium">
-                    Leave From - To :<span class="text-red-500">*</span>
-                </label>
 
-                <div class="md:col-span-3">
+		<!-- Allocate Leave -->
+		<div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
 
-                    <input type="date"
-                        id="start_date"
-                        name="start_date"
-                        value="<?php echo date('Y-m-d') ?>"
-                        required
-                        onchange="calculate_total_days()"
-                        class="w-full border border-gray-300 rounded px-3 py-1 text-sm">
+			<label class="md:col-span-3 text-sm font-medium">
+				Allocate Leave & Use Leave :<span class="text-red-500">*</span>
+			</label>
 
-                    <label id="leave_exists" class="text-red-500 text-sm"></label>
+			<div class="md:col-span-3">
 
-                </div>
+				<input type="text"
+					id="allocated_leave"
+					name="allocated_leave"
+					readonly
+					class="w-full border border-gray-300 rounded px-3 py-1 text-sm bg-gray-100">
 
-                <div class="md:col-span-3">
+			</div>
 
-                    <input type="date"
-                        id="end_date"
-                        name="end_date"
-                        value="<?php echo date('Y-m-d') ?>"
-                        required
-                        onchange="calculate_total_days()"
-                        class="w-full border border-gray-300 rounded px-3 py-1 text-sm">
+			<div class="md:col-span-3">
 
-                </div>
+				<input type="text"
+					id="avilable_leave"
+					name="avilable_leave"
+					readonly
+					class="w-full border border-gray-300 rounded px-3 py-1 text-sm bg-gray-100">
 
-            </div>
+			</div>
 
+		</div>
 
-            <!-- Total Days -->
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
 
-                <label class="md:col-span-3 text-sm font-medium">
-                    Total Days :
-                </label>
+		<!-- Normal Leave Group -->
+		<div id="normal_leave_group">
 
-                <div class="md:col-span-2">
+			<!-- Leave From To -->
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
 
-                    <input type="text"
-                        id="total_date"
-                        name="total_date"
-                        readonly
-                        class="w-full border border-gray-300 rounded px-3 py-1 text-sm">
+				<label class="md:col-span-3 text-sm font-medium">
+					Leave From - To :<span class="text-red-500">*</span>
+				</label>
 
-                </div>
+				<div class="md:col-span-3">
 
-            </div>
+					<input type="date"
+						id="start_date"
+						name="start_date"
+						value="<?php echo date('Y-m-d') ?>"
+						required
+						onchange="calculate_total_days()"
+						class="w-full border border-gray-300 rounded px-3 py-1 text-sm">
 
+					<label id="leave_exists" class="text-red-500 text-sm"></label>
 
-            <!-- Contact -->
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
+				</div>
 
-                <label class="md:col-span-3 text-sm font-medium">
-                    Contact & Address In leave :
-                </label>
+				<div class="md:col-span-3">
 
-                <div class="md:col-span-5">
+					<input type="date"
+						id="end_date"
+						name="end_date"
+						value="<?php echo date('Y-m-d') ?>"
+						required
+						onchange="calculate_total_days()"
+						class="w-full border border-gray-300 rounded px-3 py-1 text-sm">
 
-                    <textarea
-                        id="outside_contact"
-                        name="outside_contact"
-                        rows="2"
-                        placeholder="Contact & Address Outside Country"
-                        class="w-full border border-gray-300 rounded px-3 py-1 text-sm"></textarea>
+				</div>
 
-                </div>
+			</div>
 
-            </div>
 
+			<!-- Total Days -->
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
 
-            <!-- Reason -->
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
+				<label class="md:col-span-3 text-sm font-medium">
+					Total Days :
+				</label>
 
-                <label class="md:col-span-3 text-sm font-medium">
-                    Reason :
-                </label>
+				<div class="md:col-span-2">
 
-                <div class="md:col-span-5">
+					<input type="text"
+						id="total_date"
+						name="total_date"
+						readonly
+						class="w-full border border-gray-300 rounded px-3 py-1 text-sm">
 
-                    <textarea
-                        id="reason"
-                        name="reason"
-                        rows="2"
-                        placeholder="Specify reason for leave"
-                        class="w-full border border-gray-300 rounded px-3 py-1 text-sm"></textarea>
+				</div>
 
-                </div>
+			</div>
 
-            </div>
 
+			<!-- Contact -->
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
 
-            <!-- Joining Date -->
-            <div id="joining_date_group"
-                style="display:none;"
-                class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
+				<label class="md:col-span-3 text-sm font-medium">
+					Contact & Address In leave :
+				</label>
 
-                <label class="md:col-span-3 text-sm font-medium">
-                    Joining Date From Last Leave:<span class="text-red-500">*</span>
-                </label>
+				<div class="md:col-span-5">
 
-                <div class="md:col-span-5">
+					<textarea
+						id="outside_contact"
+						name="outside_contact"
+						rows="2"
+						placeholder="Contact & Address Outside Country"
+						class="w-full border border-gray-300 rounded px-3 py-1 text-sm"></textarea>
 
-                    <input type="date"
-                        id="last_date"
-                        name="last_date"
-                        value="<?php echo date('Y-m-d'); ?>"
-                        class="w-full border border-gray-300 rounded px-3 py-1 text-sm">
+				</div>
 
-                </div>
+			</div>
 
-            </div>
 
+			<!-- Reason -->
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
 
-            <!-- Replacement -->
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
+				<label class="md:col-span-3 text-sm font-medium">
+					Reason :
+				</label>
 
-                <label class="md:col-span-3 text-sm font-medium">
-                    Charge Handed To :<span class="text-red-500">*</span>
-                </label>
+				<div class="md:col-span-5">
 
-                <div class="md:col-span-5">
+					<textarea
+						id="reason"
+						name="reason"
+						rows="2"
+						placeholder="Specify reason for leave"
+						class="w-full border border-gray-300 rounded px-3 py-1 text-sm"></textarea>
 
-                    <select id="replcement"
-                        name="replcement"
-                        class="w-full border border-gray-300 rounded px-3 py-1 text-sm">
+				</div>
 
-                        <option value="">Select</option>
+			</div>
 
-                        <?php foreach ($user_records as $s) { ?>
 
-                            <option
-                                value="<?php echo $s->id ?>"
-                                <?php if ($this->session->userdata('user_id') == $s->id) echo 'selected'; ?>>
+			<!-- Joining Date -->
+			<div id="joining_date_group"
+				style="display:none;"
+				class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
 
-                                <?php echo $s->username; ?>
+				<label class="md:col-span-3 text-sm font-medium">
+					Joining Date From Last Leave:<span class="text-red-500">*</span>
+				</label>
 
-                            </option>
+				<div class="md:col-span-5">
 
-                        <?php } ?>
+					<input type="date"
+						id="last_date"
+						name="last_date"
+						value="<?php echo date('Y-m-d'); ?>"
+						class="w-full border border-gray-300 rounded px-3 py-1 text-sm">
 
-                    </select>
+				</div>
 
-                </div>
+			</div>
 
-            </div>
 
-        </div>
+			<!-- Replacement -->
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-center">
 
+				<label class="md:col-span-3 text-sm font-medium">
+					Charge Handed To :<span class="text-red-500">*</span>
+				</label>
 
-        <!-- File Upload -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
+				<div class="md:col-span-5">
 
-            <label class="md:col-span-3 text-sm font-medium">
-                Upload("jpeg","jpg","png","doc","pdf"):
-            </label>
+					<select id="replcement"
+						name="replcement"
+						class="w-full border border-gray-300 rounded px-3 py-1 text-sm">
 
-            <div class="md:col-span-6">
+						<option value="">Select</option>
 
-                <table class="w-full border border-gray-300 rounded">
+						<?php foreach ($user_records as $s) { ?>
 
-                    <tbody>
+							<option
+								value="<?php echo $s->employee_id ?>">
 
-                        <tr id="addr0">
+								<?php echo $s->employee_name; ?>
 
-                            <td class="border px-2 py-1">1</td>
+							</option>
 
-                            <td class="border px-2 py-1">
+						<?php } ?>
 
-                                <input type="file"
-                                    id="documents"
-                                    name="documents[]"
-                                    class="w-full border border-gray-300 rounded px-2 py-1 text-sm">
+					</select>
 
-                            </td>
+				</div>
 
-                            <td class="border px-2 py-1 space-x-2">
+			</div>
 
-                                <a id="add_row"
-                                    class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm cursor-pointer">
+		</div>
 
-                                    +
 
-                                </a>
+		<!-- File Upload -->
+		<div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
 
-                                <a id="delete_row"
-                                    class="inline-block bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm cursor-pointer">
+			<label class="md:col-span-3 text-sm font-medium">
+				Upload("jpeg","jpg","png","doc","pdf"):
+			</label>
 
-                                    🗑
+			<div class="md:col-span-6">
 
-                                </a>
+				<table class="w-full border border-gray-300 rounded">
 
-                            </td>
+					<tbody>
 
-                        </tr>
+						<tr id="addr0">
 
-                        <tr id="addr1"></tr>
+							<td class="border px-2 py-1">1</td>
 
-                    </tbody>
+							<td class="border px-2 py-1">
 
-                </table>
+								<input type="file"
+									id="documents"
+									name="documents[]"
+									class="w-full border border-gray-300 rounded px-2 py-1 text-sm" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx">
 
-            </div>
+							</td>
 
-        </div>
+							<td class="border px-2 py-1 space-x-2">
 
+								<a id="add_row"
+									class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm cursor-pointer">
 
-        <!-- Submit -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+									+
 
-            <div class="md:col-span-3"></div>
+								</a>
 
-            <div class="md:col-span-5">
+								<a id="delete_row"
+									class="inline-block bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm cursor-pointer">
 
-                <button type="submit"
-                    id="add"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow">
+									🗑
 
-                    Submit
+								</a>
 
-                </button>
+							</td>
 
-            </div>
+						</tr>
 
-        </div>
+						<tr id="addr1"></tr>
 
-    </form>
+					</tbody>
+
+				</table>
+
+			</div>
+
+		</div>
+
+
+		<!-- Submit -->
+		<div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+
+			<div class="md:col-span-3"></div>
+
+			<div class="md:col-span-5">
+
+				<button type="submit"
+					id="add"
+					class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow">
+
+					Submit
+
+				</button>
+
+			</div>
+
+		</div>
+
+	</form>
 
 </div>
 
 
 <script>
-    $(document).ready(function() {
-        var i = 1;
-        $("#add_row").click(function() {
-            $('#addr' + i).html("<td>" + (i + 1) + "</td><td><div class='col-sm-6'><input class='form-control' id='documents" + i + "' name='documents[]' type='file'></div></td><td></td>");
-            $('#tab_logic').append('<tr id="addr' + (i + 1) + '"></tr>');
-            i++;
-        });
+	$(document).ready(function() {
+		var i = 1;
+		$("#add_row").click(function() {
+			$('#addr' + i).html("<td>" + (i + 1) + "</td><td><div class='col-sm-6'><input class='form-control' id='documents" + i + "' name='documents[]' type='file'></div></td><td></td>");
+			$('#tab_logic').append('<tr id="addr' + (i + 1) + '"></tr>');
+			i++;
+		});
 
-        $("#delete_row").click(function() {
-            if (i > 1) {
-                $("#addr" + (i - 1)).html('');
-                i--;
-            }
-        });
+		$("#delete_row").click(function() {
+			if (i > 1) {
+				$("#addr" + (i - 1)).html('');
+				i--;
+			}
+		});
 
-        function toggleLeaveFields() {
-            var selected = $('#ltype_id').val();
+		function toggleLeaveFields() {
+			var selected = $('#ltype_id').val();
 
-            if (selected && selected.toLowerCase().includes("compensatory")) {
-                $('#normal_leave_group').hide();
-                $('#comp_leave_group').show();
+			if (selected && selected.toLowerCase().includes("compensatory")) {
+				$('#normal_leave_group').hide();
+				$('#comp_leave_group').show();
 
-                // remove required from normal fields
-                $('#normal_leave_group :input').prop('required', false);
+				// remove required from normal fields
+				$('#normal_leave_group :input').prop('required', false);
 
-                // add required to comp leave fields
-                $('#date_working, #date_compoff').prop('required', true);
+				// add required to comp leave fields
+				$('#date_working, #date_compoff').prop('required', true);
 
-            } else {
-                $('#normal_leave_group').show();
-                $('#comp_leave_group').hide();
+			} else {
+				$('#normal_leave_group').show();
+				$('#comp_leave_group').hide();
 
-                // add required back to normal fields
-                $('#start_date, #end_date, #charge_handed_to').prop('required', true);
+				// add required back to normal fields
+				$('#start_date, #end_date, #charge_handed_to').prop('required', true);
 
-                // remove required from comp leave fields
-                $('#date_working, #date_compoff').prop('required', false);
-            }
+				// remove required from comp leave fields
+				$('#date_working, #date_compoff').prop('required', false);
+			}
 
-            // also handle "Joining Date From Last Leave" visibility for Annual Leave
-            if (selected && selected.toLowerCase().includes("annual")) {
-                $('#joining_date_group').show();
-                $('#last_date').prop('required', true);
-            } else {
-                $('#joining_date_group').hide();
-                $('#last_date').prop('required', false);
-            }
-        }
+			// also handle "Joining Date From Last Leave" visibility for Annual Leave
+			if (selected && selected.toLowerCase().includes("annual")) {
+				$('#joining_date_group').show();
+				$('#last_date').prop('required', true);
+			} else {
+				$('#joining_date_group').hide();
+				$('#last_date').prop('required', false);
+			}
+		}
 
-        toggleLeaveFields(); // run on load
-        $('#ltype_id').on('change', toggleLeaveFields);
-    });
+		toggleLeaveFields(); // run on load
+		$('#ltype_id').on('change', toggleLeaveFields);
+	});
 
-    $("#tab_logic").on('click', '.remove', function() {
-        $(this).closest('tr').remove();
-    });
-    //this following function is calculate total days
-    function calculate_total_days() {
-        var startDateStr = document.getElementById('start_date').value;
-        var endDateStr = document.getElementById('end_date').value;
+	$("#tab_logic").on('click', '.remove', function() {
+		$(this).closest('tr').remove();
+	});
+	//this following function is calculate total days
+	function calculate_total_days() {
+		var startDateStr = document.getElementById('start_date').value;
+		var endDateStr = document.getElementById('end_date').value;
 
-        if (!startDateStr || !endDateStr) {
-            document.getElementById("total_date").value = 0;
-            return;
-        }
+		if (!startDateStr || !endDateStr) {
+			document.getElementById("total_date").value = 0;
+			return;
+		}
 
-        // Parse start date and end date in Y-m-d format
-        var startDateArr = startDateStr.split('-');
-        var endDateArr = endDateStr.split('-');
+		// Parse start date and end date in Y-m-d format
+		var startDateArr = startDateStr.split('-');
+		var endDateArr = endDateStr.split('-');
 
-        var startDate = new Date(startDateArr[0], startDateArr[1] - 1, startDateArr[2]);
-        var endDate = new Date(endDateArr[0], endDateArr[1] - 1, endDateArr[2]);
+		var startDate = new Date(startDateArr[0], startDateArr[1] - 1, startDateArr[2]);
+		var endDate = new Date(endDateArr[0], endDateArr[1] - 1, endDateArr[2]);
 
-        const time = endDate - startDate;
+		const time = endDate - startDate;
 
-        if (time < 0) {
-            document.getElementById("total_date").value = 0; // invalid range
-            return;
-        }
+		if (time < 0) {
+			document.getElementById("total_date").value = 0; // invalid range
+			return;
+		}
 
-        // Add 1 to include both start and end date
-        const days = Math.floor(time / (1000 * 60 * 60 * 24)) + 1;
+		// Add 1 to include both start and end date
+		const days = Math.floor(time / (1000 * 60 * 60 * 24)) + 1;
 
-        document.getElementById("total_date").value = days;
-    }
-
-
-    //add a calender to hide privious date thi functionality
-    var date = new Date();
-    var tdate = date.getDate();
-    var month = date.getMonth() + 1;
-
-    if (tdate < 10) {
-        tdate = '0' + tdate;
-    }
-    if (month < 10) {
-        month = '0' + month;
-    }
-
-    var year = date.getUTCFullYear();
-    var mindate = year + "-" + month + "-" + tdate;
-
-    // document.getElementById("application_date").setAttribute('min', mindate);
-    document.getElementById("start_date").setAttribute('min', mindate);
-    document.getElementById("end_date").setAttribute('min', mindate);
-    document.getElementById("last_date").setAttribute('min', mindate);
-    console.log(mindate);
-
-    window.onload = function() {
-        calculate_total_days();
-    };
-
-    function data_for_leave_days() {
-
-        var ltype_id = document.getElementById('ltype_id').value;
-        var employee_id = document.getElementById('employee_id').value;
+		document.getElementById("total_date").value = days;
+	}
 
 
-        if (ltype_id != '') {
-            $.ajax({
-                async: "false",
-                type: "POST",
-                url: "<?php echo base_url() ?>index.php/Ajax/ajax_get_paid_leave_info",
-                data: {
-                    ltype_id: ltype_id,
-                    employee_id: employee_id
-                },
-                dataType: "json",
-                success: function(msg) {
+	//add a calender to hide privious date thi functionality
+	var date = new Date();
+	var tdate = date.getDate();
+	var month = date.getMonth() + 1;
+
+	if (tdate < 10) {
+		tdate = '0' + tdate;
+	}
+	if (month < 10) {
+		month = '0' + month;
+	}
+
+	var year = date.getUTCFullYear();
+	var mindate = year + "-" + month + "-" + tdate;
+
+	// document.getElementById("application_date").setAttribute('min', mindate);
+	document.getElementById("start_date").setAttribute('min', mindate);
+	document.getElementById("end_date").setAttribute('min', mindate);
+	document.getElementById("last_date").setAttribute('min', mindate);
+	console.log(mindate);
+
+	window.onload = function() {
+		calculate_total_days();
+	};
+
+	function data_for_leave_days() {
+
+		var ltype_id = document.getElementById('ltype_id').value;
+		var employee_id = document.getElementById('employee_id').value;
 
 
-                    document.getElementById("avilable_leave").value = msg.use_paid_leave;
-                    document.getElementById("allocated_leave").value = msg.paid_days;
+		if (ltype_id != '') {
+			$.ajax({
+				async: "false",
+				type: "POST",
+				url: "<?php echo base_url() ?>index.php/Ajax/ajax_get_paid_leave_info",
+				data: {
+					ltype_id: ltype_id,
+					employee_id: employee_id
+				},
+				dataType: "json",
+				success: function(msg) {
 
 
-                }
-            });
-        } else {
-            document.getElementById("avilable_leave").value = '';
-            document.getElementById("allocated_leave").value = '';
+					document.getElementById("avilable_leave").value = msg.use_paid_leave;
+					document.getElementById("allocated_leave").value = msg.paid_days;
+
+
+				}
+			});
+		} else {
+			document.getElementById("avilable_leave").value = '';
+			document.getElementById("allocated_leave").value = '';
 
 
 
-        }
-    }
-    // function check_date_exist() {
-    //     var startDate = $('#start_date').val();
+		}
+	}
+	// function check_date_exist() {
+	//     var startDate = $('#start_date').val();
 
-    //     $.ajax({
-    //         url: "<?php echo site_url('Ajax/check_exist_leave_application'); ?>",
-    //         type: 'POST',
-    //         data: {
-    //             start_date: startDate
-    //         },
-    //         success: function(msg) {
-    //             if (msg != 0) {
-    //                 $('#leave_exists').text("Leave record already exists for the selected start date.");
-    //             } else {
-    //                 $('#leave_exists').text("");
-    //             }
-    //         }
-    //     });
-    // }
+	//     $.ajax({
+	//         url: "<?php echo site_url('Ajax/check_exist_leave_application'); ?>",
+	//         type: 'POST',
+	//         data: {
+	//             start_date: startDate
+	//         },
+	//         success: function(msg) {
+	//             if (msg != 0) {
+	//                 $('#leave_exists').text("Leave record already exists for the selected start date.");
+	//             } else {
+	//                 $('#leave_exists').text("");
+	//             }
+	//         }
+	//     });
+	// }
 </script>
 
 
@@ -656,3 +678,18 @@
     //     retur n parts[2] + "-" + parts[1] + "-" + parts[0];
     // }
 </script> -->
+
+
+<script>
+	document.getElementById('employee_dropdown').addEventListener('change', function() {
+
+		let selected = this.options[this.selectedIndex];
+
+		let empId = this.value;
+		let empName = selected.getAttribute('data-name');
+
+		document.getElementById('employee_id').value = empId ? empId : '';
+		document.getElementById('employee_name').value = empName ? empName : '';
+
+	});
+</script>

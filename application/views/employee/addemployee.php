@@ -155,7 +155,7 @@
 			<div>
 				<label>Upload Passport Copy</label>
 				<input type="file" name="passport_file"
-					class="w-full border p-2 rounded">
+					class="w-full border p-2 rounded" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx">
 			</div>
 
 		</div>

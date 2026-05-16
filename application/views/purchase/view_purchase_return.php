@@ -6,18 +6,42 @@
 	<title>Purchase Return</title>
 
 	<style>
-		@page {
+		/* @page {
 			size: A4;
-			margin: 12mm;
+			margin: 0;
 		}
 
 		body {
 			font-family: Arial;
 			font-size: 12px;
+			background: #fff;
+			
 		}
 
 		.print-wrapper {
 			width: 100%;
+			background: #fff;
+			 padding:12mm;
+			
+		} */
+
+		@page {
+			size: A4;
+			margin: 10mm;
+		}
+
+		html,
+		body {
+			font-family: Arial;
+			font-size: 12px;
+			margin: 0;
+			padding: 0;
+			background: #fff;
+		}
+
+		.print-wrapper {
+			padding: 12mm;
+			background: #fff;
 		}
 
 		/* HEADER */
@@ -65,10 +89,30 @@
 			border-collapse: collapse;
 		}
 
-		th,
+		/* th,
 		td {
 			border: 1px solid #000;
 			padding: 4px;
+		} */
+		.print-wrapper td {
+			border: none;
+		}
+
+		.items-table {
+			border-collapse: collapse;
+		}
+
+		.items-table th,
+		.items-table td {
+			border: 1px solid #000;
+		}
+
+		.totals-table {
+			border-collapse: collapse;
+		}
+
+		.totals-table td {
+			border: 1px solid #000;
 		}
 
 		th {
@@ -105,6 +149,14 @@
 				max-height: none !important;
 			}
 
+			body {
+				background: #fff !important;
+			}
+
+			.print-wrapper {
+				background: #fff !important;
+			}
+
 			button {
 				display: none;
 			}
@@ -125,8 +177,7 @@
 
 	<div class="hide-on-print" style="
     margin:10px 0;
-    padding:10px;
-    border-bottom:1px solid #ccc;">
+    padding:10px;">
 		<button onclick="window.print()" style="
         padding:8px 18px;
         background:#2563eb;
@@ -150,7 +201,7 @@
 
 
 	<table class="print-wrapper">
-				<!-- ================= REPEATING HEADER ================= -->
+		<!-- ================= REPEATING HEADER ================= -->
 		<thead>
 			<tr>
 				<td>
@@ -180,7 +231,7 @@
 
 		<!-- ================= BODY ================= -->
 
-		
+
 
 
 		<tbody>
@@ -209,7 +260,7 @@
 
 					<!-- ITEMS -->
 
-					<table>
+					<table class="items-table">
 
 						<thead>
 
@@ -261,7 +312,7 @@
 
 					<br>
 
-					<table style="width:40%;margin-left:auto">
+					<table class="totals-table" style="width:40%;margin-left:auto">
 
 						<tr>
 							<td>Sub Total</td>

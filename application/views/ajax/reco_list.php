@@ -3,83 +3,92 @@
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-<div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-200">
+<div class="bg-white rounded-2xl shadow-md border border-gray-200 p-4 mt-4">
 
-	<table id="dr_table" class="min-w-full divide-y divide-gray-200">
+    <div class="overflow-x-auto">
+        <table id="dr_table" class="min-w-full text-sm">
 
-		<!-- Header -->
-		<thead class="bg-gray-50">
-			<tr>
-				<th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Select</th>
-				<th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
-				<th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Account</th>
-				<th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Instrument Date</th>
-				<th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Instrument Number</th>
-				<th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Amount</th>
-				<th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Bank Date</th>
-			</tr>
-		</thead>
+            <thead>
+                <tr class="bg-gray-100 text-gray-600 uppercase text-xs">
+                    <th class="px-4 py-3 text-left">Select</th>
+                    <th class="px-4 py-3 text-left">Date</th>
+                    <th class="px-4 py-3 text-left">Account</th>
+                    <th class="px-4 py-3 text-left">Instrument Date</th>
+                    <th class="px-4 py-3 text-left">Instrument No</th>
+                    <th class="px-4 py-3 text-right">Amount</th>
+                    <th class="px-4 py-3 text-left">Bank Date</th>
+                </tr>
+            </thead>
 
-		<!-- Body -->
-		<tbody class="divide-y divide-gray-100">
-			<tr>
-				<td colspan="7">
-					<input type="hidden" name="selected_tr" id="selected_tr">
-				</td>
-			</tr>
+            <tbody class="divide-y divide-gray-200">
 
-			<?php foreach ($records as $r) { ?>
-				<tr class="hover:bg-gray-50 transition">
+                <?php foreach ($records as $r) { ?>
+                    <tr class="hover:bg-gray-50 transition">
 
-					<td class="px-4 py-2">
-						<input type="checkbox"
-							class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-							name="inv_id[]"
-							value="<?php echo $r->voucher_id; ?>"
-							onclick="p_check();" />
-					</td>
+                        <!-- Checkbox -->
+                        <td class="px-4 py-3">
+                            <input type="checkbox"
+                                name="inv_id[]"
+                                value="<?php echo $r->voucher_id; ?>"
+                                class="w-4 h-4 text-blue-600 border-gray-300 rounded">
+                        </td>
 
-					<td class="px-4 py-2"><?php echo $r->voucher_date ?></td>
-					<td class="px-4 py-2 font-medium text-gray-700"><?php echo $r->account_name ?></td>
-					<td class="px-4 py-2"><?php echo $r->voucher_date ?>
-						<input type="hidden"
-							name="voucher_date"
-							value="<?php echo $r->voucher_date; ?>">
-					</td>
-					<td class="px-4 py-2"><?php echo $r->transaction_no ?>
-						<input type="hidden"
-							name="transaction_no"
-							value="<?php echo $r->transaction_no; ?>">
-					</td>
-					<td class="px-4 py-2 font-semibold"><?php echo $r->amount ?>
-						<input type="hidden"
-							name="amount"
-							value="<?php echo $r->amount; ?>">
-					</td>
+                        <!-- Date -->
+                        <td class="px-4 py-3 text-gray-700">
+                            <?php echo date('d-m-Y', strtotime($r->voucher_date)); ?>
+                        </td>
 
-					<td class="px-4 py-2">
-						<input type="date"
-							name="bank_date[]"
-							value="<?php echo $r->bank_date; ?>"
-							class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                        <!-- Account -->
+                        <td class="px-4 py-3 font-medium text-gray-800">
+                            <?php echo $r->account_name; ?>
+                        </td>
 
-						<input type="hidden"
-							name="customer_id"
-							value="<?php echo $r->customer_id; ?>">
-					</td>
+                        <!-- Instrument Date -->
+                        <td class="px-4 py-3 text-gray-600">
+                            <?php echo date('d-m-Y', strtotime($r->voucher_date)); ?>
+                            <input type="hidden"
+                                name="instrument_dates[<?php echo $r->voucher_id; ?>]"
+                                value="<?php echo $r->voucher_date; ?>">
+                        </td>
 
-				</tr>
-			<?php } ?>
-		</tbody>
+                        <!-- Instrument Number -->
+                        <td class="px-4 py-3 text-gray-600">
+                            <?php echo $r->transaction_no; ?>
+                            <input type="hidden"
+                                name="instrument_nos[<?php echo $r->voucher_id; ?>]"
+                                value="<?php echo $r->transaction_no; ?>">
+                        </td>
 
-	</table>
+                        <!-- Amount -->
+                        <td class="px-4 py-3 text-right font-semibold text-gray-800">
+                            ₹ <?php echo number_format($r->amount, 2); ?>
+                            <input type="hidden"
+                                name="deposit_amounts[<?php echo $r->voucher_id; ?>]"
+                                value="<?php echo $r->amount; ?>">
+                        </td>
+
+                        <!-- Bank Date -->
+                        <td class="px-4 py-2">
+                            <input type="date"
+                                name="bank_dates[<?php echo $r->voucher_id; ?>]"
+                                value="<?php echo $r->bank_date; ?>"
+                                class="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none w-full">
+                        </td>
+
+                    </tr>
+                <?php } ?>
+
+            </tbody>
+
+        </table>
+    </div>
+
 </div>
+
 <script>
 	$(document).ready(function() {
 		$('#dr_table').DataTable({
-			pageLength: 10,
-			responsive: true,
-			ordering: true
+			pageLength: 10
 		});
 	});
 </script>

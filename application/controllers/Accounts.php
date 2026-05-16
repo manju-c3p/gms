@@ -29,6 +29,7 @@ class Accounts extends CI_Controller
 		echo $res;
 	}
 
+
 	//////////////////////////////// Account group starts ////////////////////////////////
 
 	function view_account_group_form()
@@ -212,7 +213,7 @@ class Accounts extends CI_Controller
 		$id = $this->Accounts_model->add_contra_entry();
 		if ($id != '')
 			$this->session->set_flashdata('success', 'Record Successfully Saved');
-		redirect('accounts/list_contra_entry');
+		redirect('Accounts/list_contra_entry');
 	}
 
 	function list_contra_entry()
@@ -250,7 +251,7 @@ class Accounts extends CI_Controller
 		$id = $this->Accounts_model->add_journal();
 		if ($id != '')
 			$this->session->set_flashdata('success', 'Record Successfully Saved');
-		redirect('accounts/view_journal_list');
+		redirect('Accounts/view_journal_list');
 	}
 
 	function view_journal_list()
@@ -264,7 +265,8 @@ class Accounts extends CI_Controller
 			$data['to'] = date('Y-m-d');
 		}
 		$this->load->model('Accounts_model');
-		$data['records'] = $this->Accounts_model->get_journal_records($data['from'], $data['to']);
+		$data['records'] = $this->Accounts_model->get_journal_records_new($data['from'], $data['to']);
+		// log_message('error', 'Journal Records: ' . print_r($data['records'], true));
 		$data['main_content'] = 'Accounts/journal_list.php';
 		$this->load->view('includes/template', $data);
 	}
@@ -289,7 +291,7 @@ class Accounts extends CI_Controller
 		$id = $this->Accounts_model->add_debit_note();
 		if ($id != '')
 			$this->session->set_flashdata('success', 'Record Successfully Saved');
-		redirect('accounts/view_debit_note_list');
+		redirect('Accounts/view_debit_note_list');
 	}
 
 	function view_debit_note_list()
@@ -322,10 +324,10 @@ class Accounts extends CI_Controller
 		$id = $this->Accounts_model->update_debit_note();
 		if ($id) {
 			$this->session->set_flashdata('success', 'Data Updated successfully');
-			redirect('accounts/view_debit_note_list');
+			redirect('Accounts/view_debit_note_list');
 		} else {
 			$this->session->set_flashdata('error', 'Record Not Updated !! Duplicate Entry ');
-			redirect('accounts/get_edit_debit_note');
+			redirect('Accounts/get_edit_debit_note');
 		}
 	}
 	/////////////////////////////////// Debit Note End////////////////////////////////////////
@@ -342,6 +344,48 @@ class Accounts extends CI_Controller
 		$data['main_content'] = 'Accounts/credit_note';
 		$this->load->view('includes/template', $data);
 	}
+	// =======================================================
+
+	function supplier_advance()
+	{ //in use
+		$data['title'] = "Supplier Advance";
+		$this->load->model('Accounts_model');
+		// $data['sundry_detors_records'] = $this->Accounts_model->get_general_ledger_accounts('', 'Income');
+		$data['credit_records'] = $this->Accounts_model->get_general_ledger_accounts('Assets', '');
+		$data['sundry_detors_records'] = $this->Accounts_model->get_supplier_account_all();
+
+
+		$data['main_content'] = 'Accounts/supplier_advance';
+		$this->load->view('includes/template', $data);
+	}
+
+	function add_supplier_advance()
+	{ //in use
+		$data['title'] = "Supplier Advance";
+		$this->load->model('Accounts_model');
+		$id = $this->Accounts_model->add_supplier_advance();
+		if ($id != '')
+			$this->session->set_flashdata('success', 'Record Successfully Saved');
+		redirect('Accounts/view_supplier_advance_list');
+	}
+
+	function view_supplier_advance_list()
+	{ //in use
+		$data['title'] = "Supplier Advance";
+		if ($this->input->post('from')) {
+			$data['from'] = $this->input->post('from');
+			$data['to'] = $this->input->post('to');
+		} else {
+			$data['from'] = date('Y-m-d');
+			$data['to'] = date('Y-m-d');
+		}
+		$this->load->model('Accounts_model');
+		$data['credit_note'] = $this->Accounts_model->get_supplier_advance_records($data['from'], $data['to']);
+		$data['main_content'] = 'Accounts/supplier_advance_list';
+		$this->load->view('includes/template', $data);
+	}
+
+	// ===========================================================
 
 	function add_credit_note()
 	{ //in use
@@ -350,7 +394,7 @@ class Accounts extends CI_Controller
 		$id = $this->Accounts_model->add_credit_note();
 		if ($id != '')
 			$this->session->set_flashdata('success', 'Record Successfully Saved');
-		redirect('accounts/view_credit_note_list');
+		redirect('Accounts/view_credit_note_list');
 	}
 
 	function view_credit_note_list()
@@ -383,10 +427,10 @@ class Accounts extends CI_Controller
 		$id = $this->Accounts_model->update_credit_note();
 		if ($id) {
 			$this->session->set_flashdata('success', 'Data Updated successfully');
-			redirect('accounts/view_credit_note_list');
+			redirect('Accounts/view_credit_note_list');
 		} else {
 			$this->session->set_flashdata('error', 'Record Not Updated !! Duplicate Entry ');
-			redirect('accounts/get_edit_credit_note');
+			redirect('Accounts/get_edit_credit_note');
 		}
 	}
 
@@ -457,37 +501,15 @@ class Accounts extends CI_Controller
 
 		if ($id != '') {
 			$this->session->set_flashdata('success', 'Record Successfully Saved');
-			redirect('accounts/view_receipt_list');
+			redirect('Accounts/view_receipt_list');
 		} else {
 			$this->session->set_flashdata('error', 'Failed to save receipt');
-			redirect('accounts/add_receipt');
+			redirect('Accounts/add_receipt');
 		}
 	}
 
 
-	// function view_receipt_list() // in use
-	// {
-	//   $data['title'] = "Receipt List";
-	//   $data['header'] = $this->input->post('header');
 
-	//   if ($this->uri->segment(3)) {
-	//     $data['division_id'] = $this->uri->segment(3);
-	//     $data['from'] = $this->uri->segment(4);
-	//     $data['to'] = $this->uri->segment(5);
-	//   } else if ($this->input->post('from')) {
-	//     $data['from'] = $this->input->post('from');
-	//     $data['to'] = $this->input->post('to');
-	//   } else {
-	//     $data['from'] = date('Y-m-d');
-	//     $data['to'] = date('Y-m-d');
-	//   }
-
-	//   $this->load->model('Accounts_model');
-	//   $data['receipt'] = $this->Accounts_model->get_receipt_list($data['from'], $data['to']);
-
-	//   $data['main_content'] = 'Accounts/receipt_list.php';
-	//   $this->load->view('includes/template', $data);
-	// }
 	function view_receipt_list() // in use
 	{
 		$data['title'] = "Receipt List";
@@ -636,7 +658,7 @@ class Accounts extends CI_Controller
 		$id = $this->Accounts_model->add_new_payment_data();
 		if ($id != '') {
 			$this->session->set_flashdata('success', 'Record Successfully Saved');
-			redirect('accounts/view_payment_list');
+			redirect('Accounts/view_payment_list');
 		}
 	}
 
@@ -751,6 +773,7 @@ class Accounts extends CI_Controller
 
 		$this->load->model('Accounts_model');
 		$data['res'] = $this->Accounts_model->ajax_get_invoice_list($data['account_id']);
+		log_message('error', 'Invoice List: ' . print_r($data['res'], true));
 		if (empty($data['res']))
 			echo 0;
 		else
@@ -778,7 +801,7 @@ class Accounts extends CI_Controller
 		// $data['from_date'] = date('d-m-Y', strtotime('01-01-' . date('Y')));
 		$data['to_date'] = date("d-m-Y", strtotime(date("Y-m-d")));
 		//    
-		log_message('error', $data['from_date'] . "," . $data['to_date']);
+		// log_message('error', $data['from_date'] . "," . $data['to_date']);
 		$data['account_id'] = "";
 
 		$this->load->model('Accounts_model');
@@ -875,13 +898,56 @@ class Accounts extends CI_Controller
 		$data['main_content'] = 'accounts/edit_receipt';
 		redirect("Accounts/view_account_transaction_details/$voucher_id");
 	}
-	function view_balance_sheet()
+	function view_balance_sheet11()
 	{
 		$data['title'] = "Report-Balance Sheet";
 		$data['from'] = date('01-01-Y');
 		$data['to'] = date('d-m-Y');
 
 		$data['main_content'] = 'reports/account/balance_sheet_list';
+		$this->load->view('includes/template', $data);
+	}
+
+	function view_balance_sheet()
+	{
+		$data['title'] = "Balance Sheet";
+
+		$from = $this->input->post('from') ?: date('Y-01-01');
+		$to   = $this->input->post('to') ?: date('Y-m-d');
+
+		$data['from'] = date('Y-m-d', strtotime($from));
+		$data['to']   = date('Y-m-d', strtotime($to));
+
+		$this->load->model('Accounts_model');
+
+		$tree = $this->Accounts_model->prepare_balance_sheet($to);
+
+		$assets = [];
+		$liabilities = [];
+
+		foreach ($tree as $group) {
+
+			if (strtolower(trim($group->group_name)) == 'assets') {
+				$assets[] = $group; // ✅ FIX
+			}
+
+			if (strtolower(trim($group->group_name)) == 'liabilities') {
+				$liabilities[] = $group; // ✅ FIX
+			}
+		}
+
+		$profit = $this->Accounts_model->get_profit_loss($from, $to);
+
+		foreach ($liabilities as &$group) {
+			if (strtolower(trim($group->group_name)) == 'capital account') {
+				$group->balance += $profit;
+			}
+		}
+
+		$data['assets'] = $assets;
+		$data['liabilities'] = $liabilities;
+
+		$data['main_content'] = 'Reports/account/balance_sheet_list_new';
 		$this->load->view('includes/template', $data);
 	}
 	function get_balance_sheet()
@@ -894,7 +960,7 @@ class Accounts extends CI_Controller
 		$data['main_content'] = 'reports/account/balance_sheet_list';
 		$this->load->view('includes/template', $data);
 	}
-	function view_profit_and_loss()
+	function view_profit_and_loss_old()
 	{
 		$data['title'] = "Report-Profit and Loss";
 
@@ -972,8 +1038,15 @@ class Accounts extends CI_Controller
 		$data['title'] = "Payment Print";
 
 		$data['account_id'] = $this->uri->segment(7);
-		$data['voucher_code'] = $this->uri->segment(3) . '/' . $this->uri->segment(4) . '/' . $this->uri->segment(5) . '/' . $this->uri->segment(6);
+		// $data['voucher_code'] = $this->uri->segment(3) . '/' . $this->uri->segment(4) . '/' . $this->uri->segment(5) . '/' . $this->uri->segment(6);
+		$data['voucher_code'] = implode('/', array_filter([
+			$this->uri->segment(3),
+			$this->uri->segment(4),
+			$this->uri->segment(5)
+		])) . '/';
 
+		$data['voucher_code'] = rtrim($data['voucher_code'], '/');
+		log_message("error", $data['voucher_code']);
 		$this->load->model('Setup_model');
 		$this->load->model('Accounts_model');
 
@@ -981,7 +1054,7 @@ class Accounts extends CI_Controller
 		$data['logo_details'] = "";
 		// Fetch all voucher_transaction rows for this voucher_code
 		$all_voucher_rows = $this->Accounts_model->get_payment_record($data['voucher_code']);
-
+		log_message('error', 'Voucher Rows: ' . print_r($all_voucher_rows, true));
 		// Separate header (credit) and details (debits)
 		$header = null;
 		$payment_details = [];
@@ -1281,6 +1354,8 @@ class Accounts extends CI_Controller
 
 		$this->load->model('Accounts_model');
 		$data['records'] = $this->Accounts_model->get_bank_reconciliation_list();
+		$data['account_ledgers'] = $this->Accounts_model->get_all_general_ledger_accounts();
+		// log_message('error', 'Account Ledgers: ' . print_r($data['records'], true));
 
 		$data['main_content'] = 'Accounts/bank_reconciliation_list.php';
 		$this->load->view('includes/template.php', $data);
@@ -1503,7 +1578,7 @@ class Accounts extends CI_Controller
 		$to   = DateTime::createFromFormat('d-m-Y', $to_date);
 
 		if (!$from || !$to) {
-			show_error("Invalid date format.");
+			show_error("333Invalid date format.");
 		}
 
 		$from_sql = $from->format('Y-m-d');
@@ -1531,9 +1606,25 @@ class Accounts extends CI_Controller
 		$to_date = $this->input->post('to_date');
 		// $this->load->model('Setup_model');
 		$this->load->model('Accounts_model');
-		// $comapny_records = $this->Setup_model->get_company_master_list();
-		$trial_balance_data = $this->Accounts_model->get_account_trial_balance($from_date, $to_date);
 
+		// $comapny_records = $this->Setup_model->get_company_master_list();
+		$from = DateTime::createFromFormat('d-m-Y', $from_date)
+			?: DateTime::createFromFormat('Y-m-d', $from_date);
+
+		$to = DateTime::createFromFormat('d-m-Y', $to_date)
+			?: DateTime::createFromFormat('Y-m-d', $to_date);
+
+		if (!$from || !$to) {
+			show_error("Invalid date format in export");
+		}
+
+		$from_sql = $from->format('Y-m-d');
+		$to_sql   = $to->format('Y-m-d');
+
+		// ✅ pass converted values
+		$trial_balance_data = $this->Accounts_model->get_account_trial_balance($from_sql, $to_sql);
+
+		// log_message('error', 'Trial Balance Data: ' . print_r($trial_balance_data, true));
 		// Prepare the output headers for Excel
 		header("Content-Type: application/vnd.ms-excel");
 		header("Content-Disposition: attachment; filename=Trial_Balance_" . date('Ymd') . ".xls");
@@ -1671,7 +1762,7 @@ class Accounts extends CI_Controller
 		$id = $this->Accounts_model->add_new_payment_data();
 		if ($id != '') {
 			$this->session->set_flashdata('success', 'Record Successfully Saved');
-			redirect('accounts/view_payment_list');
+			redirect('Accounts/view_payment_list');
 		}
 	}
 	/***********************************    End CI Controller*************************************/
@@ -1706,12 +1797,12 @@ class Accounts extends CI_Controller
 			$data['sales_records']    = $this->Invoice_model->get_tax_summary_emirate($from_date_db, $to_date_db);
 			$data['purchase_summary'] = $this->Purchase_Model->get_purchase_vat_summary($from_date_db, $to_date_db);
 			$data['voucher_summary']  = $this->Accounts_model->get_voucher_vat_summary($from_date_db, $to_date_db);
-			$view_file = 'Reports/account/tax_report_summary';
+			$view_file = 'reports/account/tax_report_summary';
 		} else {
 			$data['sales_records']    = $this->Invoice_model->get_tax_detailed($from_date_db, $to_date_db);
 			$data['purchase_records'] = $this->Purchase_Model->get_purchase_vat_details($from_date_db, $to_date_db);
 			$data['voucher_records']  = $this->Accounts_model->get_voucher_vat_details($from_date_db, $to_date_db);
-			$view_file = 'Reports/account/tax_report_detailed';
+			$view_file = 'reports/account/tax_report_detailed';
 		}
 
 		$data['from_date']   = $from_date;
@@ -1724,8 +1815,950 @@ class Accounts extends CI_Controller
 		} else {
 			// Normal page load
 			$data['title']        = "Tax Report";
-			$data['main_content'] = 'Reports/account/tax_report';
+			$data['main_content'] = 'reports/account/tax_report';
 			$this->load->view('includes/template', $data);
 		}
 	}
+
+	public function save_expense()
+	{
+		$this->load->model('Accounts_model');
+
+		$expense_id = $this->Accounts_model->save_expense_master();
+
+		if ($expense_id) {
+			$this->Accounts_model->post_expense_voucher($expense_id);
+
+			$this->session->set_flashdata('success', 'Expense Saved Successfully');
+		} else {
+			$this->session->set_flashdata('error', 'Expense Save Failed');
+		}
+
+		redirect('Accounts/expense_list');
+	}
+
+	public function expense_entry12()
+	{
+		// ⭐ Load Expense Ledgers (Direct Expense Group)
+		$data['expense_ledgers'] = $this->db
+			->select('account_id as ledger_id, account_name as ledger_name')
+			->from('general_ledger')
+			->where('group_no', 4)   // ⭐ change this ID
+			->order_by('account_name', 'asc')
+			->get()
+			->result();
+
+		// ⭐ Load Suppliers
+		$data['suppliers'] = $this->db
+			->select('supplier_id, supplier_name')
+			->from('supplier_master')
+			->order_by('supplier_name', 'asc')
+			->get()
+			->result();
+
+		// ⭐ Load View
+		$data['title']        = "Expense Details";
+		$data['main_content'] = 'purchase/expense_entry';
+		$this->load->view('includes/template', $data);
+		// $this->load->view('purchase/expense_entry', $data);
+	}
+	public function expense_entry()
+	{
+		// ⭐ Load Expense Ledgers (Direct + Indirect Expense Groups)
+		$this->db->select('account_id as ledger_id, account_name as ledger_name');
+		$this->db->from('general_ledger');
+		$this->db->where_not_in('group_no', [29, 30]);   // Exclude group_no 29 and 30
+		$this->db->order_by('account_name', 'asc');
+		$data['expense_ledgers'] = $this->db->get()->result();
+
+		// ⭐ Load Bank Ledgers (Bank Accounts Group)
+		// $this->db->select('account_id as ledger_id, account_name as ledger_name');
+		// $this->db->from('general_ledger');
+		// $this->db->where('group_no', 2);   // ⭐ Example: 2 = Bank Accounts
+		// $this->db->order_by('account_name', 'asc');
+		// $data['bank_ledgers'] = $this->db->get()->result();
+
+
+		// ⭐ Load Cash Ledger (Single Row)
+		$this->db->select('account_id as ledger_id, account_name as ledger_name');
+		$this->db->from('general_ledger');
+		$this->db->where('group_no', 21);   // ⭐ Example: 1 = Cash-in-hand
+		$data['cash_ledger'] = $this->db->get()->row();
+
+
+		// ⭐ Load Suppliers (For Credit Expense Future)
+		$this->db->select('supplier_id, supplier_name');
+		$this->db->from('supplier_master');
+		$this->db->order_by('supplier_name', 'asc');
+		$data['suppliers'] = $this->db->get()->result();
+
+
+		// ⭐ Page Load
+		$data['title']        = "Expense Entry";
+		$data['main_content'] = 'purchase/expense_entry';
+
+		$this->load->view('includes/template', $data);
+	}
+
+
+	public function expense_list()
+	{
+		$data['expenses'] = $this->db
+			->select('e.*, g.account_name as ledger_name, s.supplier_name')
+			->from('expense_master e')
+			->join('general_ledger g', 'g.account_id = e.ledger_id', 'left')
+			->join('supplier_master s', 's.supplier_id = e.supplier_id', 'left')
+			->order_by('e.expense_id', 'desc')
+			->get()
+			->result();
+		$data['title']        = "Expense List";
+		$data['main_content'] = 'purchase/expense_list';
+		$this->load->view('includes/template', $data);
+	}
+	public function delete_expense($expense_id)
+	{
+		$this->load->model('Accounts_model');
+
+
+		$status = $this->Accounts_model->delete_expense_full($expense_id);
+
+		if ($status)
+			$this->session->set_flashdata('success', 'Expense Deleted Successfully');
+		else
+			$this->session->set_flashdata('error', 'Expense Delete Failed');
+
+		redirect('Accounts/expense_list');
+	}
+
+	public function edit_expense($expense_id)
+	{
+		$data['expense'] = $this->db
+			->where('expense_id', $expense_id)
+			->get('expense_master')
+			->row();
+
+
+		$data['document'] = $this->db
+			->where('expense_id', $expense_id)
+			->get('expense_documents')
+			->row();
+
+		$this->db->select('account_id as ledger_id, account_name as ledger_name');
+		$this->db->from('general_ledger');
+		$this->db->where_not_in('group_no', [29, 30]);   // Exclude group_no 29 and 30
+		$this->db->order_by('account_name', 'asc');
+		$data['expense_ledgers'] = $this->db->get()->result();
+
+		$this->db->select('account_id as ledger_id, account_name as ledger_name');
+		$this->db->from('general_ledger');
+		$this->db->where('group_no', 19);   // ⭐ Example: 2 = Bank Accounts
+		$this->db->order_by('account_name', 'asc');
+		$data['bank_ledgers'] = $this->db->get()->result();
+
+		if (!$data['expense'])
+			redirect('purchase/expense_list');
+
+		$data['title']        = "Expense Edit";
+		$data['main_content'] = 'purchase/expense_edit';
+		$this->load->view('includes/template', $data);
+	}
+
+	public function update_expense($expense_id)
+	{
+		$this->load->model('Accounts_model');
+
+
+		$status = $this->Accounts_model->update_expense_full($expense_id);
+
+		if ($status)
+			$this->session->set_flashdata('success', 'Expense Updated');
+		else
+			$this->session->set_flashdata('error', 'Update Failed');
+
+		redirect('Accounts/expense_list');
+	}
+
+	public function print_expense($expense_id)
+	{
+		$data['header'] = $this->db->query("
+		SELECT e.*,
+		l.account_name,
+		b.account_name  as bank_ledger_name,
+		s.supplier_name
+		FROM expense_master e
+		LEFT JOIN general_ledger l ON l.account_id  = e.ledger_id
+		LEFT JOIN general_ledger b ON b.account_id  = e.bank_ledger_id
+		LEFT JOIN supplier_master s ON s.supplier_id = e.supplier_id
+		WHERE e.expense_id = $expense_id
+	")->row();
+
+		$data['documents'] = $this->db
+			->where('expense_id', $expense_id)
+			->get('expense_documents')
+			->result();
+
+		$this->load->view('Accounts/print/print_expense', $data);
+	}
+
+	public function get_bank_ledgers()
+	{
+		$this->load->model('Accounts_model');
+
+		$data = $this->Accounts_model->get_bank_ledgers();
+
+		echo json_encode($data);
+	}
+
+	// ========================================
+
+	public function test_pnl()
+	{
+		$this->load->helper('account_helper');
+
+		$from = $this->input->get('from') ?? '2025-04-01';
+		$to   = $this->input->get('to') ?? date('Y-m-d');
+
+		$result = get_net_profit_loss($from, $to);
+
+		// 🔹 Log result
+		log_message('error', 'P&L Result: ' . print_r($result, true));
+
+		// 🔹 Also show on screen (optional)
+		echo "<pre>";
+		print_r($result);
+		echo "</pre>";
+	}
+	// ==============================================================
+	public function update_customer_ledger_name($customer_id = null)
+	{
+		if (empty($customer_id)) {
+			echo "Customer ID is required";
+			return;
+		}
+
+		$this->load->model('Accounts_model');
+
+		$new_name = 'Rajvi Parmar';
+
+		$updated = $this->Accounts_model->update_customer_ledger_name($customer_id, $new_name);
+
+		if ($updated) {
+			echo "Ledger name updated successfully";
+		} else {
+			echo "Failed to update ledger name";
+		}
+	}
+
+	public function repair_customer_ledgers()
+	{
+		$this->load->model('Accounts_model');
+
+		$this->Accounts_model->repair_customer_ledgers();
+
+		echo "All customer ledger issues fixed successfully.";
+	}
+
+	public function fix_supplier_opening_type()
+	{
+		$this->load->model('Accounts_model');
+
+		$updated = $this->Accounts_model->fix_supplier_opening_type();
+
+		echo $updated . " supplier ledger records updated to CR.";
+	}
+
+	// =========================== new payment entry 
+
+	function add_payment_new()
+	{
+		// in use
+		$data['title'] = "Payment Entry";
+
+		$data['ledger_id'] = $this->input->post('occupier_id');
+		$d1 = date('Y-m-d');
+		$data['opening_bal'] = '';
+
+		$this->load->model('Accounts_model');
+		$data['account_records'] = $this->Accounts_model->get_account_group_list();
+
+		$this->load->model('Accounts_model');
+		$data['sundry_detors_records'] = $this->Accounts_model->get_all_general_ledger_accounts(); //all ledgers
+		$data['receipt_Creditors'] = $this->Accounts_model->get_all_general_ledger_accounts(); //bank
+
+		$data['main_content'] = 'Accounts/payment_add_new.php';
+		$this->load->view('includes/template', $data);
+	}
+
+	function add_payment_details_new()
+	{ // in use
+		$data['title'] = "Payment Entry";
+		$this->load->model('Accounts_model');
+		$id = $this->Accounts_model->add_new_payment();
+		if ($id != '') {
+			$this->session->set_flashdata('success', 'Record Successfully Saved');
+			redirect('accounts/view_payment_list_new');
+		}
+	}
+
+	function view_payment_list_new() // in use
+	{
+		$data['title'] = "Payment List";
+		$data['header'] = $this->input->post('header');
+
+		if ($this->uri->segment(3)) {
+			$data['division_id'] = $this->uri->segment(3);
+			$data['from'] = $this->uri->segment(4);
+			$data['to'] = $this->uri->segment(5);
+		} else if ($this->input->post('from')) {
+			$data['from'] = $this->input->post('from');
+			$data['to'] = $this->input->post('to');
+		} else {
+			$data['from'] = date('Y-m-d');
+			$data['to'] = date('Y-m-d');
+		}
+
+		$this->load->model('Accounts_model');
+		$data['receipt'] = $this->Accounts_model->get_payment_list($data['from'], $data['to']);
+
+		$data['main_content'] = 'Accounts/payment_list_new.php';
+		$this->load->view('includes/template', $data);
+	}
+
+	function edit_payment_new() // in use
+	{
+		$data['title'] = "Payment Edit";
+		$this->load->model('accounts/debit_note');
+		$data['receipt_records'] = $this->debit_note->receipt_records_pmc();
+
+		$this->load->model('vehicle/vehicle_model');
+		$data['driver_records'] = $this->vehicle_model->get_driver_records();
+		$this->load->model('bags/Bags_master_model');
+		$data['user_records'] = $this->Bags_master_model->get_user_details();
+
+		$data['main_content'] = 'accounts/edit_receipt';
+		$this->load->view('includes/template', $data);
+	}
+
+	function get_edit_payment_data_new() // in use
+	{
+		$data['title'] = "Payment edit";
+		$data['voucher_id'] = $this->input->post('voucher_id');
+		$data['occupier'] = $this->input->post('occupier');
+		$data['division_id'] = $this->uri->segment(4);
+		$data['from'] = $this->uri->segment(5);
+		$data['to'] = $this->uri->segment(6);
+		$this->load->model('accounts/debit_note');
+		$data['receipt_records'] = $this->debit_note->receipt_records_pmc();
+
+		$this->load->model('vehicle/vehicle_model');
+		$data['driver_records'] = $this->vehicle_model->get_driver_records();
+		$this->load->model('bags/Bags_master_model');
+		$data['user_records'] = $this->Bags_master_model->get_user_details();
+
+		$data['main_content'] = 'accounts/edit_receipt';
+		$this->load->view('includes/template', $data);
+	}
+
+	function update_payment_data_new()
+	{ // in use
+		$data['title'] = "Payment ";
+		$division_id = trim($this->input->post('division_id'));
+		$from = trim($this->input->post('from'));
+		$to = trim($this->input->post('to'));
+
+		$this->load->model('accounts/debit_note');
+		$id = $this->debit_note->update_receipt();
+		if ($id) {
+			$this->session->set_flashdata('success', 'Data Updated successfully');
+		} else {
+			$this->session->set_flashdata('error', 'Record Not Updated !! Duplicate Entry ');
+		}
+		redirect("accounts/view_receipt_list/" . $division_id . '/' . $from . '/' . $to);
+	}
+
+	function print_payment_new() // in use
+	{
+		$data['title'] = "Payment Print";
+		$data['header'] = $this->input->post('header');
+		$this->load->model('Setup_Model');
+		$data['logo_details'] = $this->Setup_Model->get_company_master_list();
+
+		$this->load->model('Accounts_model');
+		$data['receipt'] = $this->Accounts_model->transport_receipt_records();
+		$this->load->view('Accounts/print/print_receipt', $data);
+	}
+
+	//   ======================voucher code changing function ==========
+
+	public function fix_voucher_code_format()
+	{
+		$data = $this->db
+			->where('voucher_code IS NOT NULL', null, false)
+			->get('voucher_transaction')
+			->result();
+
+		foreach ($data as $row) {
+
+			$old = $row->voucher_code;
+			$parts = explode('/', $old);
+
+			// Default values
+			$prefix = '';
+			$year   = '';
+			$number = '';
+
+			// Detect format and map
+			if (strpos($old, 'R/') === 0) {
+				// R/26/00008
+				$prefix = 'RV';
+				$year   = $parts[1] ?? '';
+				$number = $parts[2] ?? '';
+			} elseif (strpos($old, 'COOL/P/') === 0) {
+				// COOL/P/26/00016
+				$prefix = 'PV';
+				$year   = $parts[2] ?? '';
+				$number = $parts[3] ?? '';
+			} elseif (strpos($old, 'PVF/C/') === 0) {
+				$prefix = 'CN';
+				$year   = $parts[2] ?? '';
+				$number = $parts[3] ?? '';
+			} elseif (strpos($old, 'PVF/D/') === 0) {
+				$prefix = 'DN';
+				$year   = $parts[2] ?? '';
+				$number = $parts[3] ?? '';
+			} elseif (strpos($old, 'PVF/J/') === 0) {
+				$prefix = 'JV';
+				$year   = $parts[2] ?? '';
+				$number = $parts[3] ?? '';
+			} elseif (strpos($old, 'PVF/N/') === 0) {
+				$prefix = 'CE';
+				$year   = $parts[2] ?? '';
+				$number = $parts[3] ?? '';
+			}
+
+			// Skip if not matched properly
+			if ($prefix == '' || $year == '' || $number == '') {
+				continue;
+			}
+
+			// Final format
+			$new_code = $prefix . '/' . $year . '/' . str_pad($number, 5, '0', STR_PAD_LEFT);
+
+			// Update DB
+			$this->db->where('voucher_id', $row->voucher_id);
+			$this->db->update('voucher_transaction', [
+				'voucher_code' => $new_code
+			]);
+		}
+
+		echo "Voucher codes updated successfully";
+	}
+
+	public function fix_all_codes11()
+	{
+		// Tables + column names
+		$tables = [
+			['table' => 'voucher_transaction', 'column' => 'voucher_code'],
+
+			['table' => 'purchase_order_master', 'column' => 'po_code'],
+			['table' => 'purchase_grn_master', 'column' => 'grn_code'],
+		];
+
+		foreach ($tables as $t) {
+
+			$data = $this->db
+				->where($t['column'] . ' IS NOT NULL', null, false)
+				->get($t['table'])
+				->result();
+
+			foreach ($data as $row) {
+
+				$old = $row->{$t['column']};
+				$parts = explode('/', $old);
+
+				$prefix = '';
+				$year   = '';
+				$number = '';
+
+				// ✅ PURCHASE ORDER (COOL/POD)
+				if (strpos($old, 'COOL/POD/') === 0) {
+					$prefix = 'POD';   // your requirement
+					$year   = $parts[2] ?? '';
+					$number = $parts[3] ?? '';
+				}
+
+				// ✅ GRN (COOL/GRN)
+				elseif (strpos($old, 'COOL/GRN/') === 0) {
+					$prefix = 'GRN';  // keep GRN or change if needed
+					$year   = $parts[2] ?? '';
+					$number = $parts[3] ?? '';
+				}
+
+				// Skip if not matched
+				if ($prefix == '' || $year == '' || $number == '') {
+					continue;
+				}
+
+				// New code
+				$new_code = $prefix . '/' . $year . '/' . str_pad($number, 4, '0', STR_PAD_LEFT);
+
+				// Update
+				$this->db->where(
+					$t['column'] == 'voucher_code' ? 'voucher_id' : ($t['column'] == 'po_code' ? 'po_id' : 'grn_id'),
+					$row->{$t['column'] == 'voucher_code' ? 'voucher_id' : ($t['column'] == 'po_code' ? 'po_id' : 'grn_id')}
+				);
+
+				$this->db->update($t['table'], [
+					$t['column'] => $new_code
+				]);
+			}
+		}
+
+		echo "All codes updated successfully";
+	}
+
+	public function fix_grn_codes()
+	{
+		$rows = $this->db
+			->where("grn_code LIKE 'GRN/GRN/%'")
+			->get('purchase_grn_master')
+			->result();
+
+		foreach ($rows as $row) {
+
+			$old = $row->grn_code;
+
+			// Example: GRN/GRN/0001
+			$parts = explode('/', $old);
+
+			if (count($parts) != 3) {
+				continue; // skip invalid format
+			}
+
+			$number = $parts[2];
+
+			// ✅ Get year from GRN date
+			$year = date('y', strtotime($row->grn_date));
+
+			$new_code = 'GRN/' . $year . '/' . $number;
+
+			// ✅ Check duplicate before update
+			$exists = $this->db
+				->where('grn_code', $new_code)
+				->where('grn_id !=', $row->grn_id)
+				->get('purchase_grn_master')
+				->row();
+
+			if ($exists) {
+				// Skip to avoid duplicate crash
+				continue;
+			}
+
+			// ✅ Update
+			$this->db->where('grn_id', $row->grn_id);
+			$this->db->update('purchase_grn_master', [
+				'grn_code' => $new_code
+			]);
+		}
+
+		echo "GRN codes updated safely";
+	}
+
+	public function fix_po_codes()
+	{
+		$rows = $this->db
+			->where("po_code LIKE 'POD/POD/%'")
+			->get('purchase_order_master')
+			->result();
+
+		foreach ($rows as $row) {
+
+			$old = $row->po_code;
+
+			// Example: POD/POD/0083
+			$parts = explode('/', $old);
+
+			if (count($parts) != 3) {
+				continue; // skip invalid format
+			}
+
+			$number = $parts[2];
+
+			// ✅ Get year from PO date
+			$year = date('y', strtotime($row->po_date));
+
+			$new_code = 'POD/' . $year . '/' . $number;
+
+			// ✅ Prevent duplicate error
+			$exists = $this->db
+				->where('po_code', $new_code)
+				->where('po_id !=', $row->po_id)
+				->get('purchase_order_master')
+				->row();
+
+			if ($exists) {
+				continue; // skip duplicates
+			}
+
+			// ✅ Update
+			$this->db->where('po_id', $row->po_id);
+			$this->db->update('purchase_order_master', [
+				'po_code' => $new_code
+			]);
+		}
+
+		echo "PO codes updated safely";
+	}
+
+	public function fix_voucher_codes_safe()
+	{
+		$rows = $this->db
+			->get('voucher_transaction')
+			->result();
+
+		foreach ($rows as $row) {
+
+			$update = [];
+
+			/* =========================
+           1. FIX VOUCHER CODE
+        ========================= */
+
+			if (!empty($row->voucher_code)) {
+
+				// Example: V/26/0274
+				if (strpos($row->voucher_code, 'V/') === 0) {
+
+					$parts = explode('/', $row->voucher_code);
+
+					if (count($parts) == 3) {
+
+						$year   = $parts[1];
+						$number = $parts[2];
+
+						// Map voucher_type → prefix
+						$prefix = '';
+
+						if ($row->voucher_type == 'P') {
+							$prefix = 'PV'; // Payment Voucher
+						} elseif ($row->voucher_type == 'R') {
+							$prefix = 'RV'; // Receipt
+						} elseif ($row->voucher_type == 'J') {
+							$prefix = 'JV'; // Journal
+						} elseif ($row->voucher_type == 'C') {
+							$prefix = 'CE'; // Contra
+						}
+
+						if ($prefix != '') {
+							$new_voucher_code = $prefix . '/' . $year . '/' . $number;
+
+							// Avoid duplicate error
+							$exists = $this->db
+								->where('voucher_code', $new_voucher_code)
+								->where('voucher_id !=', $row->voucher_id)
+								->get('voucher_transaction')
+								->row();
+
+							if (!$exists) {
+								$update['voucher_code'] = $new_voucher_code;
+							}
+						}
+					}
+				}
+			}
+
+			/* =========================
+           2. FIX INVOICE CODE
+        ========================= */
+
+			if (!empty($row->invoice_code)) {
+
+				// Example: INV/GRN/0004
+				if (strpos($row->invoice_code, 'INV/GRN/') === 0) {
+
+					$parts = explode('/', $row->invoice_code);
+
+					if (count($parts) == 3) {
+
+						$number = $parts[2];
+
+						// Use voucher date year
+						$year = date('y', strtotime($row->voucher_date));
+
+						$new_invoice_code = 'GRN/' . $year . '/' . $number;
+
+						// Optional duplicate check
+						$exists = $this->db
+							->where('invoice_code', $new_invoice_code)
+							->where('voucher_id !=', $row->voucher_id)
+							->get('voucher_transaction')
+							->row();
+
+						if (!$exists) {
+							$update['invoice_code'] = $new_invoice_code;
+						}
+					}
+				}
+			}
+
+			/* =========================
+           UPDATE ONLY IF NEEDED
+        ========================= */
+
+			if (!empty($update)) {
+				$this->db->where('voucher_id', $row->voucher_id);
+				$this->db->update('voucher_transaction', $update);
+			}
+		}
+
+		echo "Voucher codes fixed safely";
+	}
+
+	// ===================== receipt voucher new function =====================
+
+
+	public function ajax_get_quotation_list()
+	{
+		$customer_id = $this->input->post('customer_id');
+
+		if (empty($customer_id)) {
+			echo '<option value="">No Customer Selected12</option>';
+			return;
+		}
+
+		$this->load->model('Accounts_model');
+		$data['res'] = $this->Accounts_model->ajax_get_quotation_list($customer_id);
+
+		if (empty($data['res'])) {
+			echo '<option value="">No Quotations Found</option>';
+		} else {
+			$this->load->view('ajax/quotation_list', $data);
+		}
+	}
+	// ========================================
+
+	public function create_all_supplier_gl()
+	{
+		$suppliers = $this->db->get('supplier_master')->result();
+
+		foreach ($suppliers as $sup) {
+
+			$code = !empty($sup->supplier_code)
+				? $sup->supplier_code
+				: 'SUP' . str_pad($sup->supplier_id, 4, '0', STR_PAD_LEFT);
+
+			$account_name = $sup->supplier_name . ' - Supplier Advance (' . $code . ')';
+
+			$data = [
+				'account_name'     => $account_name,
+				'group_no'         => 24,
+				'supplier_id'      => $sup->supplier_id,
+				'opening_balance'  => 0.00,
+				'opening_bal_type' => 'Dr',
+				'isdeleteable'     => 'N',
+				'date'             => date('Y-m-d H:i:s')
+			];
+
+			// ✅ smarter check
+			$existing = $this->db
+				->where('supplier_id', $sup->supplier_id)
+				->like('account_name', 'Supplier Advance')
+				->get('general_ledger')
+				->row();
+
+			if ($existing) {
+
+				// don't overwrite balances if already used
+				unset($data['opening_balance']);
+				unset($data['opening_bal_type']);
+
+				$this->db->where('account_id', $existing->account_id)
+					->update('general_ledger', $data);
+			} else {
+
+				// 🔥 extra safety: avoid duplicate by name
+				$nameExists = $this->db
+					->where('account_name', $account_name)
+					->get('general_ledger')
+					->row();
+
+				if (!$nameExists) {
+					$this->db->insert('general_ledger', $data);
+				}
+			}
+		}
+
+		return true;
+	}
+
+	public function view_profit_and_loss()
+	{
+		$data['title'] = "Report-Profit and Loss";
+		$this->load->model('Accounts_model');
+
+		// Default dates (1st day of month → today)
+		if (!$this->input->post()) {
+			$from = date('Y-m-01');
+			$to   = date('Y-m-d');
+		} else {
+			$from = $this->input->post('from');
+			$to   = $this->input->post('to');
+		}
+
+		// If still empty (safety)
+		if (empty($from)) {
+			$from = date('Y-m-01');
+		}
+
+		if (empty($to)) {
+			$to = date('Y-m-d');
+		}
+
+		// Assign to view
+		$data['from'] = $from;
+		$data['to']   = $to;
+
+		// Get data
+		$data['income']  = $this->Accounts_model->get_income($from, $to);
+		$data['expense'] = $this->Accounts_model->get_expense($from, $to);
+
+		// Fix totals (important)
+		$data['total_income'] = array_sum(array_column($data['income'], 'total'));
+		$data['total_expense'] = array_sum(array_map(function ($row) {
+			return abs($row->total);
+		}, $data['expense']));
+
+		// Net calculation
+		$net = $data['total_income'] - $data['total_expense'];
+
+		// Store result properly
+		$data['net_profit'] = $net;
+		$data['net_label']  = ($net >= 0) ? 'Net Profit' : 'Net Loss';
+
+		// Load view
+		$data['main_content'] = 'reports/account/view_profit_loss.php';
+		$this->load->view('includes/template', $data);
+	}
+
+	public function drilldown()
+	{
+		$data['title'] = "";
+		$this->load->model('Accounts_model');
+		$account_id = $this->input->get('account_id');
+		$from       = $this->input->get('from');
+		$to         = $this->input->get('to');
+
+		// Safety defaults
+		if (empty($from)) $from = date('Y-m-01');
+		if (empty($to))   $to   = date('Y-m-d');
+
+		$data['from'] = $from;
+		$data['to']   = $to;
+
+		$data['ledgers'] = $this->Accounts_model->get_ledger_transactions($account_id, $from, $to);
+
+		$data['main_content'] = 'reports/account/drilldown';
+		$this->load->view('includes/template', $data);
+	}
+
+	function view_balance_sheet_new()
+	{
+		$data['title'] = "Balance Sheet";
+
+		$from = $this->input->post('from') ?: date('Y-01-01');
+		$to   = $this->input->post('to') ?: date('Y-m-d');
+
+		$data['from'] = date('Y-m-d', strtotime($from));
+		$data['to']   = date('Y-m-d', strtotime($to));
+
+		$this->load->model('Accounts_model');
+
+		$tree = $this->Accounts_model->prepare_balance_sheet($to);
+
+		$assets = [];
+		$liabilities = [];
+
+		foreach ($tree as $group) {
+
+			if (strtolower(trim($group->group_name)) == 'assets') {
+				$assets[] = $group; // ✅ FIX
+			}
+
+			if (strtolower(trim($group->group_name)) == 'liabilities') {
+				$liabilities[] = $group; // ✅ FIX
+			}
+		}
+
+		$profit = $this->Accounts_model->get_profit_loss($from, $to);
+
+		foreach ($liabilities as &$group) {
+			if (strtolower(trim($group->group_name)) == 'capital account') {
+				$group->balance += $profit;
+			}
+		}
+
+		$data['assets'] = $assets;
+		$data['liabilities'] = $liabilities;
+
+		$data['main_content'] = 'Reports/account/balance_sheet_list_new';
+		$this->load->view('includes/template', $data);
+	}
+
+	public function drilldown_balance_sheet()
+	{
+		$data['title'] = "";
+
+		$account_id = $this->input->get('account_id');
+		$from       = $this->input->get('from');
+		$to         = $this->input->get('to');
+
+		// Safety defaults
+		if (empty($from)) $from = date('Y-m-01');
+		if (empty($to))   $to   = date('Y-m-d');
+
+		$data['from'] = $from;
+		$data['to']   = $to;
+
+		$data['ledgers'] = $this->Accounts_model->get_ledger_transactions($account_id, $from, $to);
+
+
+		$this->load->view('Reports/account/drilldown_table', $data);
+	}
+
+
+	// ===================================monthly salary ======================
+
+	 function payable_salary()
+  {
+    $data['title'] = "Monthly Salary List";
+    $data['from'] = date('M-Y');
+    $this->load->model('Hr_model');
+    $data['records'] = $this->Hr_model->get_emp_monthly_salary_list($data['from']);
+// 	echo "<pre>";
+// print_r($data['records']);
+// echo "</pre>";
+// exit;
+    $data['salary_month'] = !empty($this->input->post('from')) 
+                        ? date('Y-m', strtotime($this->input->post('from') . '-01')) 
+                        : date('Y-m');  // default to current month
+
+    $this->load->model('Accounts_model');
+    $data['sundry_detors_records'] = $this->Accounts_model->get_all_general_ledger_accounts();
+    $gno = "19,21";
+    $data['credit_records'] = $this->Accounts_model->get_bank_cash_ledgers($gno);
+
+    $data['main_content'] = 'Accounts/emp_monthly_salary_list.php';
+    $this->load->view('includes/template', $data);
+  }
+
+    function add_employee_payment_details()
+  {
+    $data['title'] = "Monthly Salary List";
+    $this->load->model('Accounts_model');
+    $id = $this->Accounts_model->add_employee_payment_details();
+    if ($id != '') {
+      $this->session->set_flashdata('success', 'Record Successfully Saved');
+      redirect('accounts/emp_monthly_salary_list');
+    }
+  }
 }

@@ -29,103 +29,169 @@
 			method="post"
 			class="p-6 space-y-8">
 
-			<!-- Row 1 -->
-			<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-				<!-- Date -->
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">
-						Date <span class="text-red-500">*</span>
-					</label>
-					<input type="text"
-						id="v_date"
-						name="v_date"
-						value="<?= date('d-m-Y') ?>"
-						class="w-full rounded-lg border border-gray-300 px-4 py-2 datepicker1">
+			<!-- ======================================================================== -->
+			<div class="bg-white p-6 rounded-xl shadow">
+
+				<!-- ================= ROW 1 ================= -->
+				<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
+
+					<!-- Date -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">
+							Date <span class="text-red-500">*</span>
+						</label>
+						<input type="date"
+							id="v_date"
+							name="v_date"
+							value="<?= date('Y-m-d') ?>"
+							class="w-full h-[38px] rounded-lg border border-gray-300 px-3 text-sm focus:ring-2 focus:ring-blue-500">
+					</div>
+
+					<!-- Customer -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">
+							Select Customer <span class="text-red-500">*</span>
+						</label>
+						<select name="debtor"
+							id="debtor"
+							class="w-full h-[38px] rounded-lg border border-gray-300 px-3 text-sm select2 debtor-select">
+
+							<option value="">Select</option>
+
+							<?php foreach ($receipt_Creditors as $s): ?>
+								<option value="<?= $s->account_id ?>"
+									data-customer-id="<?= $s->customer_id ?>">
+									<?= $s->account_name ?>
+								</option>
+							<?php endforeach; ?>
+
+						</select>
+						<input type="hidden" name="customer_org_id" id="customer_org_id">
+					</div>
+
+					<!-- Transaction Type -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">
+							Transaction Type <span class="text-red-500">*</span>
+						</label>
+						<select name="transaction_type"
+							id="transaction_type"
+							onchange="toggleTransactionFields()"
+							class="w-full h-[38px] rounded-lg border border-gray-300 px-3 text-sm select2">
+
+							<option value="">Select</option>
+							<option value="Cash">Cash</option>
+							<option value="cheque">Cheque</option>
+							<option value="etransfer">Card/Transfer</option>
+							<option value="other">Other</option>
+						</select>
+					</div>
+
+					<!-- Transaction No -->
+					<div id="transaction_fields" class="hidden">
+						<label class="block text-sm font-medium text-gray-700 mb-1" id="transaction_label">
+							Transaction No
+						</label>
+
+						<input type="text"
+							id="transaction_no"
+							name="transaction_no"
+							placeholder="Cheque / Txn ID"
+							class="w-full h-[38px] rounded-lg border border-gray-300 px-3 text-sm focus:ring-2 focus:ring-blue-500">
+					</div>
+
 				</div>
 
-				<!-- Customer -->
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">
-						Select Customer <span class="text-red-500">*</span>
-					</label>
-					<!-- onchange="get_invoice_list()" -->
-					<select name="debtor"
-						id="debtor"
 
-						class="w-full rounded-lg border border-gray-300 px-4 py-2 select2 debtor-select">
-						<option value="">Select</option>
-						<?php foreach ($receipt_Creditors as $s): ?>
-							<option value="<?= $s->account_id ?>"
-								data-customer-id="<?= $s->customer_id ?>">
-								<?= $s->account_name ?>
-							</option>
-						<?php endforeach; ?>
-					</select>
-					<input type="hidden" name="customer_org_id" id="customer_org_id">
-					<!-- <input type="text" name="customer_id" id="customer_id"> -->
+				<!-- ================= ROW 2 ================= -->
+				<div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+
+					<!-- Instrument Date -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">
+							Instrument Date <span class="text-red-500">*</span>
+						</label>
+						<input type="date"
+							id="instrument_bank_date"
+							name="instrument_bank_date"
+							value="<?= date('Y-m-d') ?>"
+							class="w-full h-[38px] rounded-lg border border-gray-300 px-3 text-sm">
+					</div>
+
+					<!-- Receipt Mode -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">
+							Receipt Against
+						</label>
+
+						<div class="flex gap-6 items-center h-[38px]">
+							<label class="flex items-center gap-1">
+								<input type="radio" name="receipt_mode" value="invoice" checked>
+								Invoice
+							</label>
+
+							<label class="flex items-center gap-1">
+								<input type="radio" name="receipt_mode" value="quotation">
+								Quotation(Advance)
+							</label>
+						</div>
+					</div>
+
+					<!-- Quotation -->
+					<!-- <div  class="hidden"> -->
+
+
+
+					<!-- Quotation -->
+					<div id="quotation_section" class="hidden">
+						<label class="block text-sm font-medium text-gray-700 mb-1">
+							Select Quotation
+						</label>
+
+						<select id="quotation_id"
+							name="quotation_id"
+							class="w-full h-[38px] border border-gray-300 rounded px-3 text-sm select2">
+						</select>
+
+						<!-- <span class="text-xs text-gray-500">
+							Balance will show here
+						</span> -->
+					</div>
+
+					<!-- Advance -->
+					<div id="quotation_section1" class="hidden">
+						<label class="block text-sm font-medium text-gray-700 mb-1">
+							Advance Amount
+						</label>
+
+						<input type="number"
+							step="0.01"
+							id="quotation_amount"
+							class="w-full h-[38px] border border-gray-300 rounded px-3 text-sm"
+							placeholder="Enter amount">
+					</div>
+
+
+
+
+
 				</div>
 
-				<!-- Transaction Type -->
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">
-						Transaction Type <span class="text-red-500">*</span>
-					</label>
-					<select name="transaction_type"
-						id="transaction_type"
-						onchange="toggleTransactionFields()"
-						class="w-full rounded-lg border border-gray-300 px-4 py-2 select2">
-						<option value="">Select</option>
-						<option value="Cash">Cash</option>
-						<option value="cheque">Cheque</option>
-						<option value="etransfer">Card/Transfer</option>
-						<option value="other">Other</option>
-					</select>
-				</div>
-
 			</div>
 
-			<!-- Instrument Date -->
-			<div class="max-w-sm">
-				<label class="block text-sm font-medium text-gray-700 mb-1">
-					Instrument Date <span class="text-red-500">*</span>
-				</label>
-				<input type="text"
-					id="instrument_bank_date"
-					name="instrument_bank_date"
-					value="<?= date('d-m-Y') ?>"
-					class="w-full rounded-lg border border-gray-300 px-4 py-2 datepicker1">
-			</div>
 
-			<!-- Transaction Fields -->
-			<div id="transaction_fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1"
-						id="transaction_label">
-						Transaction No
-					</label>
-					<input type="text"
-						id="transaction_no"
-						name="transaction_no" placeholder="Enter Cheque No / Transaction ID"
-						class="w-full rounded-lg border border-gray-300 px-4 py-2">
-				</div>
-			</div>
 
-			<!-- Invoice Details -->
-			<div class="form-group row">
-				<label class="col-sm-12" id="invoice_details"></label>
-			</div>
 
-			<!-- Receipt Details -->
-			<div class="form-group row">
-				<label class="col-sm-2 col-form-label">Receipt Details:</label>
-			</div>
+			<!-- =========================================================================================== -->
 
 			<!-- Invoice List -->
-			<div>
+			<div id="invoice_section">
 				<h3 class="text-sm font-semibold text-gray-700 mb-2">Invoice Details</h3>
 				<div id="debt_list"></div>
 			</div>
+
+
 
 			<!-- Credit Table -->
 			<div>
@@ -184,7 +250,14 @@
 			</div>
 
 			<!-- Totals -->
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-6 ">
+				<!-- Narration -->
+				<div>
+					<label class="block text-sm font-medium text-gray-700 mb-1">Narration</label>
+					<textarea name="narration" id="narration"
+						class="w-full rounded-lg border border-gray-300 px-4 py-2"
+						rows="3"></textarea>
+				</div>
 				<div>
 					<label class="block text-sm font-medium text-gray-700 mb-1">Debit Total</label>
 					<input id="debit_total" readonly
@@ -197,13 +270,7 @@
 				</div>
 			</div>
 
-			<!-- Narration -->
-			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Narration</label>
-				<textarea name="narration" id="narration"
-					class="w-full rounded-lg border border-gray-300 px-4 py-2"
-					rows="3"></textarea>
-			</div>
+
 
 			<!-- Hidden -->
 			<input type="hidden" id="vtime" name="vtime" value="<?= date('h:i:s'); ?>">
@@ -392,6 +459,17 @@
 	}
 
 	function check_total() {
+
+		// Check whether at least one invoice checkbox is selected
+		let checkedInvoices = $('input[name="invoiceID[]"]:checked').length;
+
+		// Only for invoice mode
+		let mode = $('input[name="receipt_mode"]:checked').val();
+
+		if (mode === 'invoice' && checkedInvoices === 0) {
+			alert('Please select at least one invoice');
+			return false;
+		}
 		var dr_total = parseFloat($('#debit_total').val()) || 0;
 		var cr_total = parseFloat($('#credit_total').val()) || 0;
 		if (dr_total !== cr_total) {
@@ -415,7 +493,7 @@
 
 		var debtorSelect = document.getElementById('debtor');
 		var account_id = debtorSelect.value;
-// alert(account_id);
+		// alert(account_id);
 		// Get customer_id from selected option data attribute
 		var customer_id = debtorSelect.options[debtorSelect.selectedIndex]?.getAttribute('data-customer-id');
 		// alert(customer_id);
@@ -478,4 +556,62 @@
 
 
 	});
+
+	$('input[name="receipt_mode"]').on('change', function() {
+
+		let mode = $(this).val();
+
+		if (mode === 'invoice') {
+			$('#invoice_section').show();
+			$('#quotation_section').hide();
+			$('#quotation_section1').hide();
+		} else {
+
+			$('#invoice_section').hide();
+			$('#quotation_section').show();
+			$('#quotation_section1').show();
+			loadQuotationList();
+		}
+	});
+
+	function loadQuotationList() {
+		let customer_id = $('#customer_org_id').val();
+
+		if (!customer_id) return;
+
+		$.ajax({
+			url: "<?php echo site_url('Accounts/ajax_get_quotation_list'); ?>",
+			type: "POST",
+			data: {
+				customer_id: customer_id
+			},
+			success: function(res) {
+
+				$('#quotation_id').html(res);
+			}
+		});
+	}
+	$('#quotation_amount').on('keyup change', function() {
+		let amt = parseFloat($(this).val()) || 0;
+
+		// Fill credit (bank)
+		$('#cr_amount0').val(amt);
+
+		// 🔹 Set debit total manually (since no invoice rows)
+		$('#debit_total').val(amt.toFixed(2));
+
+		// 🔹 Set credit total
+		$('#credit_total').val(amt.toFixed(2));
+	});
+
+	function validateAmount(input) {
+		let value = parseFloat(input.value);
+
+		// Prevent negative or zero values
+		if (input.value !== '' && (isNaN(value) || value <= 0)) {
+			alert('Amount should be greater than 0');
+			input.value = '';
+			input.focus();
+		}
+	}
 </script>

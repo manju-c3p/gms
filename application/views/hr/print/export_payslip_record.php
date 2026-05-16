@@ -1,76 +1,95 @@
 <?php
-header("Content-type: application/octet-stream");
-header("Content-Disposition:attachment;filename=export_monthly_salary_record.xls");
+header("Content-Type: application/vnd.ms-excel; charset=utf-8");
+$month = date('M_Y');
+if (!empty($records)) {
+    $month = date('M_Y', strtotime($records[0]->salary_month));
+}
+
+header("Content-Disposition: attachment;filename=salary_report_" . $month . ".xls");
+// header("Content-Disposition: attachment;filename=monthly_salary_record.xls");
 header("Pragma: no-cache");
 header("Expires: 0");
 ?>
 
 <html>
-
 <body>
-    <table width="100%" border=0 cellspacing="0" colspacing="0">
-        <tr align="center">
-            <td>
-                <p style="font-size:16px; font-weight:bold;">Monthly Salary Record</p>
+
+<table width="100%" border="0">
+    <tr align="center">
+        <td>
+            <b style="font-size:16px;">Monthly Salary Report</b>
+        </td>
+    </tr>
+</table>
+
+<table width="100%" border="0">
+    <tr>
+        <td><b>Date:</b> <?= date('d-M-Y'); ?></td>
+    </tr>
+</table>
+
+<br>
+
+<table width="100%" border="1" cellspacing="0">
+    <thead>
+        <tr style="background:#f2f2f2;">
+            <th>Sr No</th>
+            <th>Employee Name</th>
+            <th>Salary Month</th>
+            <th>Working Days</th>
+            <th>Total Leave</th>
+            <th>Present Days</th>
+            <th>Paid Leave</th>
+            <th>Payment Days</th>
+            <th>Basic Salary</th>
+            <th>Total Allowances</th>
+            <th>Total Deduction</th>
+            <th>Gross Pay</th>
+            <th>Net Pay</th>
+            <th>Remarks</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <?php 
+        $i = 1;
+        $total_net = 0;
+
+        foreach ($records as $row) { 
+            $total_net += $row->net_salary;
+        ?>
+        <tr>
+            <td><?= $i++ ?></td>
+            <td><?= $row->employee_name ?></td>
+            <td><?= date('M-Y', strtotime($row->salary_month)); ?></td>
+            <td><?= $row->working_days ?></td>
+            <td><?= $row->leave_days ?></td>
+            <td><?= $row->present_days ?></td>
+            <td><?= $row->paid_leave ?></td>
+            <td><?= $row->payment_days ?></td>
+
+            <td><?= number_format($row->basic_salary, 2); ?></td>
+            <td><?= number_format($row->total_allowance, 2); ?></td>
+            <td><?= number_format($row->total_deduction, 2); ?></td>
+            <td><?= number_format($row->gross_salary, 2); ?></td>
+
+            <td style="mso-number-format:'0.00';">
+                <?= number_format($row->net_salary, 2); ?>
             </td>
 
+            <td><?= $row->remark ?></td>
         </tr>
-    </table>
-    <table width="100%" border=1 cellspacing="0" colspacing="0">
-        <tr align="left">
-            <th>Todays Date : <?php echo date('d-M-Y'); ?></th>
+        <?php } ?>
+
+        <!-- TOTAL -->
+        <tr>
+            <td colspan="12" align="right"><b>Total Net Pay</b></td>
+            <td><b><?= number_format($total_net, 2); ?></b></td>
+            <td></td>
         </tr>
-    </table>
-    <br>
-    <table width='100%' border=1 cellspacing="0" colspacing="0">
-        <thead>
-            <tr>
-            <th>Sr No</th>
-                    <th>Employee Name</th>
-                    <th>Salary Month</th>
-                    <th>Working Days</th>
-                    <th>Total Leave</th>
-                    <th>Present Days</th>
-                    <th>Paid Leave</th>
-                    <th>Payment Days</th>
-                    <th>Total Overtime(hour)</th>
-                    <th>Overtime Amt</th>
-                    <th>Basic Salary</th>
-                    <th>Total Allowances</th>
-                    <th>Total Deduction</th>
-                    <th>Gross pay</th>
-                    <th>Net pay</th>
-                    <th>Remarks</th>
-                    <th>Action</th>
 
-            </tr>
-        </thead>
+    </tbody>
+</table>
 
-        <tbody>
-                <?php $i = 1;
-                foreach ($records as $row) { ?>
-                    <tr>
-                        <td><?php echo $i; $i++; ?></td>
-                        <td><?php echo $row->user_name; ?></td>
-                        <td><?php echo date('M-Y', strtotime($row->salary_month)); ?></td>
-                		<td><?php echo $row->working_days; ?></td>
-                		<td><?php echo $row->leave_days; ?></td>
-                		<td><?php echo $row->present_days; ?></td>
-                		<td><?php echo $row->paid_leave; ?></td>
-                		<td><?php echo $row->payment_days; ?></td>
-                		<td><?php echo $row->overtime; ?></td>
-                        <td><?php echo $row->overtime_amt; ?></td>
-                		<td><?php echo $row->basic_salary; ?></td>
-                        <td><?php echo $row->total_allowance; ?></td>
-                        <td><?php echo $row->total_deduction; ?></td>
-                        <td><?php echo $row->gross_salary; ?></td>
-                        <td><?php echo $row->net_salary; ?></td>
-                        <td><?php echo $row->remark; ?></td>
-                        
-                    </tr>
-                <?php  } ?>
-            </tbody>
-    </table>
 </body>
-
 </html>

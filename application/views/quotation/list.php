@@ -26,7 +26,9 @@
 			<tbody>
 				<?php if (!empty($quotations)): ?>
 					<?php $sl = 1;
-					foreach ($quotations as $q): ?>
+					foreach ($quotations as $q): 
+					if ($q->status !== "Draft"){
+					?>
 						<tr class="hover:bg-gray-50">
 
 							<!-- SL -->
@@ -58,7 +60,7 @@
 
 							<!-- Amount -->
 							<td class="border px-3 py-2 text-right">
-								AED <?= number_format($q->grand_total, 2) ?>
+								AED <?= number_format($q->subtotal, 2) ?>
 							</td>
 
 							<!-- Status -->
@@ -121,7 +123,10 @@
 							</td>
 
 						</tr>
-					<?php endforeach; ?>
+					<?php 
+					}	
+				endforeach;
+					?>
 				<?php else: ?>
 					<!-- <tr>
 						<td colspan="8"

@@ -469,6 +469,10 @@ class Ajax extends CI_Controller
 
 		$this->load->model('Purchase_Model');
 		$data['records1'] = $this->Purchase_Model->get_po_details_by_id($po_id);
+		// 		echo "<pre>";
+		// print_r($data['records1']);
+		// echo "</pre>";
+		// exit;
 		foreach ($data['records1'] as $v) {
 			$supplier_id = $v->supplier_id;
 		}
@@ -681,11 +685,65 @@ class Ajax extends CI_Controller
 		}
 
 		$this->load->model('Purchase_Model');
+		// $data['records1'] = $this->Purchase_Model->get_supplier_pending_docs($supplier_id, $account_id);
 		$data['records1'] = $this->Purchase_Model->get_grn_master_data($supplier_id, $account_id);
+		// $data['records2'] = $this->Purchase_Model->get_service_po_data($supplier_id, $account_id);
+
+		$this->load->view('ajax/grn_list_payment_entry.php', $data);
+	}
+	public function get_grn_list1()
+	{
+		$account_id = $this->input->post('supplier_id');
+		log_message('error', 'Accountr ID: ' . $account_id);
+
+		if (empty($account_id)) {
+			echo "Supplier ID is required.";
+			return;
+		}
+
+		$this->load->model('Accounts_model');
+		$supplier_id = $this->Accounts_model->get_supp_id_from_account_id($account_id);
+		log_message('error', 'Supplier ID: ' . $supplier_id);
+
+		if (empty($supplier_id)) {
+			echo "No supplier found for this account.";
+			return;
+		}
+
+		$this->load->model('Purchase_Model');
+		// $data['records1'] = $this->Purchase_Model->get_supplier_pending_docs($supplier_id, $account_id);
+		// $data['records1'] = $this->Purchase_Model->get_grn_master_data($supplier_id, $account_id);
+		$data['records1'] = $this->Purchase_Model->get_service_po_data($supplier_id, $account_id);
 
 		$this->load->view('ajax/grn_list_payment_entry.php', $data);
 	}
 
+	public function get_supplier_docs()
+	{
+		$account_id = $this->input->post('supplier_id');
+		log_message('error', 'Account ID: ' . $account_id);
+
+		if (empty($account_id)) {
+			echo "Supplier ID is required.";
+			return;
+		}
+
+		$this->load->model('Accounts_model');
+		$supplier_id = $this->Accounts_model->get_supp_id_from_account_id($account_id);
+
+		if (empty($supplier_id)) {
+			echo "No supplier found for this account.";
+			return;
+		}
+
+		$this->load->model('Purchase_Model');
+
+		// ✅ Use combined function
+		$data['records1'] = $this->Purchase_Model->get_supplier_pending_docs($supplier_id, $account_id);
+
+		// ✅ Load view ONLY ONCE
+		$this->load->view('ajax/grn_list_payment_entry.php', $data);
+	}
 
 	//    function get_grn_list()
 	//    {
@@ -828,9 +886,9 @@ class Ajax extends CI_Controller
 
 		$this->load->model('Purchase_Model');
 		$data['records'] = $this->Purchase_Model->get_po_master_by_id($po_id);
-		log_message('error', 'RFQ Data: ' . print_r($data['records'], true));
+		log_message('error', 'pooo Data: ' . print_r($data['records'], true));
 		foreach ($data['records'] as $row) {
-			$value = array('supplier_id' => $row->supplier_id, 'supplier_code' => $row->supplier_code, 'supplier_name' => $row->supplier_name, 'subtotal' => $row->sub_total, 'discount_percent' => $row->discount_percent, 'discount' => $row->discount, 'vat_percent' => $row->vat_percent, 'vat_amt' => $row->vat_amt, 'grand_total' => $row->grand_total);
+			$value = array('currency_rate' => $row->currency_rate, 'po_date' => $row->po_date, 'supplier_id' => $row->supplier_id, 'supplier_code' => $row->supplier_code, 'supplier_name' => $row->supplier_name, 'subtotal' => $row->sub_total, 'discount_percent' => $row->discount_percent, 'discount' => $row->discount, 'vat_percent' => $row->vat_percent, 'vat_amt' => $row->vat_amt, 'grand_total' => $row->grand_total);
 		}
 		echo json_encode($value);
 	}
@@ -902,5 +960,84 @@ class Ajax extends CI_Controller
 		log_message('error', 'active_units: ' . print_r($data['active_units'], true));
 
 		$this->load->view('ajax/get_grn_items_for_return', $data);
+	}
+
+
+
+	public function update_resign_flag()
+	{
+		$table_name = $this->input->post('table_name');
+		$where_key = $this->input->post('where_key');
+		$where_val = $this->input->post('where_val');
+		$column = $this->input->post('column');
+		$value = $this->input->post('value');
+		$user_id = $this->input->post('user_id');
+
+		$this->load->model('Ajax_model');
+		$res = $this->Ajax_model->update_resign_flag($table_name, $where_key, $where_val, $column, $value, $user_id);
+
+
+		if ($res) {
+			echo 1; 	// Success
+		} else {
+			echo 0; 	// Failure
+		}
+	}
+
+	public function reject_emp_resignation()
+	{
+		$resig_id = $this->input->post('resig_id');
+		$reject_remark = $this->input->post('reject_remark');
+		$user_id = $this->input->post('user_id');
+
+		if (!$resig_id || empty($reject_remark)) {
+			echo 0; // Invalid data
+			return;
+		}
+
+		$data = array(
+			'reject_remark' => $reject_remark,
+			'approve_flag' => 2 // 2 = Rejected
+		);
+
+		$this->db->where('resig_id', $resig_id);
+		$update = $this->db->update('employee_resignation', $data);
+
+		if ($update) {
+			echo 1;
+			/////////////////////////////////////notification manage new format/////////////////////////////////////////////////////////
+			$ci = get_instance();
+			$ci->load->helper('log');
+			$notice = add_notification($resig_id, $user_id, "Resignation Rejected", "Hr/edit_emp_regignation/$resig_id");
+
+			/////////////////////////////////////////end notification manage////////////////////////////////////////////
+			/* end notification */
+		} else {
+			echo 0;
+		}
+	}
+
+
+
+	public function delete_resignation_document()
+	{
+		$doc_id = $this->input->post('doc_id');
+
+		if ($doc_id) {
+			$doc = $this->db->get_where('employee_resignation_documents', ['doc_id' => $doc_id])->row();
+			if ($doc) {
+				$file_path = './uploads/resignation/' . $doc->document_path;
+				if (file_exists($file_path)) {
+					unlink($file_path);
+				}
+
+				$this->db->where('doc_id', $doc_id);
+				$this->db->delete('employee_resignation_documents');
+
+				echo 1;
+				return;
+			}
+		}
+		echo 0;
 	}
 }

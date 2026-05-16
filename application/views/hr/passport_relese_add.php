@@ -35,8 +35,8 @@
 					<option value="">Select</option>
 
 					<?php foreach ($records as $s) { ?>
-						<option value="<?php echo $s->id ?>">
-							<?php echo $s->username; ?>
+						<option value="<?php echo $s->employee_id ?>">
+							<?php echo $s->employee_name; ?>
 						</option>
 					<?php } ?>
 
@@ -52,17 +52,17 @@
 
 				<div class="flex items-center gap-2">
 
-					<input type="text"
+					<input type="date"
 						name="indate"
 						id="indate"
 						class="w-full border border-gray-300 rounded px-2 py-1 text-sm datepicker1"
 						tabindex="4"
-						value="<?php echo date('d-m-Y') ?>"
+						value="<?php echo date('Y-m-d') ?>"
 						required>
 
-					<div class="px-3 py-1 border border-gray-300 rounded bg-gray-100">
+					<!-- <div class="px-3 py-1 border border-gray-300 rounded bg-gray-100">
 						<i class="fa fa-calendar"></i>
-					</div>
+					</div> -->
 
 				</div>
 
@@ -177,17 +177,17 @@
 
 				<div class="flex items-center gap-2">
 
-					<input type="text"
+					<input type="date"
 						class="w-full border border-gray-300 rounded px-2 py-1 text-sm datepicker1"
 						id="outdate"
 						name="outdate"
-						value="<?php echo date('d-m-Y') ?>"
+						value="<?php echo date('Y-m-d') ?>"
 						required
 						tabindex="3">
 
-					<div class="px-3 py-1 border border-gray-300 rounded bg-gray-100">
+					<!-- <div class="px-3 py-1 border border-gray-300 rounded bg-gray-100">
 						<i class="fa fa-calendar"></i>
-					</div>
+					</div> -->
 
 				</div>
 

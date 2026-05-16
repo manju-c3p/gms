@@ -75,36 +75,23 @@
 
 						<td class="px-3 py-2 border border-gray-200 whitespace-nowrap">
 
-							<!-- Edit -->
-							<a href="<?php echo base_url() . 'index.php/Hr/edit_passport_release/' . $row->emp_docId; ?>"
-								title="Edit"
-								class="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-100 text-blue-600 hover:bg-blue-200 mr-2">
+						<a href="<?php echo base_url() . 'index.php/Hr/edit_passport_release/' . $row->emp_docId; ?>"
+									class="bg-yellow-400 text-white px-3 py-1 rounded">Edit</a>
 
-								<i class="fa-solid fa-pen-to-square"></i>
+								<a href="<?php echo base_url() . 'index.php/Hr/delete_passport_release/' . $row->emp_docId; ?>"
+									onclick="return confirmcancel(<?php echo $row->emp_docId; ?>);" class="bg-red-500 text-white px-3 py-1 rounded">Delete</a>
 
-							</a>
-
-
-							<!-- Delete -->
-							<a href="<?php echo base_url() . 'index.php/Hr/delete_passport_release/' . $row->emp_docId; ?>"
-								title="Delete"
-								onclick="return confirmcancel(<?php echo $row->emp_docId; ?>);"
-								class="inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 text-red-600 hover:bg-red-200 mr-2">
-
-								<i class="fa-solid fa-trash"></i>
-
-							</a>
+								<a href="<?php echo base_url() . 'index.php/Hr/print_passport_release/' . $row->emp_docId; ?>"
+									target="_blank"
+									class="bg-blue-600 text-white px-3 py-1 rounded">Print</a>
 
 
-							<!-- Print -->
-							<a href="<?php echo base_url() . 'index.php/Hr/print_passport_release/' . $row->emp_docId; ?>"
-								title="Print"
-								target="_blank"
-								class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 text-gray-600 hover:bg-gray-200">
+							
 
-								<i class="fa-solid fa-print"></i>
+							
 
-							</a>
+
+							
 
 						</td>
 					</tr>
@@ -138,7 +125,9 @@
 				success: function(msg) {
 					if (msg == 1) {
 
-						window.location.href = "<?php echo $_SERVER['PHP_SELF'] ?>";
+						alert("Record Deleted");
+
+						window.location.reload();
 					} else {
 						alert("Can't Delete record. Data already exist!!!");
 					}

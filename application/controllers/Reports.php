@@ -175,9 +175,15 @@ class Reports extends CI_Controller
 		$to_date   = $this->input->get('to_date');
 		$supplier  = $this->input->get('supplier');
 
+		// Convert to Y-m-d
+		$from_date = !empty($from_date) ? date('Y-m-d', strtotime($from_date)) : '';
+		$to_date   = !empty($to_date) ? date('Y-m-d', strtotime($to_date)) : '';
+		log_message('error', 'FROM: ' . $from_date);
+		log_message('error', 'TO: ' . $to_date);
+		log_message('error', 'SUPPLIER: ' . $supplier);
 
 		$po_list = $this->Reports_model->get_po_report($from_date, $to_date, $supplier);
-
+		log_message('error', 'PO Report Data: ' . print_r($po_list, true));
 		header("Content-Type: application/vnd.ms-excel");
 		header("Content-Disposition: attachment; filename=PO_Report_" . date('Ymd') . ".xls");
 
@@ -219,7 +225,7 @@ class Reports extends CI_Controller
 
 		$data['supplier_id'] = $supplier_id;
 
-		$this->load->view('Reports/Purchase/Print/print_po_report', $data);
+		$this->load->view('reports/Purchase/Print/print_po_report', $data);
 	}
 	///////////////  GRN Report ////////////////////
 	function grn_report()
@@ -272,7 +278,7 @@ class Reports extends CI_Controller
 		$this->load->model('Setup_model');
 
 		// Dropdowns
-		$data['user_records'] = $this->Setup_model->get_all_users();
+		$data['user_records'] = $this->Employee_model->get_all_employees();
 		$data['departments'] = $this->Employee_model->get_departments();
 		$data['designations'] = $this->Employee_model->get_designations_with_department();
 
@@ -289,11 +295,21 @@ class Reports extends CI_Controller
 			$dept_id = $this->input->post('department_id');
 			$desig_id = $this->input->post('designation_id');
 
-			$filters = [
-				'user_id' => $user_id,
-				'department_id' => $dept_id,
-				'designation_id' => $desig_id
-			];
+			$filters = [];
+
+			// ✅ PRIORITY: Employee filter
+			if (!empty($user_id)) {
+				$filters['user_id'] = $user_id;
+			} else {
+				// Only apply these if employee NOT selected
+				if (!empty($dept_id)) {
+					$filters['department_id'] = $dept_id;
+				}
+
+				if (!empty($desig_id)) {
+					$filters['designation_id'] = $desig_id;
+				}
+			}
 
 			// Fetch filtered data
 			$data['records'] = $this->Employee_model->get_filtered_employees($filters);
@@ -311,7 +327,7 @@ class Reports extends CI_Controller
 
 	public function print_employee_report()
 	{
-		// $this->load->model('Users_model');
+		$this->load->model('Employee_model');
 		$this->load->model('Setup_model');
 
 		// Fetch filters from POST
@@ -327,19 +343,19 @@ class Reports extends CI_Controller
 			'designation_id' => $desig_id,
 		];
 
-		// Ensure print only if report was generated
+		// Ensure print only if report was generatedprint_employee_report
 		if ($is_generated !== '1') {
 			$data['records'] = [];  // Show "No records found"
 		} else {
-			$data['records'] = $this->Users_model->get_filtered_employees($filters);
+			$data['records'] = $this->Employee_model->get_filtered_employees($filters);
 		}
 
 		// Other data
 		$data['title'] = 'Employee Master Report';
 		$data['filters'] = $filters;
 		$data['user_id'] = $user_id;
-		$data['departments'] = $this->Setup_model->get_department_list();
-		$data['designations'] = $this->Setup_model->get_designation_list();
+		$data['departments'] = $this->Employee_model->get_departments();
+		$data['designations'] = $this->Employee_model->get_designations_with_department();
 		$data['user_records'] = $this->Setup_model->get_all_users();
 
 		// Load print view
@@ -349,7 +365,7 @@ class Reports extends CI_Controller
 	public function export_employee_report()
 	{
 
-		$this->load->model('Users_model');
+		$this->load->model('Employee_model');
 		$this->load->model('Setup_model');
 
 		// Fetch filters from POST
@@ -368,15 +384,15 @@ class Reports extends CI_Controller
 		if ($is_generated !== '1') {
 			$data['records'] = [];
 		} else {
-			$data['records'] = $this->Users_model->get_filtered_employees($filters);
+			$data['records'] = $this->Employee_model->get_filtered_employees($filters);
 		}
 		// Pass data to view
 		$data['title'] = 'Employee Master Report';
 		$data['filters'] = $filters;
 		$data['user_id'] = $user_id;
-		$data['departments'] = $this->Setup_model->get_department_list();
-		$data['designations'] = $this->Setup_model->get_designation_list();
-		$data['user_records'] = $this->Users_model->get_active_user_list();
+		$data['departments'] = $this->Employee_model->get_departments();
+		$data['designations'] = $this->Employee_model->get_designations_with_department();
+		$data['user_records'] = $this->Setup_model->get_all_users();
 
 		$this->load->view('excel_reports/export_employee_report', $data);
 	}
@@ -392,7 +408,8 @@ class Reports extends CI_Controller
 		$dept_id = $this->input->post('department_id') ?? '';
 
 		// Fetch dropdown data
-		$data['departments'] = $this->Setup_model->get_department_list();
+		$this->load->model('Employee_model');
+		$data['departments'] = $this->Employee_model->get_departments();
 
 		// Fetch leave report
 		$data['records'] = $this->Hr_model->get_monthly_leave_report($month, $dept_id);
@@ -403,7 +420,7 @@ class Reports extends CI_Controller
 
 		// Page details
 		$data['title'] = 'Monthly Leave Report';
-		$data['main_content'] = 'Reports/monthly_leave_report';
+		$data['main_content'] = 'reports/monthly_leave_report.php';
 		$this->load->view('includes/template', $data); // Corrected template load
 	}
 
@@ -450,7 +467,9 @@ class Reports extends CI_Controller
 		$this->load->model('Hr_model');
 		$this->load->model('Setup_model');
 
-		$data['departments'] = $this->Setup_model->get_department_list();
+		// $data['departments'] = $this->Setup_model->get_department_list();
+		$this->load->model('Employee_model');
+		$data['departments'] = $this->Employee_model->get_departments();
 
 		$data['records'] = [];
 		$data['from_date'] = '';
@@ -471,7 +490,7 @@ class Reports extends CI_Controller
 		}
 
 		$data['title'] = 'Monthly Attendance Report';
-		$data['main_content'] = 'Reports/monthly_attendance_report.php';
+		$data['main_content'] = 'reports/monthly_attendance_report.php';
 		$this->load->view('includes/template.php', $data);
 	}
 

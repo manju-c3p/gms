@@ -64,13 +64,13 @@
 
 <!-- =============================================== -->
 <aside id="sidebar" class="sidebar flex flex-col">
-<div class="brand flex items-center gap-3 px-4 py-3">
-    <img src="<?= base_url('public/images/logoauto1.png') ?>"
-         alt="GMS Logo"
-         class="w-auto">
+	<div class="brand flex items-center gap-3 px-4 py-3">
+		<img src="<?= base_url('public/images/logoauto1.png') ?>"
+			alt="GMS Logo"
+			class="w-auto">
 
- 
-</div>
+
+	</div>
 
 
 	<nav>

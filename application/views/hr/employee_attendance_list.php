@@ -1,34 +1,39 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
 <div class="bg-white shadow rounded-xl p-6">
-<div class="flex justify-between items-center mb-6 border-b pb-3">
+	<div class="flex justify-between items-center mb-6 border-b pb-3">
 
-    <!-- Caption -->
-    <h2 class="text-xl font-semibold text-gray-800">
-        Employee Attendance List
-    </h2>
+		<!-- Caption -->
+		<h2 class="text-xl font-semibold text-gray-800">
+			Employee Attendance List
+		</h2>
 
-    <!-- Attendance List Button -->
-    <a href="<?php echo base_url('index.php/Hr/add_emp_attendance'); ?>"
-       class="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm shadow">
+		<!-- Attendance List Button -->
+		<a href="<?php echo base_url('index.php/Hr/add_emp_attendance'); ?>"
+			class="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm shadow">
 
-        <!-- List Icon -->
-        <svg xmlns="http://www.w3.org/2000/svg"
-             class="w-4 h-4"
-             fill="none"
-             viewBox="0 0 24 24"
-             stroke="currentColor">
+			<!-- List Icon -->
+			<svg xmlns="http://www.w3.org/2000/svg"
+				class="w-4 h-4"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke="currentColor">
 
-            <path stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 6h16M4 12h16M4 18h16"/>
+				<path stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M4 6h16M4 12h16M4 18h16" />
 
-        </svg>
+			</svg>
 
-        Add Attendance
+			Add Attendance
 
-    </a>
+		</a>
 
-</div>
+	</div>
 
 	<!-- Filter Form -->
 	<form id="main"
@@ -48,15 +53,13 @@
 
 				<div class="flex">
 
-					<input type="text"
+					<input type="date"
 						id="from"
 						name="from"
 						value="<?php echo $from; ?>"
 						class="w-full border border-gray-300 rounded-l-lg px-3 py-2 text-sm datepicker1">
 
-					<span class="inline-flex items-center px-3 border border-l-0 border-gray-300 rounded-r-lg bg-gray-50">
-						📅
-					</span>
+					
 
 				</div>
 
@@ -72,15 +75,13 @@
 
 				<div class="flex">
 
-					<input type="text"
+					<input type="date"
 						id="to"
 						name="to"
 						value="<?php echo $to; ?>"
 						class="w-full border border-gray-300 rounded-l-lg px-3 py-2 text-sm datepicker1">
 
-					<span class="inline-flex items-center px-3 border border-l-0 border-gray-300 rounded-r-lg bg-gray-50">
-						📅
-					</span>
+					
 
 				</div>
 
@@ -101,16 +102,16 @@
 
 				<select id="user_id"
 					name="user_id"
-					class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm select2">
+					class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm select2 debtor-select">
 
 					<option value="">Select</option>
 
 					<?php foreach ($records1 as $s): ?>
 
-						<option <?php if ($s->id == $user_id) echo 'selected'; ?>
-							value="<?php echo $s->id ?>">
+						<option <?php if ($s->employee_id == $user_id) echo 'selected'; ?>
+							value="<?php echo $s->employee_id ?>">
 
-							<?php echo $s->username; ?>
+							<?php echo $s->employee_name; ?>
 
 						</option>
 
@@ -214,73 +215,68 @@
 
 			<tbody class="divide-y">
 
-				<?php $i = 1; foreach ($records as $row): ?>
-    <?php if (!empty($row->employee_id)): ?>
+				<?php $i = 1;
+				foreach ($records as $row): ?>
+					<?php if (!empty($row->employee_id)): ?>
 
-        <tr class="hover:bg-gray-50">
+						<tr class="hover:bg-gray-50">
 
-            <td class="px-4 py-2 border">
-                <?php echo $i++; ?>
-            </td>
+							<td class="px-4 py-2 border">
+								<?php echo $i++; ?>
+							</td>
 
-            <td class="px-4 py-2 border">
-                <?php echo htmlspecialchars($row->name); ?>
-            </td>
+							<td class="px-4 py-2 border">
+								<?php echo htmlspecialchars($row->name ?? ''); ?>
+							</td>
 
-            <td class="px-4 py-2 border">
-                <?php echo htmlspecialchars($row->attendence); ?>
-            </td>
+							<td class="px-4 py-2 border">
+								<?php echo htmlspecialchars($row->attendence ?? ''); ?>
+							</td>
 
-            <td class="px-4 py-2 border">
-                <?php
-                    if ($row->type == 'I') echo "Biometric";
-                    elseif ($row->type == 'M') echo "Manual";
-                    elseif ($row->type == 'O') echo "Onsite";
-                    else echo "-";
-                ?>
-            </td>
+							<td class="px-4 py-2 border">
+								<?php
+								if ($row->type == 'I') echo "Biometric";
+								elseif ($row->type == 'M') echo "Manual";
+								elseif ($row->type == 'O') echo "Onsite";
+								else echo "-";
+								?>
+							</td>
 
-            <td class="px-4 py-2 border">
-                <?php echo htmlspecialchars($row->in_time); ?>
-            </td>
+							<td class="px-4 py-2 border">
+								<?php echo htmlspecialchars($row->in_time ?? ''); ?>
+							</td>
 
-            <td class="px-4 py-2 border">
-                <?php echo htmlspecialchars($row->out_time); ?>
-            </td>
+							<td class="px-4 py-2 border">
+								<?php echo htmlspecialchars($row->out_time ?? ''); ?>
+							</td>
 
-            <td class="px-4 py-2 border">
-                <?php echo !empty($row->Attendance_date) ? date('d-M-Y', strtotime($row->Attendance_date)) : '-'; ?>
-            </td>
+							<td class="px-4 py-2 border">
+								<?php echo !empty($row->Attendance_date) ? date('d-M-Y', strtotime($row->Attendance_date)) : '-'; ?>
+							</td>
 
-            <td class="px-4 py-2 border">
-                <?php echo !empty($row->created_by_user) ? htmlspecialchars($row->created_by_user) : '-'; ?>
-                <br>
-                <?php echo !empty($row->created_date) ? htmlspecialchars($row->created_date) : '-'; ?>
-            </td>
+							<td class="px-4 py-2 border">
+								
+								<?php echo !empty($row->created_date) ? htmlspecialchars($row->created_date ?? '') : '-'; ?>
+							</td>
 
-            <td class="px-4 py-2 border text-center whitespace-nowrap">
+							<td class="px-4 py-2 border text-center whitespace-nowrap">
 
-                <!-- Edit -->
-                <a href="<?= base_url('index.php/Hr/edit_emp_attendance/'.$row->emp_aId); ?>"
-                   class="inline-flex items-center justify-center w-8 h-8 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg"
-                   title="Edit">
-                   ✏️
-                </a>
 
-                <!-- Delete -->
-                <a href="<?= base_url('index.php/Hr/delete_attendance_emp/'.$row->emp_aId); ?>"
-                   onclick="return confirmcancel(<?= $row->emp_aId; ?>);"
-                   class="inline-flex items-center justify-center w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg ml-2"
-                   title="Delete">
-                   🗑
-                </a>
 
-            </td>
+								<!-- Delete -->
+								<a href="<?= base_url('index.php/Hr/delete_attendance_emp/' . $row->emp_aId); ?>"
+									onclick="return confirmcancel(<?= $row->emp_aId; ?>);"
+									class="inline-flex items-center justify-center w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg ml-2"
+									title="Delete">
+									🗑
+								</a>
 
-        </tr>
+							</td>
 
-    <?php endif; ?>
-<?php endforeach; ?>
+						</tr>
+
+					<?php endif; ?>
+				<?php endforeach; ?>
 
 			</tbody>
 
@@ -309,8 +305,8 @@
 				},
 				success: function(msg) {
 					if (msg == 1) {
-						// alert("Record deleted");
-						window.location.href = "<?php echo $_SERVER['PHP_SELF'] ?>";
+						alert("Record deleted");
+						window.location.reload();
 					} else {
 						alert("Can't Delete record. Data already exist!!!");
 					}
@@ -321,4 +317,24 @@
 			return false;
 
 	}
+
+	$(document).ready(function() {
+
+		$('.debtor-select').select2({
+			width: '100%'
+		});
+
+		$('#datatable').DataTable({
+			pageLength: 10,
+			ordering: true,
+			searching: true,
+			lengthMenu: [10, 25, 50, 100],
+			columnDefs: [{
+					orderable: false,
+					targets: [8]
+				} // disable sorting for Action column
+			]
+		});
+
+	});
 </script>

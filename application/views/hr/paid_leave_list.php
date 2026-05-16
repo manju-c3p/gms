@@ -54,17 +54,29 @@
 
 			<!-- Year Picker -->
 			<div class="relative md:col-span-2">
-				<input type="text"
+				<select id="current_year"
+					name="current_year"
+					class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+					<?php
+					$currentYear = date('Y');
+					for ($i = $currentYear - 10; $i <= $currentYear + 10; $i++) {
+						$selected = ($i == $current_year) ? 'selected' : '';
+						echo "<option value='$i' $selected>$i</option>";
+					}
+					?>
+				</select>
+				<!-- <input type="year"
 					class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
 					id="current_year"
 					name="current_year"
 					placeholder="Select Year"
 					readonly
-					value="<?php echo $current_year; ?>">
+					value="<?php echo $current_year; ?>"> -->
 
-				<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+				<!-- <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
 					<i class="fa fa-calendar text-gray-400"></i>
-				</div>
+				</div> -->
 			</div>
 
 			<!-- Spacer -->
@@ -135,29 +147,23 @@
 						</td>
 
 						<td class="px-4 py-2 border">
-							<?php echo $row->paid_days; ?>
+							<?php echo $row->total_paid_days; ?>
 						</td>
 
 						<td class="px-4 py-2 border text-center whitespace-nowrap">
 
-							<!-- Edit -->
-							<a href="<?php echo base_url() . 'index.php/Hr/edit_paid_leave/' . $row->paid_id; ?>"
-								title="Edit"
-								class="inline-flex items-center justify-center w-8 h-8 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg">
+						<a href="<?php echo base_url() . 'index.php/Hr/edit_paid_leave/' . $row->paid_id; ?>"
+									class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded text-sm">
+									Edit
+								</a>
 
-								<i class="fa fa-edit"></i>
+								<a href="<?php echo base_url() . 'index.php/Hr/delete_paid_leave/' . $row->paid_id; ?>"
+									onclick="return confirmcancel(<?php echo $row->paid_id; ?>);"
+									class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm ml-2">
+									Delete
+								</a>
 
-							</a>
-
-							<!-- Delete -->
-							<a href="<?php echo base_url() . 'index.php/Hr/delete_paid_leave/' . $row->paid_id; ?>"
-								title="Delete"
-								onclick="return confirmcancel(<?php echo $row->paid_id; ?>);"
-								class="inline-flex items-center justify-center w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg ml-2">
-
-								<i class="fa fa-trash"></i>
-
-							</a>
+							
 
 						</td>
 
@@ -193,8 +199,9 @@
 				},
 				success: function(msg) {
 					if (msg == 1) {
+						alert("Record Deleted");
 
-						window.location.href = "<?php echo $_SERVER['PHP_SELF'] ?>";
+						window.location.reload();
 					} else {
 						alert("Can't Delete record. Data already exist!!!");
 					}

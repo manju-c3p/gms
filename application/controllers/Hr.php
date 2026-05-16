@@ -89,7 +89,10 @@ class Hr extends CI_Controller
 	{
 		$data['title'] = "Leave application";
 		$this->load->model('Setup_model');
-		$data['user_records'] = $this->Setup_model->get_all_users();
+		$data['user_recordsold'] = $this->Setup_model->get_all_users();
+
+		$this->load->model('Employee_model');
+		$data['user_records'] = $this->Employee_model->get_all_employees();
 
 		$this->load->model('Hr_model');
 		$data['category'] = $this->Hr_model->get_leave_category_list();
@@ -146,12 +149,12 @@ class Hr extends CI_Controller
 		$this->load->model('Hr_model');
 
 		// Get data for form
-		$data['user_records']   = $this->Setup_model->get_all_users();                    // All users
+		$data['user_records']   = $this->Employee_model->get_all_employees();                    // All users
 		$data['records']        = $this->Hr_model->get_employee_leave_by_id($id);          // Leave application record
 		$data['file_records']   = $this->Hr_model->get_employee_leave_doc_id($id);         // Uploaded documents
 		$data['admin_hr_ceo']   = $this->Hr_model->leave_hr_admin_ceo_list();             // Admin / HR / CEO list
 		$data['dept_list']      = $this->Employee_model->get_departments();        // Departments
-		$data['desig_list']     = "";              // Designations
+		$data['desig_list']     = $this->Employee_model->get_designations();              // Designations
 		$data['appro']          = $this->Hr_model->get_approval_setup_list();              // Approval setup
 		$data['leave_appro']    = $this->Hr_model->get_leave_approval_details_leave_id($id); // Leave approval details
 		$data['approval_record'] = $this->Hr_model->get_employee_leave_approveal_record($id); // Previous approval records
@@ -190,12 +193,13 @@ class Hr extends CI_Controller
 
 		$this->load->model('Hr_model');
 		$data['records'] = $this->Hr_model->get_employee_leave_by_id($id);
+		// log_message('error', 'Leave Record: ' . print_r($data['records'], true));
 		// $this->load->model('Users_model');
 		// $data['record1'] = $this->Users_model->get_user_record_by_id_pass($id);
 		$data['record1'] = "";
-		$this->load->model('Setup_model');
-		$data['dept_list'] = $this->Setup_model->get_active_department_list();
-		$data['desig_list'] = $this->Setup_model->get_designation_list();
+		$this->load->model('Employee_model');
+		$data['dept_list'] = $this->Employee_model->get_departments();
+		$data['desig_list'] = $this->Employee_model->get_designations();
 
 		$this->load->view('hr/print/print_leave_application.php', $data);
 	}
@@ -368,7 +372,9 @@ class Hr extends CI_Controller
 		$id = $this->uri->segment('3');
 
 		$this->load->model('Setup_model');
-		$data['user_records'] = $this->Setup_model->get_all_users();
+		$this->load->model('Employee_model');
+		$data['user_records1'] = $this->Setup_model->get_all_users();
+		$data['user_records'] = $this->Employee_model->get_all_employees();
 
 		$this->load->model('Hr_model');
 		$data['records'] = $this->Hr_model->get_salary_structure_by_id($id);
@@ -444,7 +450,10 @@ class Hr extends CI_Controller
 		$data['records1'] = $this->Hr_model->get_emp_attendance();
 
 		$this->load->model('Setup_model');
-		$data['records'] = $this->Setup_model->get_all_users();
+		$data['recordsold'] = $this->Setup_model->get_all_users();
+
+		$this->load->model('Employee_model');
+		$data['records'] = $this->Employee_model->get_all_employees();
 
 		$data['main_content'] = 'hr/employee_attendance_add.php';
 		$this->load->view('includes/template', $data);
@@ -457,17 +466,19 @@ class Hr extends CI_Controller
 
 		$data['title'] = "Employee Attendance List";
 
-		$data['from'] = date('01-01-Y');
-		$data['to'] = date('d-m-Y');
+		$data['from'] = date('Y-01-01');
+		$data['to'] = date('Y-m-d');
 		$data['user_id'] = "";
 
 		$this->load->model('Hr_model');
+		$this->load->model('Employee_model');
 		$data['records'] = $this->Hr_model->get_emp_attendance_list_filter_get_todays_record();
-		$data['records1'] = $this->Hr_model->get_emp_attendance();
+		// $data['records2'] = $this->Hr_model->get_emp_attendance();
+		$data['records1'] = $this->Employee_model->get_all_employees();
 
 		// Log results
-		// log_message('error', 'Today Attendance Records: ' . print_r($data['records'], true));
-		// log_message('error', 'All Attendance Records: ' . print_r($data['records1'], true));
+		log_message('error', 'Today Attendance Records: ' . print_r($data['records'], true));
+		log_message('error', 'All Attendance Records: ' . print_r($data['records1'], true));
 		$data['main_content'] = 'hr/employee_attendance_list.php';
 		$this->load->view('includes/template', $data);
 	}
@@ -489,8 +500,10 @@ class Hr extends CI_Controller
 		}
 
 		$this->load->model('Hr_model');
+		$this->load->model('Employee_model');
 		$data['records'] = $this->Hr_model->get_emp_attendance_list_filter();
-		$data['records1'] = $this->Hr_model->get_emp_attendance();
+		$data['records2'] = $this->Hr_model->get_emp_attendance();
+		$data['records1'] = $this->Employee_model->get_all_employees();
 
 		$data['main_content'] = 'hr/employee_attendance_list.php';
 		$this->load->view('includes/template', $data);
@@ -664,8 +677,8 @@ class Hr extends CI_Controller
 		$data['title'] = "Edit Resignation";
 		$id = $this->uri->segment('3');
 
-		$this->load->model('Setup_model');
-		$data['user_records'] = $this->Setup_model->get_all_users();
+		$this->load->model('Employee_model');
+		$data['user_records'] = $this->Employee_model->get_all_employees();
 
 		$this->load->model('Hr_model');
 		$data['records'] = $this->Hr_model->get_employee_resigning_by_id($id);
@@ -695,12 +708,12 @@ class Hr extends CI_Controller
 		$this->load->model('Hr_model');
 		$data['records'] = $this->Hr_model->get_employee_resigning_by_id($id);
 
-		$this->load->model('Users_model');
-		$data['record1'] = $this->Users_model->get_user_record_by_id_pass($id);
+		// $this->load->model('Users_model');
+		// $data['record1'] = $this->Users_model->get_user_record_by_id_pass($id);
 
-		$this->load->model('Setup_model');
-		$data['dept_list'] = $this->Setup_model->get_active_department_list();
-
+		$this->load->model('Employee_model');
+		$data['dept_list'] = $this->Employee_model->get_departments();
+		$data['record1'] = $this->Employee_model->get_all_employees($id);
 		$this->load->view('hr/print/print_resigning_application.php', $data);
 	}
 
@@ -738,8 +751,8 @@ class Hr extends CI_Controller
 	{
 		$data['title'] = "Passport Release";
 
-		$this->load->model('Setup_model');
-		$data['records'] = $this->Setup_model->get_all_users();
+		$this->load->model('Employee_model');
+		$data['records'] = $this->Employee_model->get_all_employees();
 
 
 		$data['main_content'] = 'hr/passport_relese_add.php';
@@ -773,8 +786,8 @@ class Hr extends CI_Controller
 	{
 		$data['title'] = "Edit Release Passport";
 		$id = $this->uri->segment('3');
-		$this->load->model('Setup_model');
-		$data['records'] = $this->Setup_model->get_all_users();
+		$this->load->model('Employee_model');
+		$data['records'] = $this->Employee_model->get_all_employees();
 		$this->load->model('Hr_model');
 		$data['record1'] = $this->Hr_model->get_passport_release_list_by_id($id);
 
@@ -807,8 +820,8 @@ class Hr extends CI_Controller
 		$data['record1'] = $this->Hr_model->get_passport_release_list_by_id($id);
 		$data['records'] = $this->Hr_model->get_user_record_by_id($id);
 
-		$this->load->model('Setup_model');
-		$data['dept_list'] = $this->Setup_model->get_active_department_list();
+		$this->load->model('Employee_model');
+		$data['dept_list'] = $this->Employee_model->get_departments();
 
 		$this->load->view('hr/print/print_passport_release.php', $data);
 	}
@@ -965,9 +978,30 @@ class Hr extends CI_Controller
 		$this->load->model('Hr_model');
 		$data['records'] = array();
 
+		$this->load->model('Accounts_model');
+		$data['sundry_detors_records'] = $this->Accounts_model->get_general_ledger_accounts('Expense', '');
+		$data['credit_records'] = $this->Accounts_model->get_general_ledger_accounts('Liabilities', '');
+
 		$data['main_content'] = 'hr/emp_monthly_salary_add.php';
 		$this->load->view('includes/template', $data);
 	}
+	function get_company_off_days($year, $month)
+	{
+		$start = strtotime("$year-$month-01");
+		$end   = strtotime(date("Y-m-t", $start));
+
+		$count = 0;
+
+		for ($date = $start; $date <= $end; $date = strtotime("+1 day", $date)) {
+
+			if (date('N', $date) == 7) { // 7 = Sunday
+				$count++;
+			}
+		}
+
+		return $count;
+	}
+
 
 	function add_monthly_salary_data()
 	{
@@ -984,15 +1018,40 @@ class Hr extends CI_Controller
 		$data['days_in_month'] = date('t', strtotime($selected_month_year));
 
 
+		$effective_date = $this->input->post('effective_date');
+
+
+		// Get year & month
+		$year  = date('Y', strtotime($effective_date));
+		$month = date('m', strtotime($effective_date));
+
+		// Company off days (Sundays)
+		$data['compoff_count'] = $this->get_company_off_days($year, $month);
+
+
 		$this->load->model('Hr_model');
 		$data['records'] = $this->Hr_model->get_emp_monthly_salary_data();
 		//$data['records'] = $this->Hr_model->get_emp_monthly_salary_data($start_date, $end_date);
 
+		foreach ($data['records'] as $k => $row) {
+			$advance = $this->Hr_model->get_employee_advance_monthly(
+				$row->emp_id,
+				$data['start_date'],
+				$data['end_date']
+			);
+
+			$data['records'][$k]->advance_taken = $advance;
+		}
+
+		// echo "<pre>";
+		// print_r($data['records']);
+		// exit;
+
 		$data['holiday_count'] = $this->Hr_model->get_emp_holiday_count();
 
 		$this->load->model('Accounts_model');
-		$Salary_payables = 38;
-		$Salary_expense = 37;
+		$Salary_payables = 2815;
+		$Salary_expense = 2824;
 		$data['sundry_detors_records'] = $this->Accounts_model->get_general_ledger_accounts('Expense', '');
 		$data['credit_records'] = $this->Accounts_model->get_general_ledger_accounts('Liabilities', '');
 
@@ -1180,6 +1239,40 @@ class Hr extends CI_Controller
 		$this->load->model('Hr_model');
 		$res = $this->Hr_model->delete_emp_salary($sid);
 		echo $res;
+	}
+
+
+	public function delete_monthly_salary()
+	{
+		$sid = $this->input->post('sid');
+
+		if (empty($sid)) {
+			echo json_encode(['status' => 'error', 'msg' => 'Invalid ID']);
+			return;
+		}
+
+		$this->db->trans_start();
+
+		// 🔹 Delete salary details
+		$this->db->where('sid', $sid);
+		$this->db->delete('employee_monthly_salary_details');
+
+		// 🔹 Delete voucher entries (VERY IMPORTANT)
+		$this->db->where('trans_id', $sid);
+		$this->db->where('trans_type', 'MS');
+		$this->db->delete('voucher_transaction');
+
+		// 🔹 Delete main salary record
+		$this->db->where('sid', $sid);
+		$this->db->delete('employee_monthly_salary');
+
+		$this->db->trans_complete();
+
+		if ($this->db->trans_status() === FALSE) {
+			echo json_encode(['status' => 'error', 'msg' => 'Delete failed']);
+		} else {
+			echo json_encode(['status' => 'success', 'msg' => 'Salary deleted successfully']);
+		}
 	}
 
 	////////////////////////////////////////gratuaty-start/////////////////////////////////////////////
@@ -1550,7 +1643,7 @@ class Hr extends CI_Controller
 		$data['title'] = "Leave Days List";
 		$this->load->model('Hr_model');
 		$data['records'] = $this->Hr_model->get_paid_leave_list();
-
+		// log_message('error', 'records: ' . print_r($data['records'], true));
 		$data['current_year'] = date('Y');
 
 		$data['main_content'] = 'hr/paid_leave_list.php';
@@ -1592,7 +1685,10 @@ class Hr extends CI_Controller
 		$id = $this->uri->segment('3');
 
 		$this->load->model('Setup_model');
-		$data['user_records'] = $this->Setup_model->get_all_users();
+		$data['user_recordsold'] = $this->Setup_model->get_all_users();
+
+		$this->load->model('Employee_model');
+		$data['user_records'] = $this->Employee_model->get_all_employees();
 
 		$this->load->model('Hr_model');
 		$data['records'] = $this->Hr_model->get_paid_leave_by_id($id);
@@ -3316,112 +3412,295 @@ class Hr extends CI_Controller
 	///////////////sneha code 10 nov 2025/////////////////////////
 
 
-	function add_air_ticket_allowance_data()
-	{
-		$data['title'] = "Annual Air Ticket";
-		$this->load->model('Hr_model');
-
-		$flag = $this->Hr_model->add_ticket_allowance_data();
-		if ($flag) {
-			$this->session->set_flashdata('success', 'Record Successfully Saved');
-			redirect('Hr/view_emp_request_list');
-		}
-	}
 
 
 
-	public function update_ticket_allowance_data()
-	{
-		$data['title'] = "Update Air Ticket Allowance";
-		$id = $this->input->post('id');
-		$this->load->model('Hr_model');
 
-		$flag = $this->Hr_model->update_employee_request_ticket($id);
 
-		if ($flag) {
-			$this->session->set_flashdata('success', 'Record Successfully Updated');
-			redirect('Hr/view_emp_request_list');
-		} else {
-			$this->session->set_flashdata('error', 'Failed to update the record');
-			redirect('Hr/view_emp_request_edit/' . $id);
-		}
-	}
 
-	function update_ticket_allowance_data_hr()
-	{
-		$data['title'] = "Update Employee Request";
-		$id = $this->input->post('id');
-		$this->load->model('Hr_model');
 
-		$flag = $this->Hr_model->update_ticket_allowance_hr($id);
-		if ($flag) {
-			$this->session->set_flashdata('success', 'Record Successfully Saved');
-			redirect('Hr/add_emp_req_data');
-		}
-	}
 
-	function add_service_request_data()
-	{
-		$data['title'] = "Service Request";
-		$this->load->model('Hr_model');
 
-		$flag = $this->Hr_model->add_service_request_data();
-		if ($flag) {
-			$this->session->set_flashdata('success', 'Record Successfully Saved');
-			redirect('Hr/view_emp_request_list');
-		}
-	}
 
-	public function update_service_request_data()
-	{
-		$data['title'] = "Update Service Request";
-		$id = $this->input->post('req_id');
-		$this->load->model('Hr_model');
 
-		$flag = $this->Hr_model->update_service_request_data($id);
 
-		if ($flag) {
-			$this->session->set_flashdata('success', 'Record Successfully Updated');
-			redirect('Hr/view_emp_request_list');
-		} else {
-			$this->session->set_flashdata('error', 'Failed to update the record');
-			redirect('Hr/view_emp_request_edit/' . $id);
-		}
-	}
 
-	public function edit_service_request($id)
-	{
-		$this->load->model('Hr_model');
-
-		// Main request
-		$data['request'] = $this->Hr_model->get_service_request_by_id($id);
-
-		// User details (dept, name etc.)
-		$data['user'] = $this->Hr_model->get_user_details($data['request']->user_id);
-
-		// Service items table
-		$data['items'] = $this->Hr_model->get_service_request_items($id);
-
-		$this->load->view('hr/emp_req_application_edit', $data);
-	}
-	public function ceo_service_request_edit($id)
-	{
-		$this->load->model('Hr_model');
-
-		$data['request'] = $this->Hr_model->get_service_request_for_ceo($id);
-		$data['user']    = (object) [
-			'user_name' => $data['request']->user_name,
-			'dept_name' => $data['request']->dept_name
-		];
-		$data['items']   = $this->Hr_model->get_service_request_items($id);
-
-		$data['main_content'] = 'hr/emp_req_application_edit';
-		$this->load->view('includes/template', $data);
-	}
 
 	///////////////////////////////////////////////////////////
 
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////salary advance functions////////////////////////////////////////////////////////////
 
+	public function salary_advance()
+	{
+		$data['employees'] = $this->db
+			->where('status', 'Active')
+			->get('employees')->result();
+
+		$data['cash_bank_ledgers'] = $this->db->query("
+		SELECT account_id,account_name 
+		FROM general_ledger
+		WHERE group_no IN (19,21)")->result();
+		$data['title'] = 'Salary Advance';
+		$data['main_content'] = 'hr/salary_advance';
+		$this->load->view('includes/template', $data);
+	}
+
+	public function generate_voucher_code($prefix)
+	{
+		// Example: SA (Salary Advance), JV, PV etc.
+
+		$year = date('y'); // 26
+		$full_prefix = $prefix . '/' . $year . '/';
+
+		// Get last voucher number
+		$this->db->like('voucher_code', $full_prefix, 'after');
+		$this->db->order_by('voucher_code', 'DESC');
+		$this->db->limit(1);
+
+		$query = $this->db->get('voucher_transaction');
+
+		if ($query->num_rows() > 0) {
+			$last_code = $query->row()->voucher_code;
+
+			// Extract last number
+			$last_number = (int) substr($last_code, -5);
+			$next_number = $last_number + 1;
+		} else {
+			$next_number = 1;
+		}
+
+		// Format: 00001
+		$number = str_pad($next_number, 5, '0', STR_PAD_LEFT);
+
+		return $full_prefix . $number;
+	}
+
+	public function save_salary_advance()
+	{
+		$emp_id = $this->input->post('emp_id');
+		$amount = $this->input->post('amount');
+		$date   = $this->input->post('advance_date');
+		$ledger = $this->input->post('pay_ledger_id');
+		$remarks = $this->input->post('remarks');
+		$paymode = $this->input->post('payment_mode');
+
+		$this->db->trans_start();
+
+		/* INSERT ADVANCE TABLE */
+
+
+		$this->db->insert('employee_salary_advance', [
+
+			'emp_id' => $emp_id,
+			'advance_date' => $date,
+			'amount' => $amount,
+			'balance_amount' => $amount,
+			'status' => 'Pending',
+			'remarks' => $remarks,
+			'created_by' => $_SESSION['user_id'],
+			'created_at' => date('Y-m-d H:i:s'),
+			'payment_mode' => $paymode,
+			'ledger_id' => $ledger
+
+		]);
+		$advance_id = $this->db->insert_id();
+
+		/* ACCOUNT VOUCHER ENTRY */
+
+		$voucher_no = $this->generate_voucher_code('SA');
+
+		$emp_acc = $this->db
+			->select('account_id, account_name')
+			->from('general_ledger')
+			->where('employee_id', $emp_id)
+			->get()
+			->row();
+
+		$emp_acc_id = $emp_acc->account_id ?? '';
+		$emp_acc_name = $emp_acc->account_name ?? '';
+
+
+
+		// $voucher_no = 'ADV' . time();
+
+		/* Debit Entry - Employee Advance */
+
+		$this->db->insert('voucher_transaction', [
+
+			'voucher_code' => $voucher_no,
+			'voucher_date' =>  $date,
+			'voucher_type' => 'SA',
+			'account_id'   => $emp_acc_id,
+			'drcr_type'    => 'Dr',
+			'amount'       => $amount,
+			'narration' => 'Salary advance to ' . $emp_acc_name . ' on ' . date('d-m-Y', strtotime($date)),
+			'trans_id'   => $advance_id,
+			'customer_id' => $emp_id,
+			'trans_type' => 'SA'
+
+		]);
+
+
+		/* Credit Entry - Cash / Bank */
+
+		$this->db->insert('voucher_transaction', [
+
+			'voucher_code' => $voucher_no,
+			'voucher_date' =>  $date,
+			'voucher_type' => 'SA',
+			'account_id'   => $ledger,
+			'drcr_type'    => 'Cr',
+			'amount'       => $amount,
+			'narration'    => 'Salary Advance Payment',
+			'trans_id'   => $advance_id,
+			'customer_id' => $emp_id,
+			'trans_type' => 'SA'
+
+		]);
+
+
+
+		$this->db->trans_complete();
+
+		redirect('Hr/salary_advance_list');
+	}
+
+	public function salary_advance_list()
+	{
+		$this->load->model('Hr_model');
+		$data['advances'] = $this->Hr_model->get_salary_advances();
+
+
+		// echo "<pre>";
+		// print_r($data['advances']);
+		// echo "</pre>";
+		// exit;
+		$data['title'] = 'Salary Advance';
+		$data['main_content'] = 'hr/salary_advance_list';
+		$this->load->view('includes/template', $data);
+	}
+
+	public function delete_salary_advance($id)
+	{
+		$this->db->where('advance_id', $id);
+		$this->db->delete('employee_salary_advance');
+
+		$this->db->where('trans_id', $id);
+		$this->db->delete('voucher_transaction');
+
+		redirect('Hr/salary_advance_list');
+	}
+
+	public function edit_salary_advance($id)
+	{
+		$this->load->model('Hr_model');
+		$this->load->model('Employee_model');
+
+		$data['advance'] = $this->Hr_model->get_salary_advance_by_id($id);
+		$data['employees'] = $this->Employee_model->get_all_employees();
+		$data['cash_bank_ledgers'] = $this->db->query("
+		SELECT account_id,account_name 
+		FROM general_ledger
+		WHERE group_no IN (19,21)")->result();
+
+
+		$data['title'] = 'Salary Advance';
+		$data['main_content'] = 'hr/salary_advance_edit';
+		$this->load->view('includes/template', $data);
+	}
+
+	public function update_salary_advance()
+	{
+		$id = $this->input->post('advance_id');
+		$emp_id = $this->input->post('emp_id');
+
+		$amount = $this->input->post('amount');
+		$date   = $this->input->post('advance_date');
+		$ledger = $this->input->post('pay_ledger_id');
+		$remarks = $this->input->post('remarks');
+		$paymode = $this->input->post('payment_mode');
+
+		$data = [
+			'emp_id' => $this->input->post('emp_id'),
+			'advance_date' => $this->input->post('advance_date'),
+			'amount' => $this->input->post('amount'),
+			'balance_amount' => $this->input->post('amount'), // simple logic
+			'payment_mode' => $this->input->post('payment_mode'),
+			'ledger_id' => $this->input->post('pay_ledger_id'),
+			'remarks' => $this->input->post('remarks')
+		];
+
+		$this->db->where('advance_id', $id);
+		$this->db->update('employee_salary_advance', $data);
+
+		$this->db->where('trans_id', $id);
+		$this->db->delete('voucher_transaction');
+
+		/* ACCOUNT VOUCHER ENTRY */
+
+		$voucher_no = $this->generate_voucher_code('SA');
+
+		$emp_acc = $this->db
+			->select('account_id, account_name')
+			->from('general_ledger')
+			->where('employee_id', $emp_id)
+			->get()
+			->row();
+
+		$emp_acc_id = $emp_acc->account_id ?? '';
+		$emp_acc_name = $emp_acc->account_name ?? '';
+		// $voucher_no = 'ADV' . time();
+
+		/* Debit Entry - Employee Advance */
+
+		$this->db->insert('voucher_transaction', [
+
+			'voucher_code' => $voucher_no,
+			'voucher_date' =>  $date,
+			'voucher_type' => 'SA',
+			'account_id'   => $emp_acc_id,
+			'drcr_type'    => 'Dr',
+			'amount'       => $amount,
+			'narration' => 'Salary advance to ' . $emp_acc_name . ' on ' . date('d-m-Y', strtotime($date)),
+			'trans_id'   => $id,
+			'customer_id' => $emp_id,
+			'trans_type' => 'SA'
+
+		]);
+
+
+		/* Credit Entry - Cash / Bank */
+
+		$this->db->insert('voucher_transaction', [
+
+			'voucher_code' => $voucher_no,
+			'voucher_date' =>  $date,
+			'voucher_type' => 'SA',
+			'account_id'   => $ledger,
+			'drcr_type'    => 'Cr',
+			'amount'       => $amount,
+			'narration'    => 'Salary Advance Payment',
+			'trans_id'   => $id,
+			'customer_id' => $emp_id,
+			'trans_type' => 'SA'
+
+		]);
+
+
+		redirect('Hr/salary_advance_list');
+	}
+
+	public function print_salary_advance($id)
+	{
+
+		$this->load->model('Hr_model');
+		$data['advance'] = $this->Hr_model->get_salary_advance_by_id_details($id);
+		// $data['title'] = 'Salary Advance';
+		// echo "<pre>";
+		// print_r($data['advance']);
+		// echo "</pre>";
+		// exit;
+		$this->load->view('hr/print/print_salary_advance', $data);
+	}
 }

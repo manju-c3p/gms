@@ -72,9 +72,9 @@
 					<option value="">Select</option>
 
 					<?php foreach ($user_records as $s) { ?>
-						<option <?php if ($this->session->userdata('user_id') == $s->id) echo 'selected'; ?>
-							value="<?php echo $s->id ?>">
-							<?php echo $s->username; ?>
+						<option <?php if ($this->session->userdata('user_id') == $s->employee_id) echo 'selected'; ?>
+							value="<?php echo $s->employee_id ?>">
+							<?php echo $s->employee_name; ?>
 						</option>
 					<?php } ?>
 
@@ -90,7 +90,7 @@
 			</label>
 
 			<div class="relative md:col-span-2">
-				<input type="text"
+				<input type="date"
 					class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm datepicker1 focus:outline-none focus:ring-2 focus:ring-blue-500"
 					id="paid_date"
 					name="paid_date"
@@ -107,7 +107,7 @@
 			</label>
 
 			<div class="relative md:col-span-2">
-				<input type="text"
+				<input type="date"
 					class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm datepicker1 focus:outline-none focus:ring-2 focus:ring-blue-500"
 					id="end_date"
 					name="end_date"

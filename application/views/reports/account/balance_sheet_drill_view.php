@@ -7,7 +7,7 @@ $this->load->helper('form');
 <div class="bg-white shadow-md rounded-lg p-6">
 
 	<!-- Main form for View -->
-	<form class="space-y-4" action="<?php echo base_url('index.php/accounts/balance_sheet_bsg'); ?>" id="balance_sheet_form" method="post">
+	<form class="space-y-4" action="<?php echo base_url('index.php/Accounts/balance_sheet_bsg'); ?>" id="balance_sheet_form" method="post">
 
 		<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
 			<label class="md:col-span-2 font-medium text-sm text-gray-700">From</label>
@@ -64,7 +64,7 @@ $this->load->helper('form');
 		<form method="post" action="<?php echo base_url('index.php/Accounts/balance_sheet_bsg'); ?>">
 			<input type="hidden" name="from_date" value="<?php echo isset($from_date) ? $from_date : ''; ?>">
 			<input type="hidden" name="to_date" value="<?php echo isset($to_date) ? $to_date : ''; ?>">
-			<input type="hidden" name="group_no" value="<?php echo isset($group_no) ? $group_no : ''; ?>">
+			<input type="text" name="group_no" value="<?php echo isset($group_no) ? $group_no : ''; ?>">
 			<button type="submit" name="action" value="view"
 				class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-md shadow">
 				View

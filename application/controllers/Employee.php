@@ -19,7 +19,7 @@ class Employee extends CI_Controller
 	public function save()
 	{
 		$this->Employee_model->save_employee($this->input->post());
-		redirect('employee/add');
+		redirect('Employee');
 	}
 
 	public function index()

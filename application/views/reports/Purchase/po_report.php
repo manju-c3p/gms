@@ -1,6 +1,27 @@
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
 <?php
 $user = $this->session->userdata('user_id');
 ?>
+<style>
+	.select2-container {
+    width: 100% !important;
+}
+
+.select2-dropdown {
+    width: 420px !important;
+}
+
+.select2-results__option {
+    white-space: nowrap;
+}
+
+.select2-selection__rendered {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+</style>
 <form id="main" method="post" action="<?php echo base_url() . 'index.php/'; ?>Reports/get_po_report" autocomplete="off" enctype="multipart/form-data">
 
 	<!-- page content -->
@@ -16,30 +37,29 @@ $user = $this->session->userdata('user_id');
 		<!-- Filters -->
 		<div class="bg-white shadow rounded-lg p-4 mb-4">
 
-			<div class="flex flex-wrap items-end gap-4">
+			<div class="flex flex-wrap items-end gap-6">
 
 				<!-- Date From -->
-				<div class="flex items-center gap-2">
-					<label class="text-sm font-medium whitespace-nowrap">Date From:</label>
+				<div class="flex flex-col">
+					<label class="text-sm font-medium mb-1">Date From</label>
 					<input type="date" name="from_date"
-						class="border border-gray-300 rounded px-3 py-2 focus:ring focus:ring-blue-200 focus:border-blue-400"
+						class="border border-gray-300 rounded px-3 py-2 w-44"
 						value="<?php echo $from; ?>" />
 				</div>
 
 				<!-- Date To -->
-				<div class="flex items-center gap-2">
-					<label class="text-sm font-medium whitespace-nowrap">Date To:</label>
+				<div class="flex flex-col">
+					<label class="text-sm font-medium mb-1">Date To</label>
 					<input type="date" name="to_date"
-						class="border border-gray-300 rounded px-3 py-2 focus:ring focus:ring-blue-200 focus:border-blue-400"
+						class="border border-gray-300 rounded px-3 py-2 w-44"
 						value="<?php echo $to; ?>" />
 				</div>
 
 				<!-- Supplier -->
-				<div class="flex items-center gap-2">
-					<label class="text-sm font-medium whitespace-nowrap">Supplier:</label>
+				<div class="flex flex-col">
+					<label class="text-sm font-medium mb-1">Supplier</label>
 					<select name="supplier_id" id="supplier_id"
-						class="border border-gray-300 rounded px-3 py-2 focus:ring focus:ring-blue-200 focus:border-blue-400 select2"
-						tabindex="2">
+						class="border border-gray-300 rounded px-3 py-2 w-96 select2 debtor-select">
 						<option value="">-select-</option>
 
 						<?php foreach ($supplier_records as $g) { ?>
@@ -52,32 +72,34 @@ $user = $this->session->userdata('user_id');
 					</select>
 				</div>
 
-
-
-
-
 				<!-- Buttons -->
-				<div class="flex items-center gap-3">
+				<div class="flex flex-col justify-end">
+					<label class="invisible mb-1">Actions</label>
 
-					<button type="submit"
-						class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow">
-						Go
-					</button>
+					<div class="flex items-center gap-3">
 
-					<a style="cursor:pointer"
-						onclick="printPOReport()"
-						class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow flex items-center gap-2">
-						<i class="fa fa-print"></i>
-						Print
-					</a>
+						<!-- Go -->
+						<button type="submit"
+							class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow">
+							Go
+						</button>
 
-					<a href="<?= base_url('index.php/Reports/export_po_excel?from_date=' . ($from_date ?? '') . '&to_date=' . ($to_date ?? '') . '&supplier=' . ($supplier ?? '')) ?>"
-   class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow inline-flex items-center gap-2">
-   📥 Export Excel
-</a>
+						<!-- Print -->
+						<a href="javascript:void(0)"
+							onclick="printPOReport()"
+							class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow flex items-center gap-2">
+							<i class="fa fa-print"></i>
+							Print
+						</a>
 
+						<!-- Export -->
+						<a href="javascript:void(0)"
+							onclick="exportPOExcel()"
+							class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow flex items-center gap-2">
+							📥 Export Excel
+						</a>
 
-
+					</div>
 				</div>
 
 			</div>
@@ -174,4 +196,27 @@ $user = $this->session->userdata('user_id');
 		window.open(`${baseUrl}?${params.toString()}`, '_blank');
 
 	}
+
+	function exportPOExcel() {
+		const fromDate = document.querySelector('input[name="from_date"]').value;
+		const toDate = document.querySelector('input[name="to_date"]').value;
+		const supplierId = document.querySelector('select[name="supplier_id"]').value;
+
+		const baseUrl = "<?php echo base_url() . 'index.php/Reports/export_po_excel'; ?>";
+
+		const params = new URLSearchParams({
+			from_date: fromDate,
+			to_date: toDate,
+			supplier: supplierId // ✅ match controller
+		});
+
+		window.location.href = baseUrl + '?' + params.toString();
+	}
+	$(document).ready(function() {
+		$('.debtor-select').select2({
+			width: '100%'
+		});
+
+
+	});
 </script>

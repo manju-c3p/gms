@@ -88,7 +88,12 @@
 					class="form-control w-full border border-gray-300 rounded px-3 py-2"
 					name="grn_date"
 					id="grn_date"
-					value="<?php echo date('Y-m-d'); ?>">
+					value="">
+
+				<input type="hidden"
+					class="form-control w-full border border-gray-300 rounded px-3 py-2"
+					name="grndate"
+					id="grndate">
 
 			</div>
 
@@ -191,13 +196,13 @@
 			<input type="text"
 				class="form-control col-span-12 md:col-span-1 border rounded px-3 py-2"
 				name="discount_per"
-				id="discount_per">
+				id="discount_per" oninput="allowOnlyNumbersDecimal(this)">
 
 
 			<input type="text"
 				class="form-control col-span-12 md:col-span-1 border rounded px-3 py-2"
 				name="discount_amt"
-				id="discount_amt">
+				id="discount_amt" oninput="allowOnlyNumbersDecimal(this)">
 
 
 			<label class="col-span-12 md:col-span-1">
@@ -207,13 +212,23 @@
 			<input type="text"
 				class="form-control col-span-12 md:col-span-1 border rounded px-3 py-2"
 				name="vat_per"
-				id="vat_per">
+				id="vat_per" oninput="allowOnlyNumbersDecimal(this)">
 
 
 			<input type="text"
 				class="form-control col-span-12 md:col-span-1 border rounded px-3 py-2"
 				name="vat_amount"
-				id="vat_amount">
+				id="vat_amount" oninput="allowOnlyNumbersDecimal(this)">
+
+
+
+			<label class="col-span-12 md:col-span-1">Round Off</label>
+
+			<input type="text"
+				class="form-control col-span-12 md:col-span-2 border rounded px-3 py-2"
+				name="roundoff"
+				id="roundoff" oninput="allowOnlyNumbersDecimalNegative(this)">
+
 
 
 			<label class="col-span-12 md:col-span-1">
@@ -223,7 +238,7 @@
 			<input type="text"
 				class="form-control col-span-12 md:col-span-2 border rounded px-3 py-2"
 				name="grand_total"
-				id="grand_total">
+				id="grand_total" oninput="allowOnlyNumbersDecimal(this)">
 
 		</div>
 
@@ -471,8 +486,23 @@
 	</div>
 
 </form>
+<script>
+	document.getElementById("main").addEventListener("submit", function() {
+		const btn = this.querySelector("button[type='submit']");
+		btn.disabled = true;
+		btn.innerText = "Submitting...";
+	});
+</script>
 
 <script>
+	// document.addEventListener('DOMContentLoaded', function() {
+	// 	setTimeout(function() {
+	// 		calculateAll();
+	// 	}, 200);
+	// });
+
+	let lastDiscountEdited = 'per';
+
 	function get_po_info() {
 		var po_id = document.getElementById("po_id").value;
 
@@ -486,8 +516,14 @@
 				},
 				dataType: "json",
 				success: function(msg) {
+					console.log(msg.po_date);
 					document.getElementById("supplier_id").value = msg.supplier_id;
 					document.getElementById("supplier_name").value = msg.supplier_code + ' ' + msg.supplier_name;
+
+					// document.getElementById("grn_date").value = msg.po_date;
+					$('#grn_date').val(msg.po_date);
+					$('#grndate').val(msg.po_date);
+					console.log(document.getElementById("grn_date").value);
 					get_po_items_list(po_id);
 					document.getElementById("sub_total").value = msg.subtotal;
 					document.getElementById("discount_per").value = msg.discount_percent;
@@ -495,7 +531,7 @@
 					document.getElementById("vat_per").value = msg.vat_percent;
 					document.getElementById("vat_amount").value = msg.vat_amt;
 					document.getElementById("grand_total").value = msg.grand_total;
-
+document.getElementById("roundoff").value = msg.currency_rate;
 					$.ajax({
 						type: "POST",
 						url: "<?php echo base_url() ?>index.php/Ajax/ajax_get_supplier_accountId_from_po",
@@ -575,8 +611,21 @@
 
 
 	$(document).ready(function() {
+		function triggerWhenReady() {
+
+			let inputs = document.querySelectorAll('.rec_quantity');
+
+			if (inputs.length > 0) {
+				calculateAll();
+			} else {
+				setTimeout(triggerWhenReady, 200);
+			}
+		}
+
+		triggerWhenReady();
 
 		function calculateRow($row) {
+			// alert("ld");
 			// ordered qty (class .qty)
 			const orderedQty = parseFloat($row.find('.qty').val()) || 0;
 
@@ -673,23 +722,40 @@
 			$('#sub_total').val(rowSubtotal.toFixed(2));
 
 			// Global discount handling (either percent or amount)
-			const isGlobalPerEditing = $('#discount_per').is(':focus');
-			const isGlobalAmtEditing = $('#discount_amt').is(':focus');
 
 			let globalDiscountPer = parseFloat($('#discount_per').val()) || 0;
 			let globalDiscountAmt = parseFloat($('#discount_amt').val()) || 0;
 
-			if (isGlobalPerEditing) {
+			if (lastDiscountEdited === 'per') {
+
 				globalDiscountAmt = (rowSubtotal * globalDiscountPer) / 100;
 				$('#discount_amt').val(globalDiscountAmt.toFixed(2));
-			} else if (isGlobalAmtEditing) {
-				globalDiscountPer = (rowSubtotal === 0) ? 0 : (globalDiscountAmt / rowSubtotal) * 100;
-				$('#discount_per').val(globalDiscountPer.toFixed(2));
+
 			} else {
-				// neither focused: keep consistency (compute amount from percent)
-				globalDiscountAmt = (rowSubtotal * globalDiscountPer) / 100;
-				$('#discount_amt').val(globalDiscountAmt.toFixed(2));
+
+				globalDiscountPer = (rowSubtotal === 0) ?
+					0 :
+					(globalDiscountAmt / rowSubtotal) * 100;
+
+				$('#discount_per').val(globalDiscountPer.toFixed(2));
 			}
+			// const isGlobalPerEditing = $('#discount_per').is(':focus');
+			// const isGlobalAmtEditing = $('#discount_amt').is(':focus');
+
+			// let globalDiscountPer = parseFloat($('#discount_per').val()) || 0;
+			// let globalDiscountAmt = parseFloat($('#discount_amt').val()) || 0;
+
+			// if (isGlobalPerEditing) {
+			// 	globalDiscountAmt = (rowSubtotal * globalDiscountPer) / 100;
+			// 	$('#discount_amt').val(globalDiscountAmt.toFixed(2));
+			// } else if (isGlobalAmtEditing) {
+			// 	globalDiscountPer = (rowSubtotal === 0) ? 0 : (globalDiscountAmt / rowSubtotal) * 100;
+			// 	$('#discount_per').val(globalDiscountPer.toFixed(2));
+			// } else {
+			// 	// neither focused: keep consistency (compute amount from percent)
+			// 	globalDiscountAmt = (rowSubtotal * globalDiscountPer) / 100;
+			// 	$('#discount_amt').val(globalDiscountAmt.toFixed(2));
+			// }
 
 			const afterDiscount = Math.max(0, rowSubtotal - (globalDiscountAmt || 0));
 
@@ -698,7 +764,15 @@
 			const vatAmt = (afterDiscount * vatPer) / 100;
 			$('#vat_amount').val(vatAmt.toFixed(2));
 
-			const grandTotal = afterDiscount + vatAmt;
+			// const grandTotal = afterDiscount + vatAmt;
+			// $('#grand_total').val(grandTotal.toFixed(2));
+
+			// Round Off
+			const roundOff = parseFloat($('#roundoff').val()) || 0;
+
+			// Grand Total
+			const grandTotal = afterDiscount + vatAmt + roundOff;
+
 			$('#grand_total').val(grandTotal.toFixed(2));
 
 			// ====================accounts entry=====================
@@ -734,13 +808,24 @@
 			// Bind events on relevant inputs (use event delegation to support dynamic rows)
 			$(document).on('input change', '#datatable-responsive tbody .rec_quantity, #datatable-responsive tbody .qty, #datatable-responsive tbody .unit_price, #datatable-responsive tbody .dis_per, #datatable-responsive tbody .dis_amt', function() {
 				// calculate only that row first (for responsiveness), then totals
+
 				const $row = $(this).closest('tr');
 				calculateRow($row);
 				calculateAll();
 			});
 
 			// Global discount and VAT handlers
-			$(document).on('input change', '#discount_per, #discount_amt, #vat_per', function() {
+			$(document).on('input change', '#vat_per ,#roundoff', function() {
+				calculateAll();
+			});
+
+			$('#discount_per').on('input', function() {
+				lastDiscountEdited = 'per';
+				calculateAll();
+			});
+
+			$('#discount_amt').on('input', function() {
+				lastDiscountEdited = 'amt';
 				calculateAll();
 			});
 
@@ -856,4 +941,31 @@
 		}
 
 	});
+
+	function allowOnlyNumbersDecimal(input) {
+		// alert("Cvdfgdf");
+		// Remove everything except numbers and decimal point
+		input.value = input.value.replace(/[^0-9.]/g, '');
+
+		// Prevent multiple decimal points
+		let parts = input.value.split('.');
+		if (parts.length > 2) {
+			input.value = parts[0] + '.' + parts.slice(1).join('');
+		}
+	}
+
+	function allowOnlyNumbersDecimalNegative(input) {
+
+		// Remove everything except numbers, decimal point, and minus
+		input.value = input.value.replace(/[^0-9.-]/g, '');
+
+		// Allow only one minus sign at beginning
+		input.value = input.value.replace(/(?!^)-/g, '');
+
+		// Prevent multiple decimal points
+		let parts = input.value.split('.');
+		if (parts.length > 2) {
+			input.value = parts[0] + '.' + parts.slice(1).join('');
+		}
+	}
 </script>

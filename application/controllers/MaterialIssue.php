@@ -125,6 +125,8 @@ class MaterialIssue extends CI_Controller
 		/* ===============================
       	 3️⃣ PHASE 1: VALIDATION ONLY
     		================================ */
+		$low_stock_parts = [];
+
 		foreach ($issue_items as $item) {
 
 			$part_id = $item['part_id'];
@@ -147,13 +149,61 @@ class MaterialIssue extends CI_Controller
 				->get_available_stock($part_id);
 
 			if ($qty > $available_stock) {
-				$this->session->set_flashdata(
-					'error',
-					'Insufficient stock available for one or more parts'
-				);
-				redirect('MaterialIssue/create/' . $jobcard_id);
+
+				// get part name
+				$part = $this->db
+					->select('part_name')
+					->from('spare_parts')
+					->where('part_id', $part_id)
+					->get()
+					->row();
+
+				if ($part) {
+					$low_stock_parts[] = $part->part_name;
+				}
 			}
 		}
+
+		if (!empty($low_stock_parts)) {
+
+			$parts_list = implode(', ', $low_stock_parts);
+
+			$this->session->set_flashdata(
+				'error',
+				'Insufficient stock available for: ' . $parts_list
+			);
+
+			redirect('MaterialIssue/create/' . $jobcard_id);
+		}
+		// foreach ($issue_items as $item) {
+
+		// 	$part_id = $item['part_id'];
+		// 	$qty     = $item['qty'];
+
+		// 	// Planned qty check
+		// 	$remaining_qty = $this->MaterialIssue_model
+		// 		->get_remaining_jobcard_part_qty($jobcard_id, $part_id);
+
+		// 	if ($qty > $remaining_qty) {
+		// 		$this->session->set_flashdata(
+		// 			'error',
+		// 			'Issued quantity exceeds planned quantity'
+		// 		);
+		// 		redirect('MaterialIssue/create/' . $jobcard_id);
+		// 	}
+
+		// 	// Stock availability check
+		// 	$available_stock = $this->Inventory_status_model
+		// 		->get_available_stock($part_id);
+
+		// 	if ($qty > $available_stock) {
+		// 		$this->session->set_flashdata(
+		// 			'error',
+		// 			'Insufficient stock available for one or more parts'
+		// 		);
+		// 		redirect('MaterialIssue/create/' . $jobcard_id);
+		// 	}
+		// }
 
 		/* ===============================
       	 4️⃣ PHASE 2: SAVE (TRANSACTION)

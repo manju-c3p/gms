@@ -13,7 +13,7 @@
 
 	</div>
 
-	<form action="<?php echo base_url() . 'index.php/'; ?>accounts/update_transaction_details"
+	<form action="<?php echo base_url() . 'index.php/'; ?>Accounts/update_transaction_details"
 		id="receipt"
 		method="post"
 		name="receipt"
@@ -64,6 +64,7 @@
 					<?php foreach ($res as $row) { ?>
 						<tr>
 							<td class="border px-3 py-2">
+								
 								<?php if ($row->drcr_type == 'Dr') echo $row->account_name; ?>
 							</td>
 
@@ -104,3 +105,17 @@
 
 	</form>
 </div>
+<script>
+$(document).ready(function () {
+
+	$(document).on('input', 'input[name="amount[]"]', function () {
+
+		let value = $(this).val();
+
+		// Update all amount fields with same value
+		$('input[name="amount[]"]').val(value);
+
+	});
+
+});
+</script>

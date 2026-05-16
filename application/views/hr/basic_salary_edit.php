@@ -59,19 +59,19 @@
 				<div class="col-span-12 md:col-span-3">
 
 					<?php foreach ($user_records as $s) {
-						if ($row->emp_id == $s->id) { ?>
+						if ($row->emp_id == $s->employee_id) { ?>
 
 							<input type="text"
 								class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100"
 								id="employee_id"
 								name="employee_id"
-								value="<?php echo $s->username; ?>"
+								value="<?php echo $s->employee_name; ?>"
 								tabindex="1"
 								readonly />
 
 							<input type="hidden"
 								name="employee_id_hidden"
-								value="<?php echo $s->id; ?>" />
+								value="<?php echo $s->employee_id ; ?>" />
 
 					<?php }
 					} ?>
@@ -87,20 +87,20 @@
 
 					<div class="flex">
 
-						<input type="text"
-							class="w-full border border-gray-300 rounded-l-lg px-3 py-2 text-sm datepicker1"
-							id="effctive_date"
-							name="effctive_date"
-							value="<?php echo date('d-m-Y', strtotime($row->effective_date) ?? '') ?>"
-							tabindex="2">
+						<input type="date"
+						class="w-full border border-gray-300 rounded-l-lg px-3 py-2 text-sm datepicker1"
+						id="effctive_date"
+						name="effctive_date"
+						value="<?php echo date('Y-m-d', strtotime($row->effective_date) ?? '') ?>"
+						tabindex="2">
+
+						
 
 						<input type="hidden"
 							name="old_date"
 							value="<?php echo date('d-m-Y', strtotime($row->effective_date) ?? '') ?>" />
 
-						<span class="inline-flex items-center px-3 border border-l-0 border-gray-300 rounded-r-lg bg-gray-50">
-							📅
-						</span>
+						
 
 					</div>
 

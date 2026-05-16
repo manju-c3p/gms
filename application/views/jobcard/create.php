@@ -70,7 +70,7 @@
 						<tr class="border-b">
 							<td class="w-[13%] px-3 py-1 font-medium bg-gray-50">Date</td>
 							<td class="w-[20%] px-3 py-1">
-								<input type="date" class="w-full border rounded px-2 py-1"
+								<input type="date" name="jobcard_date" class="w-full border rounded px-2 py-1"
 									value="<?= date('Y-m-d') ?>">
 							</td>
 
@@ -420,7 +420,7 @@
 								</td>
 
 								<td class="border px-3 py-2">
-									<input name="part_disamt[]" value="<?= $p->disamount ?? '' ?>"
+									<input name="part_disamt[]" value="<?= $p->dis_amount ?? '' ?>"
 										class="w-full border rounded px-2 py-1 text-center" readonly>
 								</td>
 

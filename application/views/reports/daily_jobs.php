@@ -30,10 +30,11 @@
         $completed = 0;
         $pending = 0;
         $inprogress = 0;
-
+		$Scheduled = 0;
         foreach ($jobs as $j) {
-            if ($j->status == 'Completed') $completed++;
+            if ($j->status == 'Finished') $completed++;
             elseif ($j->status == 'In Progress') $inprogress++;
+			elseif ($j->status == 'Scheduled') $Scheduled++;
             else $pending++;
         }
         ?>
@@ -54,8 +55,8 @@
         </div>
 
         <div class="bg-red-50 p-4 rounded-xl">
-            <p class="text-sm text-gray-500">Pending</p>
-            <h3 class="text-2xl font-bold text-red-700"><?= $pending ?></h3>
+            <p class="text-sm text-gray-500">Scheduled</p>
+            <h3 class="text-2xl font-bold text-red-700"><?= $Scheduled ?></h3>
         </div>
 
     </div>

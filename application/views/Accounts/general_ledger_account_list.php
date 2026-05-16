@@ -19,7 +19,7 @@
                     + Add New Record
                 </a>
 
-                <a href="<?= base_url('index.php/Accounts/groups') ?>"
+                <a href="<?= base_url('index.php/Accounts/account_group_list') ?>"
                    class="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-full hover:bg-blue-200">
                     Account Groups
                 </a>

@@ -32,10 +32,13 @@ class Supplier_model extends CI_Model
 
 	public function add_supplier_data()
 	{
+
+		$email = $this->input->post('supplier_email');
+		$email = !empty($email) ? $email : NULL;
 		$data = array(
 			'supplier_name' => $_POST['supplier_name'],
 			'supplier_code' => $_POST['supplier_code'],
-			'email_id' => $_POST['supplier_email'],
+			'email_id' => $email,
 			'contact_no' => $_POST['contact_number'],
 			'billing_address' => $_POST['supplier_address'],
 			'trn_no' => $_POST['trn_no']
@@ -69,34 +72,65 @@ class Supplier_model extends CI_Model
 				'account_name' => $this->input->post('supplier_name') . ' ' . $this->input->post('supplier_code'),
 				'group_no' => $grp_no,
 				'supplier_id' => $supplier_id,
-				'opening_bal_type' => 'Dr',
+				'opening_bal_type' => 'Cr',
 			);
 			$this->db->insert('general_ledger', $data1);
 			$ledger_id = $this->db->insert_id();
 
-			// $user_se_id = $this->session->userdata('user_id');
-			// $page_name = explode('index.php/', $_SERVER['PHP_SELF']);
-			// $ci = get_instance();
-			// $ci->load->helper('log');
-			// $log_msg = add_log_entry($user_se_id, 1, $page_name[1], 'supplier_master', 'supplier_id', $insert_id);
+
+
+			// $account_name =  $this->input->post('supplier_name') . ' - Supplier Advance (' . $this->input->post('supplier_code') . ')';
+
+			// $data = [
+			// 	'account_name'     => $account_name,
+			// 	'group_no'         => 24,
+			// 	'supplier_id'      => $supplier_id,
+			// 	'opening_balance'  => 0.00,
+			// 	'opening_bal_type' => 'Dr',
+			// 	'isdeleteable'     => 'N',
+			// 	'date'             => date('Y-m-d H:i:s')
+			// ];
+			// $this->db->insert('general_ledger', $data);
 		}
 
 		return $res;
 	}
 
 	//changed the code 
-
-	// function delete_supplier($id)
-	// {
-
-	// 	$this->db->where('supplier_id', $id);
-	// 	$this->db->delete('supplier_contact_details');
-	// 	$this->db->where('supplier_id', $id);
-	// 	$this->db->delete('supplier_master');
-
-	// 	return ($this->db->affected_rows() > 0);
-	// }
 	function delete_supplier($id)
+	{
+		// ❌ Check if used in vouchers
+		$exists = $this->db
+			->where('customer_id', $id)
+			->count_all_results('voucher_transaction');
+
+		if ($exists > 0) {
+			return ['status' => false, 'msg' => 'Supplier has transactions. Cannot delete.'];
+		}
+
+		$this->db->trans_start();
+
+		// 1️⃣ Delete contact details
+		$this->db->where('supplier_id', $id);
+		$this->db->delete('supplier_contact_details');
+
+		// 2️⃣ Delete ONLY supplier ledgers (safe filter)
+		$this->db->where('supplier_id', $id);
+		$this->db->where_in('group_no', [29, 24]); // supplier + advance
+		$this->db->delete('general_ledger');
+
+		// 3️⃣ Delete supplier
+		$this->db->where('supplier_id', $id);
+		$this->db->delete('supplier_master');
+
+		$this->db->trans_complete();
+
+		return ($this->db->trans_status())
+			? ['status' => true]
+			: ['status' => false, 'msg' => 'Delete failed'];
+	}
+
+	function delete_supplier11($id)
 	{
 		// 1️⃣ Delete supplier contact details
 		$this->db->where('supplier_id', $id);
@@ -153,10 +187,56 @@ class Supplier_model extends CI_Model
 			->get('supplier_contact_details')
 			->result();
 	}
-	public function update_supplier($id, $data)
+	public function update_supplier($supplier_id, $data)
 	{
-		$this->db->where('supplier_id', $id);
-		return $this->db->update('supplier_master', $data);
+		// 1️⃣ Update supplier master
+		$this->db->where('supplier_id', $supplier_id);
+		$this->db->update('supplier_master', $data);
+
+		// Prepare names
+		$supplier_name = $data['supplier_name'];
+		$supplier_code = $this->input->post('supplier_code');
+
+		// 2️⃣ Update Supplier Ledger (group 29)
+		$account_name = $supplier_name . ' ' . $supplier_code;
+
+		$this->db->where('supplier_id', $supplier_id);
+		$this->db->where('group_no', 29); // ✅ important filter
+		$this->db->update('general_ledger', [
+			'account_name' => $account_name
+		]);
+
+		// 3️⃣ Update Supplier Advance Ledger (group 24)
+		$advance_name = $supplier_name . ' - Supplier Advance (' . $supplier_code . ')';
+
+		$this->db->where('supplier_id', $supplier_id);
+		$this->db->where('group_no', 24); // ✅ important filter
+		$this->db->update('general_ledger', [
+			'account_name' => $advance_name
+		]);
+	}
+	public function update_supplier11($supplier_id, $data)
+	{
+		// 1️⃣ Update supplier
+		$this->db->where('supplier_id', $supplier_id);
+		$this->db->update('supplier_master', $data);
+
+		// 2️⃣ Update ledger name
+		$account_name = $data['supplier_name'] . ' ' . $this->input->post('supplier_code');
+
+		$this->db->where('supplier_id', $supplier_id);
+		$this->db->update('general_ledger', [
+			'account_name' => $account_name
+		]);
+
+		// 3️⃣ Update Supplier Advance Ledger (group 24)
+		$advance_name = $supplier_name . ' - Supplier Advance (' . $supplier_code . ')';
+
+		$this->db->where('supplier_id', $supplier_id);
+		$this->db->where('group_no', 24); // ✅ important filter
+		$this->db->update('general_ledger', [
+			'account_name' => $advance_name
+		]);
 	}
 	public function delete_contacts($supplier_id)
 	{

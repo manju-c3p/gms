@@ -22,7 +22,7 @@
 
 			<!-- PRINT -->
 			<a href="<?= base_url('index.php/Invoice/print_invoice/' . $invoice->invoice_id) ?>"
-				
+
 				class="p-3 rounded-lg bg-slate-100 hover:bg-slate-200 transition"
 				title="Print Invoice">
 				<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-700"
@@ -119,7 +119,12 @@
 								(<?= $item->item_type ?>)
 							</span>
 						</td>
-						<td class="border p-2 text-center"><?= $item->quantity ?></td>
+						<td class="border p-2 text-center">
+							<?= (floor($item->quantity) == $item->quantity)
+								? number_format($item->quantity, 0)
+								: rtrim(rtrim(number_format($item->quantity, 2), '0'), '.') ?>
+						</td>
+						<!-- <td class="border p-2 text-center"><?= $item->quantity ?></td> -->
 						<td class="border p-2 text-right">
 							<?= number_format($item->unit_price, 2) ?>
 						</td>
@@ -175,7 +180,7 @@
 			</div>
 			<div class="flex justify-between">
 				<span>Discount</span>
-				<span><?= number_format($invoice->discount_amount, 2) ?></span>
+				<span><?= number_format($invoice->discount_amount ?? 0, 2) ?></span>
 			</div>
 			<div class="flex justify-between font-bold text-lg border-t pt-2">
 				<span>Grand Total</span>

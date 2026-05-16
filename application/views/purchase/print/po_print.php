@@ -422,6 +422,9 @@
 									<?php
 									$sl_no = 1;
 									$total_before_vat = $po[0]->sub_total ?? 0;
+										$trans_charges = $po[0]->trans_charge ?? 0;
+									$custom_charges = $po[0]->cust_charge ?? 0;
+									$additional_charges = $po[0]->add_charge ?? 0;
 									$discount = $po[0]->discount ?? 0;
 									$vat_amount = $po[0]->vat_amt ?? 0;
 									$grand_total = $po[0]->grand_total;
@@ -432,7 +435,7 @@
 										<tr>
 											<td align="center"><?= $sl_no++; ?></td>
 											<td><?= htmlspecialchars($detail->part_name); ?></td>
-											<td><?= htmlspecialchars($detail->part_name); ?></td>
+											<td><?= htmlspecialchars($detail->desc); ?></td>
 											<td align="center"><?= $detail->quantity; ?></td>
 											<td align="center"><?= $detail->unit_name; ?></td>
 											<td align="right"><?= number_format($detail->price, 2); ?></td>
@@ -447,6 +450,23 @@
 										<td colspan="7" class="text-right">Total Before VAT</td>
 										<td class="text-right"><?= number_format($total_before_vat, 2) ?></td>
 									</tr>
+										<tr class="total-row">
+										<td colspan="7" class="text-right">Transportation Charges</td>
+										<td class="text-right"><?= number_format($trans_charges, 2) ?></td>
+									</tr>
+									<tr class="total-row">
+										<td colspan="7" class="text-right">Customs Charges</td>
+										<td class="text-right"><?= number_format($custom_charges, 2) ?></td>
+									</tr>
+									<tr class="total-row">
+										<td colspan="7" class="text-right">Additional Charges</td>
+										<td class="text-right"><?= number_format($additional_charges, 2) ?></td>
+									</tr>
+										<tr class="total-row">
+										<td colspan="7" class="text-right">Additional Discount</td>
+										<td class="text-right"><?= number_format($discount, 2) ?></td>
+									</tr>
+
 
 									<tr class="total-row">
 										<td colspan="7" class="text-right">VAT</td>

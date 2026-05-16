@@ -8,35 +8,72 @@
     }
 </style>
 
-<div class="card-body">
-    <form id="main" method="post" action="<?php echo base_url() . 'index.php/'; ?>Hr/add_allowances_data" id="addform" autocomplete="off" enctype="multipart/form-data">
+<div class="bg-white rounded-xl shadow p-6">
+	 <div class="flex justify-between items-center mb-4">
+       <h2 class="text-xl font-semibold text-gray-700"> Allowances & Deductions Master </h2> <!-- List Button --> <a href="<?= base_url('index.php/Hr/view_allowances_list') ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow font-medium"> List </a>
+    </div>
 
-        <div class="form-group row">
-            <label class="col-xs-12 col-sm-3 col-md-3 col-lg-3 col-form-label">Allowances Type<span style="color: red;"> * </span></label>
-            <div class="col-xs-12 col-sm-9 col-md-5 col-lg-5">
-                <select tabindex="1" class="form-select form-control-sm" id="allowance_type" name="allowance_type" required>
+    <form id="main" method="post"
+        action="<?php echo base_url() . 'index.php/'; ?>Hr/add_allowances_data"
+        autocomplete="off" enctype="multipart/form-data">
+
+        <!-- Allowance Type -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center mb-5">
+            <label class="text-sm font-medium text-gray-700">
+                Allowances Type <span class="text-red-500">*</span>
+            </label>
+
+            <div class="md:col-span-2">
+                <select tabindex="1"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    id="allowance_type" name="allowance_type" required>
+
                     <option value="">Select</option>
-                    <option value="A">Allowances </option>
-                    <option value="D">Deductions </option>
+                    <option value="A">Allowances</option>
+                    <option value="D">Deductions</option>
+
                 </select>
             </div>
         </div>
-        <div class="form-group row">
-            <label class="col-xs-12 col-sm-3 col-md-3 col-lg-3 col-form-label">Allowance Name<span style="color: red;">*</span></label>
-            <div class="col-sm-5">
-                <input type="text" class="form-control form-control-sm" id="allowance_name" name="allowance_name" onblur="check_dept_exist();"  placeholder="Enter Allowance Name" tabindex="2" required>
-	      <label id="dept_exits" style="color: red;"></label>
+
+        <!-- Allowance Name -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center mb-5">
+            <label class="text-sm font-medium text-gray-700">
+                Allowance Name <span class="text-red-500">*</span>
+            </label>
+
+            <div class="md:col-span-2">
+                <input type="text"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    id="allowance_name"
+                    name="allowance_name"
+                    onblur="check_dept_exist();"
+                    placeholder="Enter Allowance Name"
+                    tabindex="2"
+                    required>
+
+                <label id="dept_exits" class="text-red-500 text-sm mt-1 block"></label>
             </div>
         </div>
-        <div class="form-group row">
-            <label class="col-sm-2"></label>
-            <div class="col-sm-10">
-                <button type="submit" id='add' tabindex="3"class="btn btn-primary m-b-0">submit</button>
+
+        <!-- Submit Button -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div></div>
+
+            <div class="md:col-span-2">
+                <button type="submit"
+                    id="add"
+                    tabindex="3"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-lg shadow">
+                    Submit
+                </button>
             </div>
         </div>
+
     </form>
+
 </div>
-</div>
+
 
 
 <script>

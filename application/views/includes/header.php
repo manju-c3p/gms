@@ -31,10 +31,9 @@
 	</script>
 </head>
 
-<body class="flex h-screen" >
-
-	<!-- Sidebar -->
+<body class="flex min-h-screen" >
 
 
-
-	<!-- Topbar -->
+    <!-- Sidebar here -->
+<div class="w-full flex-1 flex flex-col ">
+    <!-- <div class="w-full flex-1 flex flex-col"> -->

@@ -37,7 +37,7 @@
 					<th class="border px-3 py-2">Vehicle</th>
 					<th class="border px-3 py-2 text-right">Amount</th>
 					<th class="border px-3 py-2 text-center">Status</th>
-					<th class="border px-3 py-2 text-center">Quotation</th>
+				
 					<th class="border px-3 py-2 text-center">Actions</th>
 				</tr>
 			</thead>
@@ -77,7 +77,7 @@
 
 							<!-- Amount -->
 							<td class="border px-3 py-2 text-right">
-								AED <?= number_format($e->grand_total, 2) ?>
+								AED <?= number_format($e->subtotal, 2) ?>
 							</td>
 
 							<!-- Status -->
@@ -101,19 +101,6 @@
 								<?php endif; ?>
 							</td>
 
-							<!-- Job Card -->
-							<td class="border px-3 py-2 text-center">
-								<?php if ($e->status == 'Approved'): ?>
-									<a href="<?= base_url('index.php/Quotation/create_from_estimation/' . $e->estimation_id); ?>"
-										class="px-3 py-1 text-xs bg-indigo-600 text-white rounded">
-										Create
-									</a>
-								<?php else: ?>
-									<span class="px-3 py-1 text-xs bg-gray-200 text-gray-500 rounded">
-										Not Allowed
-									</span>
-								<?php endif; ?>
-							</td>
 
 							<!-- Actions -->
 							<td class="border px-3 py-2 text-center space-x-1">
@@ -361,7 +348,7 @@
 			// order: [[1, 'desc']],
 			columnDefs: [{
 				orderable: false,
-				targets: [0, 6, 7]
+				targets: [0, 6]
 			}]
 		});
 

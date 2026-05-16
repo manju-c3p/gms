@@ -40,7 +40,7 @@
 				<div class="md:col-span-4">
 					<input type="text" name="company_pincode" id="company_pincode"
 						class="w-full border rounded px-3 py-2"
-						value="<?php echo $row->company_pincode; ?>" >
+						value="<?php echo $row->company_pincode; ?>">
 				</div>
 
 				<label class="md:col-span-2 font-medium">Country <span class="text-red-500">*</span></label>
@@ -84,6 +84,34 @@
 						value="<?php echo $row->company_website; ?>">
 				</div>
 			</div>
+			<!-- corporate tax -->
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-6 items-center">
+				<label class="md:col-span-2 font-medium">Corporate Tax Percentage</label>
+				<div class="md:col-span-2">
+					<input type="text" name="corporate_tax" id="corporate_tax"
+						class="w-full border rounded px-3 py-2"
+						value="<?php echo $row->corporate_tax_per; ?>">
+				</div>
+
+				<label class="md:col-span-2 font-medium">Threshold Value</label>
+				<div class="md:col-span-2">
+					<input type="text" name="threshold" id="threshold"
+						class="w-full border rounded px-3 py-2"
+						value="<?php echo $row->threshold_value; ?>">
+				</div>
+
+				<label class="md:col-span-1 font-medium">Excemption</label>
+				<div class="md:col-span-1">
+					<input type="hidden" name="excemption" value="0">
+
+					<input type="checkbox"
+						name="excemption"
+						id="excemption"
+						value="1"
+						class="w-full border rounded px-3 py-2"
+						<?php echo (isset($row->excemptions) && $row->excemptions == 1) ? 'checked' : ''; ?>>
+				</div>
+			</div>
 
 			<!-- BANK TABLE (structure untouched) -->
 			<div class="overflow-x-auto mb-6">
@@ -109,7 +137,7 @@
 								<td class="border px-2 py-1">
 									<input type="text" name="bname_old[]" id="bname" tabindex="2"
 										class="w-full border rounded px-2 py-1 text-sm"
-										value="<?php echo $r->bank_name; ?>" required>
+										value="<?php echo $r->bank_name; ?>" >
 								</td>
 								<td class="border px-2 py-1">
 									<input type="text" name="bacc_old[]" id="bacc" tabindex="3"
@@ -196,7 +224,7 @@
 								<td class="border px-2 py-1">
 									<input type="text" name="image_name_old[]"
 										class="w-full border rounded px-2 py-1 text-sm"
-										value="<?php echo $r->stamp_name; ?>" required>
+										value="<?php echo $r->stamp_name; ?>" >
 								</td>
 								<td class="border px-2 py-1 text-center">
 									<?php
@@ -218,7 +246,7 @@
 						<tr id="new_addr0" class="text-[13px]">
 							<td class="border px-2 py-1">
 								<input type="text" name="image_name[]" id="image_name"
-									class="w-full border rounded px-2 py-1 text-sm" required>
+									class="w-full border rounded px-2 py-1 text-sm" >
 							</td>
 							<td class="border px-2 py-1">
 								<input type="file" name="stamp_image[]"
@@ -256,7 +284,7 @@
 	$(document).ready(function() {
 		var i = 1;
 		$("#add_row").click(function() {
-			$('#addr' + i).html("<td><input type='text' name='bname[]' id='bname' tabindex='2' class='form-control' placeholder=''  required></td><td><input type='text' name='bacc[]' id='bacc' tabindex='3' class='form-control' placeholder='' ></td><td><input type='text' name='bbranch[]' id='bbranch' tabindex='3' class='form-control' placeholder='' ></td><td><input type='text' name='biban[]' id='biban' tabindex='3' class='form-control' placeholder='' ></td><td><input type='text' name='bswift[]' id='bswift' tabindex='3' class='form-control' placeholder='' ></td><td><a onclick='remove_row(" + i + ");' id='delete_row' title='Delete' class='btn btn-xs bg-orange remove1'><span class='fa fa-trash'></span></a></td>");
+			$('#addr' + i).html("<td><input type='text' name='bname[]' id='bname' tabindex='2' class='form-control' placeholder=''  ></td><td><input type='text' name='bacc[]' id='bacc' tabindex='3' class='form-control' placeholder='' ></td><td><input type='text' name='bbranch[]' id='bbranch' tabindex='3' class='form-control' placeholder='' ></td><td><input type='text' name='biban[]' id='biban' tabindex='3' class='form-control' placeholder='' ></td><td><input type='text' name='bswift[]' id='bswift' tabindex='3' class='form-control' placeholder='' ></td><td><a onclick='remove_row(" + i + ");' id='delete_row' title='Delete' class='btn btn-xs bg-orange remove1'><span class='fa fa-trash'></span></a></td>");
 			$('#mytbbody tr:last').after('<tr id="addr' + (i + 1) + '"></tr>');
 			i++;
 		});
@@ -269,7 +297,7 @@
 
 		var j = 1;
 		$("#add_new_row").click(function() {
-			$('#new_addr' + j).html("<td><input type='text' name='image_name[]' id='image_name' class='form-control' required></td><td><input type='file' name='stamp_image[]' id='stamp_image' class='form-control' ></td><td><a onclick='remove_stamp_row(" + j + ");' id='delete_row1' title='Delete' class='btn btn-xs bg-orange remove1'><span class='fa fa-trash'></span></a></td>");
+			$('#new_addr' + j).html("<td><input type='text' name='image_name[]' id='image_name' class='form-control' ></td><td><input type='file' name='stamp_image[]' id='stamp_image' class='form-control' ></td><td><a onclick='remove_stamp_row(" + j + ");' id='delete_row1' title='Delete' class='btn btn-xs bg-orange remove1'><span class='fa fa-trash'></span></a></td>");
 			$('#mystamp tr:last').after('<tr id="new_addr' + (j + 1) + '"></tr>');
 			j++;
 		});

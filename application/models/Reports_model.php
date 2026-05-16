@@ -128,6 +128,7 @@ public function get_inventory_usage_report($from, $to)
         sp.part_name,
         sp.part_code,
         jc.jobcard_id,
+		jc.jobcard_no,
         c.name AS customer_name,
         v.registration_no
     ');
@@ -161,6 +162,7 @@ public function get_customer_visit_history($from, $to, $customer_id = null)
     $this->db->join('vehicles v', 'v.vehicle_id = jc.vehicle_id');
     $this->db->where('DATE(jc.jobcard_date) >=', $from);
     $this->db->where('DATE(jc.jobcard_date) <=', $to);
+	$this->db->where('status !=', 'Draft');
 
     if (!empty($customer_id)) {
         $this->db->where('c.customer_id', $customer_id);

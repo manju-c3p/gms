@@ -42,7 +42,7 @@ $this->load->helper('myopeningbalance');
 		#printable {
 			width: 100%;
 			padding: 10px;
-			
+
 		}
 
 
@@ -198,7 +198,7 @@ $this->load->helper('myopeningbalance');
 		<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
 
 			<!-- Logo -->
-			<img src="<?= base_url('public/images/logocooling.png'); ?>" width="30%" style="height:70px;">
+			<img src="<?= base_url('public/images/logocooling.png'); ?>" width="20%">
 
 			<!-- Company Details -->
 			<div style="text-align:right; font-size:13px; line-height:1.5;">
@@ -269,17 +269,21 @@ $this->load->helper('myopeningbalance');
 							echo "<td>" . date('d-M-Y', strtotime($row->voucher_date)) . "</td>"; ?>
 							<td>
 								<?php
+								$invoice_date = (!empty($row->invoice_date) && $row->invoice_date != '0000-00-00')
+									? date('d-M-Y', strtotime($row->invoice_date))
+									: '';
+
 								if ($row->voucher_type == 'S') {
 									echo 'Ref No: ' . $row->ref_no . '<br>';
-									echo 'Invoice Date: ' . date('d-M-Y', strtotime($row->invoice_date)) . '<br>';
+									echo 'Invoice Date: ' . $invoice_date . '<br>';
 									echo 'Client PO: ' . $row->po_code;
 								} elseif ($row->voucher_type == 'G') {
 									echo 'Invoice No: ' . $row->ref_no . '<br>';
-									echo 'Invoice Date: ' . date('d-M-Y', strtotime($row->invoice_date)) . '<br>';
+									echo 'Invoice Date: ' . $invoice_date . '<br>';
 									echo 'Ref No: ' . $row->po_code;
 								} elseif ($row->voucher_type == 'P') {
 									echo 'Invoice No: ' . $row->ref_no . '<br>';
-									echo 'Invoice Date: ' . (!empty($row->invoice_date) ? date('d-M-Y', strtotime($row->invoice_date)) : '') . '<br>';
+									echo 'Invoice Date: ' . $invoice_date . '<br>';
 									echo 'Ref No: ' . $row->po_code . '<br>' . $row->narration;
 								} else {
 									echo $row->narration;
@@ -313,6 +317,15 @@ $this->load->helper('myopeningbalance');
 									break;
 								case 'N':
 									echo 'Contra Entry';
+									break;
+								case 'PR':
+									echo 'Purchase Return';
+									break;
+								case 'PURCHASE_RETURN':
+									echo 'Purchase Return';
+									break;
+								case 'AD':
+									echo 'Supplier Advance';
 									break;
 							}
 							echo "</td>";

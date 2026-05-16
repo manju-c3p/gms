@@ -14,6 +14,8 @@ class Purchase extends CI_Controller
 		$this->load->model('SpareParts_model');
 		$this->load->model('Stock_model');
 		$this->load->model('Supplier_model');
+		$this->load->model('Accounts_model');
+		$this->load->model('Jobcard_model');
 	}
 	/////////////////////Direct RFQ Start  ////////////////////////
 	function add_direct_rfq()
@@ -21,7 +23,7 @@ class Purchase extends CI_Controller
 		$data['title'] = 'Request For Quotation(RFQ)-Direct';
 
 
-		$prifix = 'COOL/RFQ/';
+		$prifix = 'RFQ/';
 		$num = $this->Setup_model->get_next_code($prifix, 'rfq_code', 'purchase_rfq', 13) + 1;
 		$digit = sprintf("%1$05d", $num);
 		$data['Code'] = $prifix . date('y') . '/' . $digit;
@@ -114,7 +116,7 @@ class Purchase extends CI_Controller
 	{
 		$data['title'] = 'Quote From Supplier';
 
-		$prifix = 'COOL/SQT/';
+		$prifix = 'SQT/';
 		$this->load->model('Setup_model');
 		$num = $this->Setup_model->get_next_code($prifix, 'quotation_code', 'purchase_quotation_master', 13) + 1;
 		$digit = sprintf("%1$04d", $num);
@@ -277,7 +279,7 @@ class Purchase extends CI_Controller
 	function add_purchase_order()
 	{
 		$data['title'] = 'Purchase Order';
-		$prifix = 'COOL/POD/';
+		$prifix = 'POD/';
 		$this->load->model('Setup_model');
 		$num = $this->Setup_model->get_next_code($prifix, 'po_code', 'purchase_order_master', 13) + 1;
 		$digit = sprintf("%1$04d", $num);
@@ -322,9 +324,13 @@ class Purchase extends CI_Controller
 		$po_id = $this->uri->segment('3');
 		$data['po_tr'] = $this->Purchase_Model->get_po_tr_by_id($po_id);
 		$data['po'] = $this->Purchase_Model->get_po_master_by_id($po_id);
+		$ptype = $data['po_tr'][0]->line_type;
 
-		$this->load->view('purchase/print/po_print.php', $data);
-		// }
+		if ($ptype == "SERVICE") {
+			$this->load->view('purchase/print/po_print_service.php', $data);
+		} else {
+			$this->load->view('purchase/print/po_print.php', $data);
+		}
 	}
 	function approve_po()
 	{
@@ -336,13 +342,156 @@ class Purchase extends CI_Controller
     </script>";
 		//redirect('Purchase/purchase_order_list');
 	}
+
+	public function create_srn()
+	{
+		$po_id = $this->uri->segment(3);
+
+		if (empty($po_id)) {
+			show_error('Invalid PO ID');
+		}
+		$data['title'] = 'Purchase Order List';
+
+		// ✅ Get PO master
+		$data['po'] = $this->Purchase_Model->get_po_master($po_id);
+
+		// ✅ Get only SERVICE PO details
+		$data['po_details'] = $this->Purchase_Model->get_service_po_details($po_id);
+
+		if (empty($data['po'])) {
+			show_error('PO not found');
+		}
+
+		// Optional safety check
+		if ($data['po']->purchase_type != 'SERVICE') {
+			show_error('This is not a Service PO');
+		}
+
+		// ✅ Load SRN creation page
+
+
+		$data['main_content'] = 'purchase/create_srn.php';
+
+
+
+		$this->load->view('includes/template.php', $data);
+	}
+
+	public function save_srn()
+	{
+		$po_id     = $this->input->post('po_id');
+		$trans_ids = $this->input->post('trans_id');
+		$amounts   = $this->input->post('amount');
+		$remarks   = $this->input->post('narration');
+		$srndate   = $this->input->post('srndate');
+		$disamt   = $this->input->post('disamt');
+		$vatamt   = $this->input->post('vatamt');
+		$subtot   = $this->input->post('subtot');
+		$gtot   = $this->input->post('gtotal');
+
+		if (empty($po_id) || empty($trans_ids)) {
+			show_error('Invalid SRN data');
+		}
+
+		// ✅ Get PO details
+		$po = $this->Purchase_Model->get_po_master($po_id);
+
+		if (!$po) {
+			show_error('PO not found');
+		}
+
+		// ✅ Generate SRN No (simple)
+		// Get current year (last 2 digits)
+		$year = date('y');
+
+		// Get last number
+		$this->db->select("MAX(CAST(SUBSTRING_INDEX(srn_no, '/', -1) AS UNSIGNED)) as max_no");
+		$this->db->like('srn_no', 'SRN/' . $year . '/', 'after');
+
+		$query = $this->db->get('service_receipt_master')->row();
+
+		$next_no = ($query->max_no ?? 0) + 1;
+
+		// Pad with zeros (5 digits)
+		$srn_number = str_pad($next_no, 5, '0', STR_PAD_LEFT);
+
+		// Final SRN No
+		$srn_no = 'SRN/' . $year . '/' . $srn_number;
+
+		// ✅ Calculate total
+		$total_amount = 0;
+		foreach ($amounts as $amt) {
+			$total_amount += (float)$amt;
+		}
+
+		// =========================
+		// INSERT MASTER
+		// =========================
+		$master_data = [
+			'srn_no'      => $srn_no,
+			'srn_date'    => $srndate,
+			'po_id'       => $po_id,
+			'supplier_id' => $po->supplier_id,
+			'total_amount' => $gtot,
+			'status'      => 'completed',
+			'remarks'     => $remarks,
+			'created_by'  => $this->session->userdata('user_id'),
+			'vatamt' => $vatamt,
+			'subtotal' => $subtot,
+			'disamt' => $disamt,
+		];
+
+		$this->db->insert('service_receipt_master', $master_data);
+		$srn_id = $this->db->insert_id();
+
+		// =========================
+		// INSERT DETAILS
+		// =========================
+		foreach ($trans_ids as $key => $trans_id) {
+
+			$po_amount = (float)$amounts[$key];
+
+			$detail_data = [
+				'srn_id'             => $srn_id,
+				'po_detail_id'       => $trans_id,
+				'service_description' => '', // optional
+				'po_amount'          => $po_amount,
+				'received_amount'    => $po_amount,
+				'pending_amount'     => 0
+			];
+
+			$this->db->insert('service_receipt_details', $detail_data);
+		}
+
+		// =========================
+		// UPDATE PO STATUS
+		// =========================
+		$this->db->where('po_id', $po_id);
+		$this->db->update('purchase_order_master', [
+			'srn_status' => 1,
+			'po_status'  => 1
+		]);
+
+		// =========================
+		// 🔥 ACCOUNTING ENTRY (IMPORTANT)
+		// =========================
+
+		// 👉 Dr Expense / Cr Supplier
+		$this->load->model('Accounts_model');
+		$this->Accounts_model->post_service_purchase_vouche_srn($srn_id);
+
+		// =========================
+		// DONE
+		// =========================
+		echo "<script>
+        alert('SRN Created Successfully');
+			window.location.href='" . site_url('Purchase/purchase_order_list') . "';
+		</script>";
+	}
 	function edit_po()
 	{
-		$user = $this->session->userdata('user_id');
-		// if (!has_access($user, 'Purchase/purchase_order_list', 'E')) {
-		// 	$data['title'] = 'Access Denied';
-		// 	$data['main_content'] = 'errors/access_control.php';
-		// } else {
+		// $user = $this->session->userdata('user_id');
+
 		$this->load->model('Setup_model');
 		$po_id = $this->uri->segment('3');
 		$data['view_only'] = $this->uri->segment('4');
@@ -358,15 +507,17 @@ class Purchase extends CI_Controller
 		$data['po_doc']   = $this->Purchase_Model->get_quote_doc($po_id, "PO File");
 		$data['supplier_records'] = $this->Supplier_model->get_active_supplier_list();
 		$data['active_units'] = $this->Setup_model->get_active_unit_list();
-		// echo '<pre>';print_r($data);exit;
-		if ($data['records1'][0]->qtn_id == 0) {
-			$data['main_content'] = 'purchase/po_direct_edit.php';
-		} else {
-			$data['main_content'] = 'purchase/po_edit.php';
-		}
+		$data['active_items'] = $this->SpareParts_model->get_all_parts();
 
-		//  echo '<pre>';print_r($data);exit;
+		$data['jobcards'] = $this->Jobcard_model->get_all_jobcards();
+
+		// if ($data['records1'][0]->qtn_id == 0) {
+		$data['main_content'] = 'purchase/po_direct_editorg.php';
+		// } else {
+		// 	$data['main_content'] = 'purchase/po_edit.php';
 		// }
+
+
 		$this->load->view('includes/template.php', $data);
 	}
 	function update_purchase_order()
@@ -399,9 +550,9 @@ class Purchase extends CI_Controller
 	function add_grn()
 	{
 		$data['title'] = 'Good Received Note';
-		$prifix = 'COOL/GRN/';
+		$prifix = 'GRN/';
 		$this->load->model('Setup_model');
-		$num = $this->Setup_model->get_next_code($prifix, 'grn_code', 'purchase_grn_master', 13) + 1;
+		$num = $this->Setup_model->get_next_code($prifix, 'grn_code', 'purchase_grn_master', 8) + 1;
 		$digit = sprintf("%1$04d", $num);
 		$data['Code'] = $prifix . date("y") . '/' . $digit;
 		$data['warehouse_list'] = "";
@@ -426,9 +577,18 @@ class Purchase extends CI_Controller
 	}
 	function purchase_grn_list()
 	{
-		$data['title'] = 'Purchase GRN List';
+		$data['title'] = 'Purchase SRN List';
 		$data['records'] = $this->Purchase_Model->get_grn_list();
+
+
 		$data['main_content'] = 'purchase/grn_list.php';
+		$this->load->view('includes/template.php', $data);
+	}
+	function purchase_srn_list()
+	{
+		$data['title'] = 'Purchase GRN List';
+		$data['records'] = $this->Purchase_Model->get_srn_list();
+		$data['main_content'] = 'purchase/srn_list.php';
 		$this->load->view('includes/template.php', $data);
 	}
 	function print_grn()
@@ -441,6 +601,7 @@ class Purchase extends CI_Controller
 		// 	$this->load->view('includes/template', $data);
 		// } else {
 		$grn_id = $this->uri->segment('3');
+
 		$data['grn_tr'] = $this->Purchase_Model->get_grn_tr_by_id($grn_id);
 		$data['grn'] = $this->Purchase_Model->get_grn_master_by_id($grn_id);
 		// echo '<pre>';
@@ -448,6 +609,85 @@ class Purchase extends CI_Controller
 		// exit;
 		$this->load->view('purchase/print/grn_print.php', $data);
 		// }
+	}
+
+	function edit_grn()
+	{
+		$data['title'] = 'Purchase grn List';
+		$grn_id = $this->uri->segment('3');
+		$data['grn_id'] = $grn_id;
+		$data['grn_tr'] = $this->Purchase_Model->get_grn_tr_by_id($grn_id);
+		$data['grn'] = $this->Purchase_Model->get_grn_master_by_id_new($grn_id);
+
+
+		$grnnew = $this->Purchase_Model->get_grn_master_by_id_new($grn_id);
+
+		$grn_date = strtotime($grnnew->grn_date);
+		$today = strtotime(date('Y-m-d'));
+		$days_diff = ($today - $grn_date) / (60 * 60 * 24);
+
+		if ($days_diff > 15) {
+			$this->session->set_flashdata('error', 'Edit not allowed after 15 days.');
+			redirect('Purchase/purchase_grn_list');
+		}
+
+		log_message('error', 'GRN DATA: ' . print_r($data['grn'], true));
+		// log_message('error', 'grn_tr DATA: ' . print_r($data['grn_tr'], true));
+
+		$data['records'] = $this->Purchase_Model->get_approved_po_list_for_grn(); // for dropdown
+		log_message('error', 'records DATA: ' . print_r($data['records'], true));
+
+		$this->load->model('Accounts_model');
+		$data['sundry_accounts1'] = $this->Accounts_model->get_general_ledger_by_group('Purchase Accounts');
+		$data['sundry_accounts2'] = $this->Accounts_model->get_gen_ledger_creditors_records();
+		$data['sundry_accounts3'] = $this->Accounts_model->get_all_general_ledger_accounts();
+		$this->load->model('Setup_model');
+		$data['supplier_records'] = $this->Supplier_model->get_active_supplier_list();
+
+		$data['main_content'] = 'purchase/grn_edit.php';
+		$this->load->view('includes/template.php', $data);
+	}
+
+
+	public function view_grn($grn_id)
+	{
+		// $data['grn_master'] = $this->Purchase_Model->get_grn_master_by_id($grn_id);
+		// $data['grn_details'] = $this->Purchase_Model->get_grn_details_by_id($grn_id);
+		$data['grn_tr'] = $this->Purchase_Model->get_grn_tr_by_id($grn_id);
+		$data['grn'] = $this->Purchase_Model->get_grn_master_by_id_new($grn_id);
+		$data['records'] = $this->Purchase_Model->get_approved_po_list_for_grn(); // for dropdown
+		$this->load->model('Accounts_model');
+		$data['sundry_accounts1'] = $this->Accounts_model->get_general_ledger_by_group('Purchase Accounts');
+		$data['sundry_accounts2'] = $this->Accounts_model->get_gen_ledger_creditors_records();
+		$data['sundry_accounts3'] = $this->Accounts_model->get_all_general_ledger_accounts();
+		$this->load->model('Setup_model');
+		$data['supplier_records'] = $this->Supplier_model->get_active_supplier_list();
+
+		$data['main_content'] = 'purchase/grn_view.php';
+		$this->load->view('includes/template.php', $data);
+	}
+
+	function update_grn_records()
+	{
+		$data['title'] = 'GRN Order';
+		$grn_id = $this->input->post('grn_id');
+
+		$this->load->model('Stock_Model');
+		$res = $this->Stock_Model->update_grn_records($grn_id);
+
+		$this->session->set_flashdata('success', 'Data Saved Successfully..');
+		redirect('Purchase/purchase_grn_list');
+	}
+	function print_srn()
+	{
+		$user = $this->session->userdata('user_id');
+
+		$srn_id = $this->uri->segment('3');
+
+		$data['srn_tr'] = $this->Purchase_Model->get_srn_tr_by_id($srn_id);
+		$data['srn']    = $this->Purchase_Model->get_srn_master_by_id($srn_id);
+
+		$this->load->view('purchase/print/srn_print.php', $data);
 	}
 	function print_grn_barcode()
 	{
@@ -474,13 +714,16 @@ class Purchase extends CI_Controller
         window.location.href='" . site_url('Purchase/purchase_grn_list') . "';
         </script>";
 	}
+
+
+
 	function direct_po()
 	{
 		$data['title'] = 'Direct Purchase Order';
 
-		$prifix = 'COOL/POD/';
+		$prifix = 'POD/';
 		$this->load->model('Setup_model');
-		$num = $this->Setup_model->get_next_code($prifix, 'po_code', 'purchase_order_master', 13) + 1;
+		$num = $this->Setup_model->get_next_code($prifix, 'po_code', 'purchase_order_master', 8) + 1;
 		$digit = sprintf("%1$04d", $num);
 		$data['Code'] = $prifix . date("y") . '/' . $digit;
 
@@ -489,7 +732,7 @@ class Purchase extends CI_Controller
 
 		$data['active_items'] = $this->SpareParts_model->get_all_parts();
 		$data['active_units'] = $this->Setup_model->get_active_unit_list();
-
+		$data['jobcards'] = $this->Jobcard_model->get_all_jobcards();
 
 		$data['supplier_records'] = $this->Supplier_model->get_active_supplier_list();
 		$data['main_content'] = 'purchase/po_direct_add.php';
@@ -520,8 +763,8 @@ class Purchase extends CI_Controller
 		if (empty($po_id)) {
 			show_404();
 		}
-		echo $po_id;
-		exit;
+		// echo $po_id;
+		// exit;
 		$this->load->model('Purchase_Model');
 
 		// Get PO
@@ -663,16 +906,27 @@ class Purchase extends CI_Controller
 
 		$voucher_no = $return_code;
 
+		$row = $this->db
+			->select('account_id')
+			->from('general_ledger')
+			->where('supplier_id', $supplier_id)
+			->get()
+			->row();
+
+		$suppaccountid = !empty($row) ? $row->account_id : '';
+
 		/* Supplier Debit */
 		$this->db->insert('voucher_transaction', [
 			'voucher_code'   => $voucher_no,
 			'voucher_date'   => $return_date,
-			'voucher_type'   => 'PURCHASE_RETURN',
-			'account_id'     => $supplier_id,
+			'voucher_type'   => 'PR',
+			'account_id'     => $suppaccountid,
 			'amount'         => $grand_total,
-			'drcr_type'      => 'DR',
+			'drcr_type'      => 'Dr',
 			'narration'      => 'Purchase Return',
-			'transaction_no' => $return_code
+			'transaction_no' => $return_code,
+			'trans_id' => $return_id,
+			'customer_id'     => $supplier_id,
 		]);
 
 		/* Purchase Return Credit */
@@ -681,12 +935,14 @@ class Purchase extends CI_Controller
 		$this->db->insert('voucher_transaction', [
 			'voucher_code'   => $voucher_no,
 			'voucher_date'   => $return_date,
-			'voucher_type'   => 'PURCHASE_RETURN',
+			'voucher_type'   => 'PR',
 			'account_id'     => $purchase_return_account,
 			'amount'         => $sub_total,
-			'drcr_type'      => 'CR',
+			'drcr_type'      => 'Cr',
 			'narration'      => 'Purchase Return',
-			'transaction_no' => $return_code
+			'transaction_no' => $return_code,
+			'trans_id' => $return_id,
+			'customer_id'     => $supplier_id,
 		]);
 
 		/* VAT Credit */
@@ -697,12 +953,14 @@ class Purchase extends CI_Controller
 			$this->db->insert('voucher_transaction', [
 				'voucher_code'   => $voucher_no,
 				'voucher_date'   => $return_date,
-				'voucher_type'   => 'PURCHASE_RETURN',
+				'voucher_type'   => 'PR',
 				'account_id'     => $vat_account,
 				'amount'         => $vat_amount,
-				'drcr_type'      => 'CR',
+				'drcr_type'      => 'Cr',
 				'narration'      => 'VAT on Purchase Return',
-				'transaction_no' => $return_code
+				'transaction_no' => $return_code,
+				'trans_id' => $return_id,
+				'customer_id'     => $supplier_id,
 			]);
 		}
 

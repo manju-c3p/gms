@@ -35,6 +35,8 @@
 					placeholder="enter document name"
 					required
 					class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring focus:ring-blue-200">
+
+
 			</div>
 		</div>
 
@@ -61,27 +63,32 @@
 			</label>
 			<div class="col-span-12 md:col-span-4">
 				<div class="flex">
-					<input type="text"
+					<input type="date" class="w-full border border-gray-300 rounded-l-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none datepicker1"
+
 						id="exp_date"
 						name="exp_date"
-						value="<?php echo date('d-m-Y') ?>"
-						tabindex="3"
-						required
-						class="w-full border border-gray-300 rounded-l-lg px-3 py-2 text-sm focus:ring focus:ring-blue-200 datepicker1">
-
-					<span class="inline-flex items-center px-3 border border-l-0 border-gray-300 rounded-r-lg bg-gray-50">
+						value="<?php echo date('Y-m-d'); ?>"
+						required>
+					<!-- <span class="inline-flex items-center px-3 border border-l-0 border-gray-300 rounded-r-lg bg-gray-50">
 						📅
-					</span>
+					</span> -->
 				</div>
 			</div>
 		</div>
 
 		<!-- Upload Documents -->
 		<div class="grid grid-cols-12 gap-4 mb-4">
-			<label class="col-span-12 md:col-span-3 font-medium">
-				Upload ("jpeg","jpg","png","doc","pdf"):
-			</label>
-
+			
+				<div class="col-span-12 md:col-span-3 font-medium">
+					<label class="col-span-12 md:col-span-3 font-medium">
+						Upload ("jpeg","jpg","png","doc","pdf"):
+					</label>
+					<button type="button"
+						id="add_row"
+						class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+						+ Add File
+					</button>
+				</div>
 			<div class="col-span-12 md:col-span-6">
 				<div class="overflow-x-auto">
 					<table class="min-w-full border border-gray-200 rounded-lg" id="tab_logic">
@@ -93,24 +100,28 @@
 									<input class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
 										id="documents"
 										name="documents[]"
-										type="file">
+										type="file"  accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx">
 								</td>
 
 								<td class="px-3 py-2 whitespace-nowrap">
 
-									<button type="button"
+									<!-- <button type="button"
 										id="add_row"
 										title="Add"
 										class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
 										+
-									</button>
-
+									</button> -->
 									<button type="button"
+											class="remove bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+											🗑
+										</button>
+
+									<!-- <button type="button"
 										id="delete_row"
 										title="Delete"
 										class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
 										🗑
-									</button>
+									</button> -->
 
 								</td>
 							</tr>
@@ -160,35 +171,73 @@
 
 
 <script>
+	// $(document).ready(function() {
+	// 	var i = 1;
+	// 	$("#add_row").click(function() {
+
+	// 		$('#addr' + i).html(
+	// 			"<td class='px-3 py-2 text-sm'>" + (i + 1) + "</td>" +
+
+	// 			"<td class='px-3 py-2'>" +
+	// 			"<input class='w-full border border-gray-300 rounded-lg px-3 py-2 text-sm' " +
+	// 			"id='documents" + i + "' name='documents[]' type='file'>" +
+	// 			"</td>" +
+
+	// 			"<td class='px-3 py-2'></td>"
+	// 		);
+
+	// 		$('#tab_logic').append('<tr id="addr' + (i + 1) + '" class="border-b"></tr>');
+
+	// 		i++;
+
+	// 	});
+
+	// 	$("#delete_row").click(function() {
+	// 		if (i > 1) {
+	// 			$("#addr" + (i - 1)).html('');
+	// 			i--;
+	// 		}
+	// 	});
+
+	// });
+
 	$(document).ready(function() {
-		var i = 1;
-		$("#add_row").click(function() {
 
-			$('#addr' + i).html(
-				"<td class='px-3 py-2 text-sm'>" + (i + 1) + "</td>" +
+    var i = 1;
 
-				"<td class='px-3 py-2'>" +
-				"<input class='w-full border border-gray-300 rounded-lg px-3 py-2 text-sm' " +
-				"id='documents" + i + "' name='documents[]' type='file'>" +
-				"</td>" +
+    $("#add_row").click(function() {
 
-				"<td class='px-3 py-2'></td>"
-			);
+        var row = `
+        <tr id="addr${i}" class="border-b">
+            <td class="px-3 py-2 text-sm">${i + 1}</td>
 
-			$('#tab_logic').append('<tr id="addr' + (i + 1) + '" class="border-b"></tr>');
+            <td class="px-3 py-2">
+                <input class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                    name="documents[]"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx">
+            </td>
 
-			i++;
+            <td class="px-3 py-2 whitespace-nowrap">
+                <button type="button"
+                    class="remove bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+                    🗑
+                </button>
+            </td>
+        </tr>
+        `;
 
-		});
+        $("#tab_logic tbody").append(row);
 
-		$("#delete_row").click(function() {
-			if (i > 1) {
-				$("#addr" + (i - 1)).html('');
-				i--;
-			}
-		});
+        i++;
+    });
 
-	});
+    // ✅ Delete specific row
+    $("#tab_logic").on('click', '.remove', function() {
+        $(this).closest('tr').remove();
+    });
+
+});
 
 	$("#tab_logic").on('click', '.remove', function() {
 		$(this).closest('tr').remove();

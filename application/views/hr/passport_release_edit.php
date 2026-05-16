@@ -29,19 +29,19 @@
 				<div class="col-span-12 md:col-span-3">
 
 					<?php foreach ($records as $s) {
-						if ($row->emp_id == $s->id) { ?>
+						if ($row->emp_id == $s->employee_id) { ?>
 
 							<input type="text"
 								class="w-full border border-gray-300 rounded px-2 py-1 text-sm"
 								id="employee_id"
 								name="employee_id"
-								value="<?php echo $s->username; ?>"
+								value="<?php echo $s->employee_name; ?>"
 								tabindex="1"
 								readonly />
 
 							<input type="hidden"
 								name="employee_id_hidden"
-								value="<?php echo $s->id; ?>" />
+								value="<?php echo $s->employee_id; ?>" />
 
 					<?php }
 					} ?>
@@ -57,17 +57,17 @@
 
 					<div class="flex items-center gap-2">
 
-						<input type="text"
+						<input type="date"
 							name="indate"
 							id="indate"
 							class="w-full border border-gray-300 rounded px-2 py-1 text-sm datepicker1"
 							tabindex="4"
-							value="<?php echo date('d-m-Y', strtotime($row->indate) ?? '') ?>"
+							value="<?php echo date('Y-m-d', strtotime($row->indate) ?? '') ?>"
 							required>
 
-						<div class="px-3 py-1 border border-gray-300 rounded bg-gray-100">
+						<!-- <div class="px-3 py-1 border border-gray-300 rounded bg-gray-100">
 							<i class="fa fa-calendar"></i>
-						</div>
+						</div> -->
 
 					</div>
 
@@ -85,11 +85,11 @@
 
 				<div class="col-span-12 md:col-span-3">
 
-					<input type="text"
+					<input type="date"
 						class="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-gray-100"
 						id="issue_date"
 						name="issue_date"
-						value="<?php echo date('d-m-Y', strtotime($row->issue_date) ?? '') ?>"
+						value="<?php echo date('Y-m-d', strtotime($row->issue_date) ?? '') ?>"
 						readonly>
 
 				</div>
@@ -101,11 +101,11 @@
 
 				<div class="col-span-12 md:col-span-3">
 
-					<input type="text"
+					<input type="date"
 						name="exp_date"
 						id="exp_date"
 						class="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-gray-100"
-						value="<?php echo date('d-m-Y', strtotime($row->expiry_date) ?? '') ?>"
+						value="<?php echo date('Y-m-d', strtotime($row->expiry_date) ?? '') ?>"
 						readonly>
 
 				</div>
@@ -126,7 +126,7 @@
 						class="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-gray-100"
 						id="user_code"
 						name="user_code"
-						value="<?php echo $row->id; ?>"
+						value=""
 						readonly>
 
 				</div>
@@ -189,17 +189,17 @@
 
 					<div class="flex items-center gap-2">
 
-						<input type="text"
+						<input type="date"
 							class="w-full border border-gray-300 rounded px-2 py-1 text-sm datepicker1"
 							id="outdate"
 							name="outdate"
-							value="<?php echo date('d-m-Y', strtotime($row->outdate) ?? '') ?>"
+							value="<?php echo date('Y-m-d', strtotime($row->outdate) ?? '') ?>"
 							required
 							tabindex="3">
 
-						<div class="px-3 py-1 border border-gray-300 rounded bg-gray-100">
+						<!-- <div class="px-3 py-1 border border-gray-300 rounded bg-gray-100">
 							<i class="fa fa-calendar"></i>
-						</div>
+						</div> -->
 
 					</div>
 

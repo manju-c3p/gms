@@ -68,7 +68,7 @@
 		</div>
 
 		<!-- 🔒 LOGOUT -->
-		 	<p class="text-gray-500">Welcome, <b><?= $this->session->userdata('username'); ?></b></p>
+		<p class="text-gray-500">Welcome, <b><?= $this->session->userdata('username'); ?></b></p>
 		<a href="<?= site_url('Login/logout'); ?>"
 			onclick="return confirm('Are you sure you want to log out?');"
 			class="ml-2 text-gray-600 hover:text-red-500 transition"
@@ -79,6 +79,8 @@
 	</div>
 
 </div>
+
+
 <script>
 	document.getElementById('mobile-actions-btn')?.addEventListener('click', function() {
 		document.getElementById('mobile-actions-menu').classList.toggle('hidden');

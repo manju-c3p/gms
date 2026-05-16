@@ -53,14 +53,12 @@ class Ajax_model extends CI_Model
 		$enq_master_id = $this->input->post('enq_master_id');
 		$query = $this->db->query("select count(*)as tcnt from  sales_quotation_master where enq_master_id='$enq_master_id' ");
 		$cnt = $query->row('tcnt');
-		if($cnt==0)
-		{
+		if ($cnt == 0) {
 			$query = $this->db->query("delete from project_costsheet_totals where cs_id='$pcost_ID' ");
 			$query = $this->db->query("delete from project_costsheet_transaction where cs_id='$pcost_ID' ");
 			$query = $this->db->query("delete from project_costsheet_master where cost_sheet_id='$pcost_ID' ");
 			return true;
-		}
-		else
+		} else
 			return false;
 	}
 	function delete_cost_sheet()
@@ -69,14 +67,12 @@ class Ajax_model extends CI_Model
 		$enq_master_id = $this->input->post('enq_master_id');
 		$query = $this->db->query("select count(*)as tcnt from  sales_quotation_master where enq_master_id='$enq_master_id' ");
 		$cnt = $query->row('tcnt');
-		if($cnt==0)
-		{
+		if ($cnt == 0) {
 			$query = $this->db->query("delete from cost_sheet_transaction where cost_master_id='$pcost_ID' ");
 			$query = $this->db->query("delete from cost_sheet_calculation where cost_master_id='$pcost_ID' ");
 			$query = $this->db->query("delete from cost_sheet where cost_sheet_id='$pcost_ID' ");
 			return true;
-		}
-		else
+		} else
 			return false;
 	}
 	function check_duplicate_exist()
@@ -105,12 +101,11 @@ class Ajax_model extends CI_Model
 		$table_name = $this->input->post('table_name');
 		$attribute1 = $this->input->post('column_name1');
 		$id1 = $this->input->post('post_id1');
-	
+
 
 		$query = $this->db->query("select count(*)as tcnt from  $table_name where $attribute1='$id1'");
-	
-		return $query->row('tcnt');
 
+		return $query->row('tcnt');
 	}
 
 
@@ -196,8 +191,8 @@ class Ajax_model extends CI_Model
 
 	///////////////////ledger record by id
 	function get_general_ledger_list_by_id($gn_led)
-	{ 
-		
+	{
+
 		$query = $this->db->query("select  * from general_ledger where account_id='$gn_led'");
 		return $query->result();
 	}
@@ -214,10 +209,87 @@ class Ajax_model extends CI_Model
 		return $query->row('tcnt');
 	}
 
-		function get_paid_leave_type_days($employee_id,$ltype_id)
+	function get_paid_leave_type_days($employee_id, $ltype_id)
 	{
 		$query = $this->db->query("SELECT * FROM paid_leave_master g JOIN paid_leave_transaction s ON g.paid_id = s.paid_id_master  WHERE g.emp_id = '$employee_id' and s.leave_type_id= '$ltype_id' ");
 
 		return $query->result();
+	}
+
+
+	public function update_resign_flag1111($table_name, $where_key, $where_val, $column, $value, $user_id)
+	{
+
+
+
+		$data = array(
+			$column => $value
+		);
+
+
+		$this->db->where($where_key, $where_val);
+		$result = $this->db->update($table_name, $data);
+
+
+
+		/////////////////////////////////////notification manage new format/////////////////////////////////////////////////////////
+		$ci = get_instance();
+		$ci->load->helper('log');
+		$notice = add_notification($where_val, $user_id, "Resignation Approve Successfully", "Hr/edit_emp_regignation/$where_val");
+
+		/////////////////////////////////////////end notification manage////////////////////////////////////////////
+		/* end notification */
+		return $result;
+	}
+	public function update_resign_flag($table_name, $where_key, $where_val, $column, $value, $user_id)
+	{
+		$data = array(
+			$column => $value
+		);
+
+		// Update resignation table
+		$this->db->where($where_key, $where_val);
+		$result = $this->db->update($table_name, $data);
+
+		// ✅ NEW: Update employee status based on approval
+		if ($result) {
+
+			// Get resignation record
+			$row = $this->db
+				->get_where($table_name, [$where_key => $where_val])
+				->row();
+
+			if ($row) {
+
+				// ✔ ACCEPT → Inactive
+				if ($value == 1) {
+					$this->db->where('employee_id', $row->employee_id);
+					$this->db->update('employees', ['status' => 'Inactive']);
+				}
+
+				// ✔ REJECT → Active (optional but good)
+				if ($value == 2) {
+					$this->db->where('employee_id', $row->employee_id);
+					$this->db->update('employees', ['status' => 'Active']);
+				}
+			}
+		}
+
+		///////////////////////////////////// notification /////////////////////////////////////
+		$ci = get_instance();
+		$ci->load->helper('log');
+
+		// Optional: better message based on status
+		$msg = "Resignation Updated Successfully";
+		if ($value == 1) {
+			$msg = "Resignation Approved Successfully";
+		} elseif ($value == 2) {
+			$msg = "Resignation Rejected Successfully";
+		}
+
+		$notice = add_notification($where_val, $user_id, $msg, "Hr/edit_emp_regignation/$where_val");
+		///////////////////////////////////// end /////////////////////////////////////
+
+		return $result;
 	}
 }

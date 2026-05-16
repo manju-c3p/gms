@@ -28,7 +28,7 @@ class Admin extends CI_Controller
 		$insert_id = $this->Admin_model->update_company_record_by_id();
 		if ($insert_id == 1) {
 			$this->session->set_flashdata('success', 'Data Saved Successfully..');
-			redirect('company/company.php');
+			redirect('Admin/company_details');
 		}
 	}
 

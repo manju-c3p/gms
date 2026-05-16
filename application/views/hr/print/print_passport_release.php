@@ -28,7 +28,7 @@
         }
 
         .section-title {
-            background-color: #ff0080;
+            /* background-color: #ff0080; */
             color: #fff;
             text-align: center;
             font-size: 18px;
@@ -80,13 +80,26 @@
         <div class="border-all">
 
             <!-- Header Logo -->
-            <table border="0" style="margin-bottom:10px;">
-                <tr>
-                    <td align="left">
-                        <img style="width:180px; height:80px;" src="<?php echo base_url() ?>public/logo/logo.png" />
-                    </td>
-                </tr>
-            </table>
+           <table width="100%" cellpadding="0" cellspacing="0">
+								<tr>
+
+									<!-- LOGO LEFT -->
+									<td width="25%" align="left">
+										<img src="<?= base_url('public/images/logocooling.png') ?>" height="70">
+									</td>
+
+									<!-- ADDRESS RIGHT -->
+									<td width="75%" align="right" style="font-size:14px; line-height:22px;">
+										<b style="font-size:16px;">Cool Runnings Garage Co LLC</b><br>
+										7 St, Al Quoz 3, Dubai, UAE <br>
+										<span style="color:#1d4ed8;">www.coolrunningsgarage.com</span><br>
+										info@coolrunningsgarage.com <br>
+										Tel: +971 4 265 4887 <br>
+										TRN: 104026094300003
+									</td>
+
+								</tr>
+							</table>
 
             <!-- Title -->
             <div class="section-title">Passport Release Application</div>
@@ -96,24 +109,23 @@
             <table>
                 <tr>
                     <th>Employee Name:</th>
-                    <td><?php echo $row->user_name; ?></td>
+                    <td><?php echo $row->employee_name; ?></td>
                     <th>Passport No:</th>
-                    <td><?php echo $row->document_number; ?></td>
+                    <td><?php echo $row->passport_number; ?></td>
                 </tr>
                 <tr>
                     <th>Employee Number:</th>
-                    <td><?php echo $row->user_code; ?></td>
-                    <th>Accommodation:</th>
-                    <td><?php echo $row->Accomodation_provided; ?></td>
+                    <td><?php echo $row->employee_code; ?></td>
+                   
                 </tr>
                 <tr>
                     <th>Mobile No:</th>
-                    <td><?php echo $row->contact_no; ?></td>
+                    <td><?php echo $row->mobile; ?></td>
                     <th>Department/Project:</th>
                     <td>
                         <?php foreach ($dept_list as $s) {
-                            if ($s->dept_id == $row->dept_id) {
-                                echo $s->dept_name;
+                            if ($s->department_id == $row->department_id) {
+                                echo $s->department_name;
                             }
                         } ?>
                     </td>

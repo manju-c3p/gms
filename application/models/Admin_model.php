@@ -32,6 +32,11 @@ class Admin_model extends CI_Model
 			'company_telephone' => $this->input->post('company_telephone'),
 			'company_TRN' => $this->input->post('company_trn'),
 			'company_website' => $this->input->post('website'),
+			'corporate_tax_per' => $this->input->post('corporate_tax'),
+			'threshold_value' => $this->input->post('threshold'),
+			'excemptions' => $this->input->post('excemption'),
+
+
 		);
 		$this->db->where('company_id', $id);
 		$this->db->update('company_master', $data);

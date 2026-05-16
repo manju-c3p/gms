@@ -82,6 +82,8 @@ class SpareParts extends CI_Controller
 		];
 
 		$this->SpareParts_model->add_part($data);
+	
+		
 
 		$this->session->set_flashdata('success', 'Part added successfully!');
 		redirect('SpareParts');
@@ -268,6 +270,9 @@ class SpareParts extends CI_Controller
 		$unit_price = $this->input->post('unit_price');
 		$part_type  = $this->input->post('part_type'); // New / After / Used
 		$labelling = $this->input->post('labeling');
+		$purchaseunit = $this->input->post('purchaseunit');
+		$stockunit = $this->input->post('stockunit');
+		$qtyperunit = $this->input->post('qtyperunit');
 
 		if ($part_name == '' || $part_type == '') {
 			echo json_encode([
@@ -283,7 +288,11 @@ class SpareParts extends CI_Controller
 			'part_type' => $part_type,
 			'created_at' => date('Y-m-d H:i:s'),
 			'min_stock' => 1,
-			'labeling' => $labelling
+			'labeling' => $labelling,
+
+			'purchase_unit_id' => $purchaseunit,
+			'stock_unit_id' => $stockunit,
+			'qty_per_purchase_unit' => $qtyperunit,
 		];
 
 		// $opening_qty = (int) $this->input->post('opening_qty');

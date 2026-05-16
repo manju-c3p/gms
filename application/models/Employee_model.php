@@ -14,6 +14,14 @@ class Employee_model extends CI_Model
 			->get('departments')
 			->result();
 	}
+	public function get_designations()
+	{
+		return $this->db
+			->where('is_active', 1)
+			->order_by('designation_name', 'ASC')
+			->get('designations')
+			->result();
+	}
 
 	// Insert new department
 	public function save_department($department_name)
@@ -112,7 +120,7 @@ class Employee_model extends CI_Model
 
 		$ledger_data = [
 			'account_name' => $data['employee_name'],
-			'group_no'     => 2816, // create group like 210
+			'group_no'     => 67, // create group like Employee Loan & Advances
 			'employee_id'  => $employee_id,
 			'opening_balance' => 0,
 			'opening_bal_type' => 'Cr'
@@ -160,8 +168,8 @@ class Employee_model extends CI_Model
 	public function update_employee($employee_id, $data)
 	{
 		/* ===============================
-       HANDLE PASSPORT FILE UPLOAD
-    =============================== */
+     		 HANDLE PASSPORT FILE UPLOAD
+    		=============================== */
 
 		$passport_file = null;
 
@@ -227,6 +235,23 @@ class Employee_model extends CI_Model
 
 		$this->db->where('employee_id', $employee_id);
 		$this->db->update('employees', $employeeData);
+
+		// Assume $employee_id already exists (from update, not insert)
+
+		// 1️⃣ Delete existing ledger for this employee
+		$this->db->where('employee_id', $employee_id);
+		$this->db->delete('general_ledger');
+
+		// 2️⃣ Insert new ledger
+		$ledger_data = [
+			'account_name'      => $data['employee_name'],
+			'group_no'          => 67, // Employee Loan & Advances
+			'employee_id'       => $employee_id,
+			'opening_balance'   => 0,
+			'opening_bal_type'  => 'Cr'
+		];
+
+		$this->db->insert('general_ledger', $ledger_data);
 
 
 		/* ===============================
@@ -365,8 +390,8 @@ class Employee_model extends CI_Model
 		$this->db->join('salary_structure ss', 'ss.emp_id = e.employee_id', 'left');
 
 		// Apply filters
-		if (!empty($filters['employee_id'])) {
-			$this->db->where('e.employee_id', $filters['employee_id']);
+		if (!empty($filters['user_id'])) {
+			$this->db->where('e.employee_id', $filters['user_id']);
 		}
 
 		if (!empty($filters['department_id'])) {

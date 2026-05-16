@@ -170,8 +170,8 @@
 				Model : <?= $invoice->brand ?> <?= $invoice->model ?><br>
 				VIN : <?= $invoice->chassis_no ?> <br>
 				Mileage : <?= $invoice->km_in ?> <br>
-				Year : <?= $invoice->year ?>
-
+				Year : <?= $invoice->year ?> <br>
+				KM's : <?= $invoice->km_in ?>
 			</td>
 
 		</tr>
@@ -210,7 +210,12 @@
 				<tr>
 					<td><?= $i++ ?></td>
 					<td><?= $srv->item_name ?></td>
-					<td><?= $srv->quantity ?></td>
+					<!-- <td><?= $srv->quantity ?></td> -->
+					 <td>
+	<?= (floor($srv->quantity) == $srv->quantity) 
+		? number_format($srv->quantity, 0) 
+		: rtrim(rtrim(number_format($srv->quantity, 2), '0'), '.') ?>
+</td>
 					<td class="right"><?= number_format($srv->unit_price, 2) ?></td>
 					<td class="right"><?= number_format($srv->total_price, 2) ?></td>
 				</tr>
@@ -253,13 +258,36 @@
 			</tr>
 
 			<?php $i = 1;
-			foreach ($parts as $p): ?>
+
+
+			foreach ($parts as $p):
+				$patype = "";
+				if ($p->labeling == "1") {
+					if ($p->part_type == "New Parts") {
+						$patype = "Original";
+					} else if ($p->part_type == "Aftermarket Parts") {
+						$patype = "Aftermarket";
+					} else if ($p->part_type == "Used Parts") {
+						$patype = "Used";
+					}
+				}
+
+			?>
 
 				<tr>
 					<td><?= $i++ ?></td>
-					<td><?= $p->part_name ?></td>
-					<td><?= $p->quantity ?></td>
-					<td class="right"><?= number_format($p->unit_price, 2) ?></td>
+					<td>
+						<?= $p->part_name ?>
+						
+						<?= !empty($patype) ? "($patype)" : "" ?><br>
+						<?= !empty($p->partremarks) ? $p->partremarks : "" ?>
+					</td>
+					<td>
+	<?= (floor($p->quantity) == $p->quantity) 
+		? number_format($p->quantity, 0) 
+		: rtrim(rtrim(number_format($p->quantity, 2), '0'), '.') ?>
+</td>
+					<td class="right"><?= number_format($p->invoiceprice, 2) ?></td>
 					<td class="right"><?= number_format($p->disamount ?? 0, 2) ?></td>
 					<td class="right"><?= number_format($p->total_price, 2) ?></td>
 				</tr>
@@ -308,7 +336,13 @@
 				<tr>
 					<td><?= $i++ ?></td>
 					<td><?= $s->item_name ?></td>
-					<td><?= $s->quantity ?></td>
+					<!-- <td><?= $s->quantity ?></td> -->
+
+					<td>
+	<?= (floor($s->quantity) == $s->quantity) 
+		? number_format($s->quantity, 0) 
+		: rtrim(rtrim(number_format($s->quantity, 2), '0'), '.') ?>
+</td>
 					<td class="right"><?= number_format($s->unit_price, 2) ?></td>
 					<td class="right"><?= number_format($s->total_price, 2) ?></td>
 				</tr>
@@ -401,7 +435,7 @@
 
 					<tr>
 						<td class="right">Discount</td>
-						<td class="right"><?= number_format($invoice->discount_amount, 2) ?></td>
+					<td class="right"><?= number_format($invoice->discount_amount ?? 0, 2) ?></td>
 					</tr>
 
 					<tr>

@@ -65,17 +65,14 @@
 
 					<option value="">Select</option>
 
+					
 					<?php foreach ($user_records as $s) { ?>
 
-						<option <?php if ($this->session->userdata('id') == $s->employee_id ) echo 'selected'; ?>
-							value="<?php echo $s->employee_id  ?>">
+						<option  value="<?php echo $s->employee_id  ?>">
 							<?php echo $s->employee_name; ?>
 						</option>
 
-						<!-- <option <?php if ($this->session->userdata('id') == $s->id) echo 'selected'; ?>
-							value="<?php echo $s->id ?>">
-							<?php echo $s->username; ?>
-						</option> -->
+						
 
 					<?php } ?>
 
@@ -92,16 +89,14 @@
 
 				<div class="flex">
 
-					<input type="text"
+					<input type="date"
 						class="w-full border border-gray-300 rounded-l-lg px-3 py-2 text-sm datepicker1"
 						id="effctive_date"
 						name="effctive_date"
-						value="<?php echo date('d-m-Y') ?>"
+						value="<?php echo date('Y-m-d') ?>"
 						tabindex="2">
 
-					<span class="inline-flex items-center px-3 border border-l-0 border-gray-300 rounded-r-lg bg-gray-50">
-						📅
-					</span>
+					<!--  -->
 
 				</div>
 

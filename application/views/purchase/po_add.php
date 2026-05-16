@@ -227,13 +227,13 @@
    			<input type="text"
    				class="form-control col-span-12 md:col-span-1 border rounded px-3 py-2"
    				name="discount_per"
-   				id="discount_per">
+   				id="discount_per"  oninput="allowOnlyNumbersDecimal(this)">
 
 
    			<input type="text"
    				class="form-control col-span-12 md:col-span-1 border rounded px-3 py-2"
    				name="discount_amt"
-   				id="discount_amt">
+   				id="discount_amt"  oninput="allowOnlyNumbersDecimal(this)">
 
 
    			<label class="col-span-12 md:col-span-1">VAT (%)</label>
@@ -241,13 +241,21 @@
    			<input type="text"
    				class="form-control col-span-12 md:col-span-1 border rounded px-3 py-2"
    				name="vat_per"
-   				id="vat_per">
+   				id="vat_per"  oninput="allowOnlyNumbersDecimal(this)">
 
 
    			<input type="text"
    				class="form-control col-span-12 md:col-span-1 border rounded px-3 py-2"
    				name="vat_amount"
-   				id="vat_amount">
+   				id="vat_amount"  oninput="allowOnlyNumbersDecimal(this)">
+
+					<label class="col-span-12 md:col-span-1">Round Off</label>
+
+   			<input type="text"
+   				class="form-control col-span-12 md:col-span-2 border rounded px-3 py-2"
+   				name="roundoff"
+   				id="roundoff"  oninput="allowOnlyNumbersDecimal(this)">
+
 
 
    			<label class="col-span-12 md:col-span-1">Grand Total</label>
@@ -255,7 +263,7 @@
    			<input type="text"
    				class="form-control col-span-12 md:col-span-2 border rounded px-3 py-2"
    				name="grand_total"
-   				id="grand_total">
+   				id="grand_total"  oninput="allowOnlyNumbersDecimal(this)">
 
    		</div>
 
@@ -409,8 +417,8 @@
    			calculateAll();
    		});
 
-   		// Event listener for global discount, VAT, and extra charges
-   		$('#discount_per, #discount_amt, #vat_per, #transportation_charge, #customs_charge, #other_charge').on('input change', function() {
+   		// Event listener for global discount, VAT, and extra charges #discount_per, 
+   		$('#discount_amt, #vat_per, #transportation_charge, #customs_charge, #other_charge').on('input change', function() {
    			calculateAll();
    		});
 
@@ -506,4 +514,16 @@
    			$('#grand_total').val(grandTotal.toFixed(2));
    		}
    	});
+
+	function allowOnlyNumbersDecimal(input) {
+		alert("Cvdfgdf");
+    // Remove everything except numbers and decimal point
+    input.value = input.value.replace(/[^0-9.]/g, '');
+
+    // Prevent multiple decimal points
+    let parts = input.value.split('.');
+    if (parts.length > 2) {
+        input.value = parts[0] + '.' + parts.slice(1).join('');
+    }
+}
    </script>

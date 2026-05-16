@@ -146,7 +146,7 @@
 		<!-- ACTIONS -->
 		<div class="hide-on-print" style="margin-bottom:10px;">
 			<button onclick="window.print()" class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded">🖨 Print</button>
-			<a href="<?= base_url('index.php/jobcard/edit/' . $jobcard->jobcard_id) ?>" class="w-full sm:w-auto  ml-3 px-6 py-2 bg-gray-300 rounded print:hidden">Cancel</a>
+			<a href="<?= base_url('index.php/Jobcard/edit/' . $jobcard->jobcard_id) ?>" class="w-full sm:w-auto  ml-3 px-6 py-2 bg-gray-300 rounded print:hidden">Cancel</a>
 		</div>
 
 		<!-- HEADER -->
@@ -165,7 +165,7 @@
 
 		<!-- TITLE -->
 		<div class="est-title-line">
-			<span>Job Card # <?= $jobcard->jobcard_id ?></span>
+			<span>Job Card # <?= $jobcard->jobcard_no ?></span>
 			<span class="center">JOB CARD</span>
 			<span>Date <?= date('d/m/Y', strtotime($jobcard->jobcard_date)) ?></span>
 		</div>

@@ -130,7 +130,7 @@
 				success: function(msg) {
 					if (msg == 1) {
 						alert("Record Cancelled");
-						window.location.href = "<?php echo $_SERVER['PHP_SELF'] ?>";
+						window.location.reload();
 					} else {
 						alert("Can't Cancel record. Data already exist!!!");
 					}

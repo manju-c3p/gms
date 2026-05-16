@@ -67,7 +67,7 @@ class Dashboard_model extends CI_Model
 	{
 		return $this->db
 			->from('job_cards')
-			->where_in('status', ['Finished',''])
+			->where_in('status', ['Finished', ''])
 			->count_all_results();
 	}
 
@@ -75,7 +75,7 @@ class Dashboard_model extends CI_Model
 	{
 		return $this->db
 			->from('job_cards')
-			->where_in('status', ['Scheduled', 'In Progress', 'Finished',''])
+			->where_in('status', ['Scheduled', 'In Progress', 'Finished', ''])
 			->count_all_results();
 	}
 	public function get_customers_count()
@@ -119,6 +119,37 @@ class Dashboard_model extends CI_Model
 			->count_all_results();
 	}
 
+	public function get_total_purchase_amount()
+	{
+		return $this->db
+			->select('SUM(grand_total) as total')
+			->from('purchase_order_master')
+			->where('cancelled', 0) // important
+			->get()
+			->row()
+			->total ?? 0;
+	}
+	public function get_parts_po_summary()
+	{
+		return $this->db
+			->select('COUNT(po_id) as count, SUM(grand_total) as total')
+			->from('purchase_order_master')
+			->where('purchase_type', 'PARTS')
+			->where('cancelled', 0)
+			->get()
+			->row();
+	}
+	public function get_service_po_summary()
+	{
+		return $this->db
+			->select('COUNT(po_id) as count, SUM(grand_total) as total')
+			->from('purchase_order_master')
+			->where('purchase_type', 'SERVICE')
+			->where('cancelled', 0)
+			->get()
+			->row();
+	}
+
 
 
 
@@ -143,7 +174,7 @@ class Dashboard_model extends CI_Model
 			->result();
 	}
 
-	public function get_low_stock_items()
+	public function get_low_stock_items_old()
 	{
 		return $this->db
 			->select('
@@ -191,6 +222,34 @@ class Dashboard_model extends CI_Model
 			->get()
 			->result();
 	}
+
+	public function get_low_stock_items()
+	{
+		return $this->db
+			->select('
+            sp.part_id,
+            sp.part_name,
+            sp.min_stock,
+            vb.brand_name,
+            IFNULL(ss.current_stock, 0) AS current_stock
+        ')
+			->from('spare_parts sp')
+
+			// Brand
+			->join('vehicle_brands vb', 'vb.brand_id = sp.brand_id', 'left')
+
+			// ✅ Use stock_summary (NO calculations)
+			->join('stock_summary ss', 'ss.part_id = sp.part_id', 'left')
+
+			// Low stock condition
+			->where('IFNULL(ss.current_stock, 0) <= sp.min_stock')
+
+			->order_by('ss.current_stock', 'ASC')
+			->limit(10)
+			->get()
+			->result();
+	}
+
 
 	public function get_recent_inspections()
 	{
@@ -481,5 +540,81 @@ class Dashboard_model extends CI_Model
 		$row->pending_amount = $row->total_invoice_amount - $row->total_collected_amount;
 
 		return $row;
+	}
+
+	public function get_cash_bank_balances11()
+	{
+		$sql = "SELECT 
+                gl.account_id,
+                gl.account_name,
+                ag.group_name,
+
+                IFNULL(SUM(
+                    CASE 
+                        WHEN vt.drcr_type = 'Dr' THEN vt.amount
+                        WHEN vt.drcr_type = 'Cr' THEN -vt.amount
+                    END
+                ),0) AS balance
+
+            FROM general_ledger gl
+
+            LEFT JOIN account_group ag 
+                ON ag.group_no = gl.group_no
+
+            LEFT JOIN voucher_transaction vt 
+                ON vt.account_id = gl.account_id
+                AND vt.cancel = 0
+
+            -- WHERE ag.group_name IN ('Cash', 'Bank')
+			WHERE ag.group_name IN ('Cash-in-hand', 'Bank Accounts')
+
+            GROUP BY gl.account_id
+            ORDER BY ag.group_name, gl.account_name";
+
+		return $this->db->query($sql)->result();
+	}
+
+	public function get_cash_bank_balances()
+	{
+		$sql = "SELECT 
+            gl.account_id,
+            gl.account_name,
+            ag.group_name,
+
+            (
+                IFNULL(
+                    CASE 
+                        WHEN gl.opening_bal_type = 'Dr' THEN gl.opening_balance
+                        WHEN gl.opening_bal_type = 'Cr' THEN -gl.opening_balance
+                        ELSE 0
+                    END
+                ,0)
+
+                +
+
+                IFNULL(SUM(
+                    CASE 
+                        WHEN vt.drcr_type = 'Dr' THEN vt.amount
+                        WHEN vt.drcr_type = 'Cr' THEN -vt.amount
+                    END
+                ),0)
+
+            ) AS balance
+
+        FROM general_ledger gl
+
+        LEFT JOIN account_group ag 
+            ON ag.group_no = gl.group_no
+
+        LEFT JOIN voucher_transaction vt 
+            ON vt.account_id = gl.account_id
+            AND vt.cancel = 0
+
+        WHERE ag.group_name IN ('Cash-in-hand', 'Bank Accounts')
+
+        GROUP BY gl.account_id
+        ORDER BY ag.group_name, gl.account_name";
+
+		return $this->db->query($sql)->result();
 	}
 }

@@ -5,7 +5,7 @@ error_reporting(E_ALL); ?>
 <div class="bg-white shadow-md rounded-xl p-6">
 
 	<form class="grid md:grid-cols-12 gap-4 items-end"
-		action="<?= base_url('index.php/accounts/trial_balance') ?>"
+		action="<?= base_url('index.php/Accounts/trial_balance') ?>"
 		method="post"
 		id="receipt"
 		name="receipt"
@@ -18,14 +18,12 @@ error_reporting(E_ALL); ?>
 			</label>
 
 			<div class="relative">
-				<input type="text"
-					class="w-full border rounded-lg px-3 py-2 datepicker focus:ring-2 focus:ring-blue-500"
+				<input type="date"
+					class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
 					name="from_date"
 					id="from_date"
-					value="<?= isset($from_date) ? $from_date : date('d-m-Y') ?>"
+					value="<?= isset($from_date) ? date('Y-m-d', strtotime($from_date)) : date('Y-m-d') ?>"
 					required>
-
-				<i class="fa fa-calendar absolute right-3 top-3 text-gray-400"></i>
 			</div>
 		</div>
 
@@ -37,14 +35,12 @@ error_reporting(E_ALL); ?>
 			</label>
 
 			<div class="relative">
-				<input type="text"
-					class="w-full border rounded-lg px-3 py-2 datepicker focus:ring-2 focus:ring-blue-500"
+				<input type="date"
+					class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
 					name="to_date"
 					id="to_date"
-					value="<?= isset($to_date) ? $to_date : date('d-m-Y') ?>"
+					value="<?= isset($to_date) ? date('Y-m-d', strtotime($to_date)) : date('Y-m-d') ?>"
 					required>
-
-				<i class="fa fa-calendar absolute right-3 top-3 text-gray-400"></i>
 			</div>
 		</div>
 
@@ -235,8 +231,42 @@ error_reporting(E_ALL); ?>
 	});
 
 	function goToUrlWithDates() {
-		const fromDate = $("#from_date").datepicker("getDate");
-		const toDate = $("#to_date").datepicker("getDate");
+	const fromDateVal = document.getElementById("from_date").value;
+	const toDateVal = document.getElementById("to_date").value;
+
+	if (!fromDateVal || !toDateVal) {
+		alert('Please select both From and To dates.');
+		return false;
+	}
+
+	if (fromDateVal > toDateVal) {
+		alert('From date cannot be greater than To date.');
+		return false;
+	}
+
+	// ✅ Convert string → Date object
+	const fromDate = new Date(fromDateVal);
+	const toDate = new Date(toDateVal);
+
+	function formatDate(d) {
+		const dd = String(d.getDate()).padStart(2, '0');
+		const mm = String(d.getMonth() + 1).padStart(2, '0');
+		const yyyy = d.getFullYear();
+		return dd + '-' + mm + '-' + yyyy;
+	}
+
+	const fromStr = formatDate(fromDate);
+	const toStr = formatDate(toDate);
+
+	const baseUrl = '<?= base_url("index.php/accounts/trial_balance") ?>';
+
+	window.location.href = `${baseUrl}/${fromStr}/${toStr}`;
+	return false;
+}
+
+	function goToUrlWithDates1111() {
+		const fromDate = document.getElementById("from_date").value;
+		const toDate = document.getElementById("to_date").value;
 
 		if (!fromDate || !toDate) {
 			alert('Please select both From and To dates.');

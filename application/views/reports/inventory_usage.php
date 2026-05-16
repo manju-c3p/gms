@@ -71,7 +71,7 @@
                     <td><?= $row->part_code ?></td>
                     <td><?= $row->part_name ?></td>
                     <td class="font-semibold text-center"><?= $row->qty ?></td>
-                    <td><?= $row->jobcard_id ?></td>
+                    <td><?= $row->jobcard_no ?></td>
                     <td><?= $row->customer_name ?></td>
                     <td><?= $row->registration_no ?></td>
                 </tr>

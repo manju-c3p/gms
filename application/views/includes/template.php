@@ -5,6 +5,8 @@
 
 	 $this->load->view('includes/topbar'); 
 
+	 
+
 	 if(isset($main_content))
 	 	$this->load->view($main_content);
 	

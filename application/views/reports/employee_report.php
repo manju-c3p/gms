@@ -1,5 +1,9 @@
 <?php if (!isset($is_generated)) $is_generated = false; ?>
-
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
 <div class="bg-white shadow rounded-lg">
 
 	<div class="p-6">
@@ -17,7 +21,7 @@
 					</label>
 
 					<select name="department_id"
-						class="w-full border border-gray-300 rounded px-2 py-1 text-sm select2">
+						class="w-full border border-gray-300 rounded px-2 py-1 text-sm select2 debtor-select">
 
 						<option value="">All</option>
 
@@ -52,7 +56,7 @@
 						<?php foreach ($designations as $desig): ?>
 
 							<option value="<?= $desig->designation_id  ?>"
-								<?= ($selected_desig == $desig->designation_id ) ? 'selected' : '' ?>>
+								<?= ($selected_desig == $desig->designation_id) ? 'selected' : '' ?>>
 
 								<?= htmlspecialchars($desig->designation_name) ?>
 
@@ -83,10 +87,10 @@
 
 						<?php foreach ($user_records as $user): ?>
 
-							<option value="<?= $user->id ?>"
-								<?= ($user->id == $user_id) ? 'selected' : '' ?>>
+							<option value="<?= $user->employee_id ?>"
+    <?= ($user->employee_id == $user_id) ? 'selected' : '' ?>>
 
-								<?= htmlspecialchars($user->username ) ?>
+								<?= htmlspecialchars($user->employee_name) ?>
 
 							</option>
 
@@ -211,7 +215,7 @@
 								</td>
 
 								<td class="px-3 py-2 border border-gray-200">
-									<?= htmlspecialchars($row->dept_name ?? '-') ?>
+									<?= htmlspecialchars($row->department_name ?? '-') ?>
 								</td>
 
 								<td class="px-3 py-2 border border-gray-200">
@@ -236,16 +240,7 @@
 
 					<?php elseif ($is_generated): ?>
 
-						<tr>
-
-							<td colspan="7"
-								class="px-3 py-2 border border-gray-200 text-center text-red-600">
-
-								No records found.
-
-							</td>
-
-						</tr>
+						
 
 					<?php endif; ?>
 
@@ -260,15 +255,20 @@
 </div>
 <script>
 	$(document).ready(function() {
-		// Initialize Select2
-		$('.select2').select2();
 
-		// Initialize DataTable safely (prevent duplicate init)
-		if (!$.fn.DataTable.isDataTable('#datatable')) {
-			$('#datatable').DataTable({
-				responsive: true
-			});
-		}
+		// Select2
+		$('.debtor-select').select2({
+			width: '100%'
+		});
+
+		$('#datatable').DataTable({
+			language: {
+				emptyTable: "No records found"
+			}
+		});
+
+
+
 
 		// Print Action
 		$('#printBtn').on('click', function() {
@@ -290,4 +290,12 @@
 			form.target = '';
 		});
 	});
+
+	
+$('#user_id').on('change', function () {
+    if ($(this).val() !== '') {
+        $('select[name="department_id"]').val('').trigger('change');
+        $('select[name="designation_id"]').val('').trigger('change');
+    }
+});
 </script>

@@ -38,7 +38,7 @@
 
 		<form id="ledger_report_form" method="post" action="<?php echo base_url('index.php/Accounts/tax_report_details'); ?>">
 
-			<div class="grid grid-cols-1 md:grid-cols-5 gap-5 items-end">
+			<div class="grid grid-cols-1 md:grid-cols-6 gap-5 items-end">
 
 				<!-- From Date -->
 				<div>
@@ -73,7 +73,7 @@
 				<!-- Generate -->
 				<div>
 					<button type="submit"
-						class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-xl shadow transition">
+						class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold px-2 py-2 rounded-xl shadow transition">
 						<i class="fa fa-search mr-1"></i> Generate
 					</button>
 				</div>
@@ -82,8 +82,15 @@
 				<div>
 					<button type="button"
 						onclick="printReport()"
-						class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl shadow transition">
+						class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold px-2 py-2 rounded-xl shadow transition">
 						<i class="fa fa-print mr-1"></i> Print
+					</button>
+				</div>
+				<div>
+					<button type="button"
+						onclick="exportExcel()"
+						class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold px-2 py-2 rounded-xl shadow transition">
+						<i class="fa fa-print mr-1"></i>Excel Export
 					</button>
 				</div>
 
@@ -125,14 +132,13 @@
 	});
 
 
-	function printReport()
-	{
+	function printReport() {
 
-				var reportContent = document.getElementById('report_result').innerHTML;
+		var reportContent = document.getElementById('report_result').innerHTML;
 
-				var w = window.open('', '_blank');
+		var w = window.open('', '_blank');
 
-				w.document.write(`
+		w.document.write(`
 				<html>
 				<head>
 				<title>VAT Report</title>
@@ -261,14 +267,169 @@
 				</html>
 				`);
 
-				w.document.close();
+		w.document.close();
 
-				setTimeout(()=>{
-					w.print();
-				},500);
+		setTimeout(() => {
+			w.print();
+		}, 500);
 
 	}
 
+	function exportExcel() {
+		var reportDiv = document.getElementById("report_result");
+
+
+		if (reportDiv.innerHTML.trim() === "") {
+			alert("Please generate report first");
+			return;
+		}
+
+		var content = reportDiv.innerHTML;
+
+		var template = `
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:x="urn:schemas-microsoft-com:office:excel"
+      xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+    <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8"/>
+
+    <!--[if gte mso 9]>
+    <xml>
+        <x:ExcelWorkbook>
+            <x:ExcelWorksheets>
+                <x:ExcelWorksheet>
+                    <x:Name>VAT Report</x:Name>
+                    <x:WorksheetOptions>
+                        <x:DisplayGridlines/>
+                    </x:WorksheetOptions>
+                </x:ExcelWorksheet>
+            </x:ExcelWorksheets>
+        </x:ExcelWorkbook>
+    </xml>
+    <![endif]-->
+
+    <style>
+        body{font-family:Arial;font-size:12px;}
+        table{border-collapse:collapse;width:100%;margin-bottom:20px;}
+        th{background:#d9d9d9;border:1px solid #000;padding:6px;text-align:left;font-weight:bold;}
+        td{border:1px solid #000;padding:6px;}
+        .text-right{text-align:right;}
+        .total{font-weight:bold;background:#f2f2f2;}
+    </style>
+
+</head>
+
+<body>
+
+    <h2>VAT Report</h2>
+    ${content}
+
+</body>
+</html>
+`;
+
+		var blob = new Blob([template], {
+			type: "application/vnd.ms-excel;charset=utf-8;"
+		});
+
+		var link = document.createElement("a");
+		document.body.appendChild(link);
+
+		link.href = URL.createObjectURL(blob);
+		link.download = "VAT_Report.xls";
+		link.click();
+
+		document.body.removeChild(link);
+
+
+	}
+
+
+	function exportExcel11() {
+		var reportDiv = document.getElementById("report_result");
+
+		if (reportDiv.innerHTML.trim() === "") {
+			alert("Please generate report first");
+			return;
+		}
+
+		var content = reportDiv.innerHTML;
+
+		var excelFile = `
+				<html xmlns:o="urn:schemas-microsoft-com:office:office"
+				xmlns:x="urn:schemas-microsoft-com:office:excel"
+				xmlns="http://www.w3.org/TR/REC-html40">
+
+				<head>
+					<meta charset="utf-8">
+
+					<style>
+						body{
+							font-family: Arial;
+							font-size:12px;
+						}
+
+						h3{
+							margin-top:25px;
+							margin-bottom:5px;
+						}
+
+						table{
+							border-collapse:collapse;
+							width:100%;
+							margin-bottom:20px;
+						}
+
+						th{
+							background:#d9d9d9;
+							border:1px solid #000;
+							padding:6px;
+							text-align:left;
+							font-weight:bold;
+						}
+
+						td{
+							border:1px solid #000;
+							padding:6px;
+						}
+
+						.text-right{
+							text-align:right;
+						}
+
+						.total{
+							font-weight:bold;
+							background:#f2f2f2;
+						}
+
+					</style>
+
+				</head>
+
+				<body>
+
+					<h2>VAT Report</h2>
+
+					${content}
+
+				</body>
+				</html>
+				`;
+
+		var blob = new Blob([excelFile], {
+			type: "application/vnd.ms-excel"
+		});
+
+		var link = document.createElement("a");
+		link.href = URL.createObjectURL(blob);
+		link.download = "VAT_Report.xls";
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+
+
+	}
 </script>
 
 <script id="x3fd8k">

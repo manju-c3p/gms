@@ -47,16 +47,16 @@
 
             <div class="flex">
 
-                <input type="text"
+                <input type="date"
                        tabindex="1"
                        id="a_date"
                        name="a_date"
                        value="<?php echo $a_date; ?>"
                        class="w-full border border-gray-300 rounded-l-lg px-3 py-2 text-sm datepicker1">
 
-                <span class="inline-flex items-center px-3 border border-l-0 border-gray-300 rounded-r-lg bg-gray-50">
+                <!-- <span class="inline-flex items-center px-3 border border-l-0 border-gray-300 rounded-r-lg bg-gray-50">
                     📅
-                </span>
+                </span> -->
 
             </div>
 
@@ -184,12 +184,12 @@
 
                     <td class="px-4 py-2 border">
 
-                        <?php echo $row->username; ?>
+                        <?php echo $row->employee_name; ?>
 
                         <input type="hidden"
                                id="user_id"
                                name="user_id[]"
-                               value="<?php echo $row->id; ?>">
+                               value="<?php echo $row->employee_id; ?>">
 
                     </td>
 
@@ -200,7 +200,7 @@
                                id="checkbox"
                                name="checkbox[]"
                                class="checkbox"
-                               value="<?php echo $row->id; ?>">
+                               value="<?php echo $row->employee_id; ?>">
 
                     </td>
 

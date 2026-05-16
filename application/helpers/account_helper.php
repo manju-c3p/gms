@@ -100,4 +100,73 @@ function get_ledger_total1($account_id,$from,$to)
 	$query=$CI->db->query(" select coalesce(sum(price*quantity),0) as totamt from stock_details where stock_date between '$from' and '$to' and stock_type='IN' and status=0");
 	return $query->row('totamt');
  }
+
+//  ===============================
+
+function get_net_profit_loss($from, $to)
+{
+    $CI =& get_instance();
+
+    $from = date('Y-m-d', strtotime($from));
+    $to   = date('Y-m-d', strtotime($to));
+
+    // Total Income
+    $income = $CI->db->query("
+        SELECT COALESCE(SUM(IF(lt.drcr_type='Cr', lt.amount, -lt.amount)),0) AS total
+        FROM voucher_transaction lt
+        JOIN general_ledger gl ON gl.account_id = lt.account_id
+        JOIN account_group ag ON ag.group_no = gl.group_no
+        WHERE ag.pandl = 1 
+        AND ag.sno IN (3)  -- Income groups
+        AND DATE(lt.voucher_date) BETWEEN '$from' AND '$to'
+        AND lt.cancel = 0
+    ")->row()->total;
+
+    // Total Expense
+    $expense = $CI->db->query("
+        SELECT COALESCE(SUM(IF(lt.drcr_type='Dr', lt.amount, -lt.amount)),0) AS total
+        FROM voucher_transaction lt
+        JOIN general_ledger gl ON gl.account_id = lt.account_id
+        JOIN account_group ag ON ag.group_no = gl.group_no
+        WHERE ag.pandl = 1 
+        AND ag.sno IN (4)  -- Expense groups
+        AND DATE(lt.voucher_date) BETWEEN '$from' AND '$to'
+        AND lt.cancel = 0
+    ")->row()->total;
+
+    $net = $income - $expense;
+
+    return [
+        'income' => $income,
+        'expense' => $expense,
+        'net_profit' => $net > 0 ? $net : 0,
+        'net_loss' => $net < 0 ? abs($net) : 0
+    ];
+}
+
+
+function get_ledger_total($account_id, $from, $to)
+{
+    $CI =& get_instance();
+
+    $from = date('Y-m-d', strtotime($from));
+    $to   = date('Y-m-d', strtotime($to));
+
+    $row = $CI->db->query("
+        SELECT COALESCE(SUM(
+            CASE 
+                WHEN drcr_type = 'Dr' THEN amount
+                WHEN drcr_type = 'Cr' THEN -amount
+                ELSE 0
+            END
+        ),0) as total
+        FROM voucher_transaction
+        WHERE account_id = '$account_id'
+        AND DATE(voucher_date) BETWEEN '$from' AND '$to'
+        AND cancel = 0
+    ")->row();
+
+    return $row->total;
+}
+
 ?>

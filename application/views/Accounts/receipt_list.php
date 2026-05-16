@@ -74,7 +74,7 @@
 						<td>
 							<div class="flex items-center gap-3">
 
-								<a href="<?php echo base_url('index.php/Accounts/print_receipt/' . $row->voucher_code); ?>"
+								<a target="_blank" href="<?php echo base_url('index.php/Accounts/print_receipt/' . $row->voucher_code); ?>"
 									class="text-blue-600 hover:text-blue-800 font-medium">
 									Print
 								</a>

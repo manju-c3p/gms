@@ -77,19 +77,23 @@
 
 				<tr>
 
-					<th class="px-4 py-2 text-left font-semibold text-gray-700">#</th>
-
 					<th class="px-4 py-2 text-left font-semibold text-gray-700">Sr.no</th>
 
-					<th class="px-4 py-2 text-left font-semibold text-gray-700">PO Code</th>
+					<th class="px-4 py-2 text-left font-semibold text-gray-700">PO Details</th>
 
-					<th class="px-4 py-2 text-left font-semibold text-gray-700">PO Date</th>
 
-					<th class="px-4 py-2 text-left font-semibold text-gray-700">Supplier</th>
+					<th class="px-4 py-2 text-left font-semibold text-gray-700">Purchase Type</th>
+					<th class="px-4 py-2 text-left font-semibold text-gray-700 w-[120px]">Document</th>
 
-					<th class="px-4 py-2 text-left font-semibold text-gray-700">Document</th>
 
-					<th class="px-4 py-2 text-left font-semibold text-gray-700">Status</th>
+					<th class="px-4 py-2 text-left font-semibold text-gray-700  text-right">Sub Total</th>
+
+					<th class="px-4 py-2 text-left font-semibold text-gray-700 text-right">Vat Amount</th>
+					<th class="px-4 py-2 text-left font-semibold text-gray-700 text-right">Dis Amount</th>
+					<th class="px-4 py-2 text-left font-semibold text-gray-700 text-right">Total Amount</th>
+
+					<th class="px-4 py-2 text-left font-semibold text-gray-700">GRN/SRN Status</th>
+					<th class="px-4 py-2 text-left font-semibold text-gray-700">Approval Status</th>
 
 					<th class="px-4 py-2 text-left font-semibold text-gray-700">Action</th>
 
@@ -105,17 +109,7 @@
 
 					<tr class="hover:bg-gray-50 transition">
 
-						<td class="px-4 py-2">
 
-							<a href="javascript:confirmcancel(<?php echo $row->po_id; ?>)"
-								title="Delete"
-								class="text-red-600 hover:text-red-800">
-
-								<i class="glyphicon glyphicon-trash"></i>
-
-							</a>
-
-						</td>
 
 
 						<td class="px-4 py-2">
@@ -124,31 +118,46 @@
 						</td>
 
 
-						<td class="px-4 py-2 font-medium text-gray-800">
-							<?php echo $row->po_code; ?>
+						<td class="px-3 py-3">
+
+							<div class="flex items-start gap-3">
+
+
+
+								<!-- Details Stack -->
+								<div class="leading-5">
+
+									<div class="font-semibold text-gray-800">
+										<?php echo $row->po_code; ?>
+									</div>
+
+									<div class="text-gray-500 text-xs">
+										<?php echo date('d-M-Y', strtotime($row->po_date)); ?>
+									</div>
+
+									<div>
+										<a target="_blank"
+											href="<?php echo base_url() . 'index.php/Supplier/edit_supplier/' . $row->supplier_id; ?>"
+											class="text-blue-600 hover:underline text-sm">
+											<?php echo $row->supplier_name; ?>
+										</a>
+									</div>
+
+								</div>
+
+							</div>
+
 						</td>
-
-
-						<td class="px-4 py-2 text-gray-700">
-							<?php echo date('d-M-Y', strtotime($row->po_date)); ?>
-						</td>
-
 
 						<td class="px-4 py-2">
 
-							<a title="View supplier details"
-								target="blank"
-								href="<?php echo base_url() . 'index.php/Users/edit_supplier/' . $row->supplier_id; ?>"
-								class="text-blue-600 hover:text-blue-800 hover:underline">
 
-								<?php echo $row->supplier_name; ?>
+							<?php echo $row->purchase_type; ?>
 
-							</a>
+
 
 						</td>
-
-
-						<td class="px-4 py-2">
+						<td class="px-4 py-2 max-w-[120px] truncate">
 
 							<a title="View Document"
 								href="<?php echo base_url('uploads/podocuments/' . $row->doc_path); ?>"
@@ -160,24 +169,115 @@
 							</a>
 
 						</td>
+						<td class="px-4 py-2 text-right">
+
+
+							<?php echo $row->sub_total; ?>
+
+
+
+						</td>
+						<td class="px-4 py-2 text-right">
+
+
+							<?php echo $row->vat_amt; ?>
+
+
+
+						</td>
+						<td class="px-4 py-2 text-right">
+
+
+							<?php echo $row->discount; ?>
+
+
+
+						</td>
+						<td class="px-4 py-2 text-right">
+
+
+							<?php echo $row->grand_total; ?>
+
+
+
+						</td>
+
+
 
 
 						<td class="px-4 py-2">
 
-							<?php if ($row->po_status == 1): ?>
 
-								<span class="inline-block bg-gray-700 text-white text-xs px-3 py-1 rounded cursor-not-allowed">
-									Approved
-								</span>
+							<?php
+							// if ($row->purchase_type == "PARTS" && $row->grn_status == "1") {
+							// 	echo "GRN forwarded";
+							// } else if ($row->purchase_type == "PARTS" && $row->grn_status == "1") {
+							// 	echo "Approve PO for GRN";
+							// } else if ($row->purchase_type == "SERVICE") {
+							// 	echo "Service PO";
+							// } else if ($row->purchase_type == "PARTS" && $row->grn_status == "0") {
+							// 	echo "Parts PO";
+							// }
 
-							<?php else: ?>
+				if ($row->purchase_type == "PARTS" && $row->grn_status == "1") {
+    echo "GRN forwarded";
 
-								<a href="<?php echo base_url() . 'index.php/Purchase/approve_po/' . $row->po_id; ?>"
-									class="inline-block bg-green-600 text-white text-xs px-3 py-1 rounded hover:bg-green-700">
-									Approve
-								</a>
+} elseif ($row->purchase_type == "SERVICE" && $row->srn_status == "1") {
+    echo "SRN Forwarded";
 
-							<?php endif; ?>
+} elseif ($row->purchase_type == "PARTS" && $row->grn_status == "0") {
+    echo "Parts PO";
+
+} elseif ($row->purchase_type == "SERVICE" && ($row->srn_status == "0" || $row->srn_status === null)) {
+    echo "Service PO";
+}
+							
+							?>
+
+
+
+						</td>
+
+
+
+
+
+
+						<td class="px-4 py-2">
+							<?php if ($row->is_grn_required == 1) { ?>
+
+								<?php if ($row->po_status == 1): ?>
+
+									<span class="inline-block bg-gray-700 text-white text-xs px-3 py-1 rounded cursor-not-allowed">
+										Approved
+									</span>
+
+								<?php else: ?>
+
+									<a href="<?php echo base_url() . 'index.php/Purchase/approve_po/' . $row->po_id; ?>"
+										class="inline-block bg-green-600 text-white text-xs px-3 py-1 rounded hover:bg-green-700">
+										Approve
+									</a>
+
+								<?php endif; ?>
+							<?php } else {
+								// echo "Not required";?>
+								<?php if ($row->srn_status == 1): ?>
+
+									<span class="inline-block bg-gray-700 text-white text-xs px-3 py-1 rounded cursor-not-allowed">
+										Approved
+									</span>
+
+								<?php else: ?>
+
+									<a href="<?php echo base_url() . 'index.php/Purchase/create_srn/' . $row->po_id; ?>"
+										class="inline-block bg-yellow-600 text-white text-xs px-3 py-1 rounded hover:bg-green-700">
+										Create SRN
+									</a>
+
+								<?php endif; ?>
+								
+							<?php } ?>
 
 						</td>
 
@@ -186,14 +286,16 @@
 						<td class="px-4 py-2">
 							<div class="flex items-center gap-3">
 
+								<?php if ($row->po_status == 0): ?>
+									<a href="<?php echo base_url() . 'index.php/Purchase/edit_po/' . $row->po_id . '/0'; ?>"
+										title="Edit"
+										class="text-green-600 hover:text-green-800">
 
-								<a href="<?php echo base_url() . 'index.php/Purchase/edit_po/' . $row->po_id . '/0'; ?>"
-									title="Edit"
-									class="text-green-600 hover:text-green-800">
+										<i class="fa fa-pencil"></i>
 
-									<i class="fa fa-pencil"></i>
+									</a>
 
-								</a>
+								<?php endif; ?>
 
 
 
@@ -205,6 +307,12 @@
 									<i class="fa fa-print"></i>
 
 								</a>
+
+								<!-- <a href="javascript:confirmcancel(<?php echo $row->po_id; ?>)"
+									class="text-red-600 hover:text-red-800 mt-1">
+									<i class="fa fa-trash"></i>
+								</a> -->
+
 
 							</div>
 						</td>
@@ -262,16 +370,16 @@
 					text: 'Export Excel',
 					className: 'bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700',
 					exportOptions: {
-						columns: [1, 2, 3, 4, 5, 6] // ✅ exclude delete + action column
+						columns: [1, 2, 3, 4, 5, 6, 7, 8, 9] // ✅ exclude delete + action column
 					}
 				},
 
 
-					// {
-					// 	extend: 'print',
-					// 	text: 'Print',
-					// 	className: 'bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700'
-					// }
+				// {
+				// 	extend: 'print',
+				// 	text: 'Print',
+				// 	className: 'bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700'
+				// }
 
 			],
 
@@ -304,10 +412,13 @@
 				var from = $('#from_date').val();
 				var to = $('#to_date').val();
 
-				// PO Date column index = 3
-				var dateStr = data[3]; // 13-Mar-2026
+				var colData = data[1];
 
-				if (!dateStr) return true;
+				// Extract date from PO Details column
+				var match = colData.match(/\d{2}-[A-Za-z]{3}-\d{4}/);
+				if (!match) return true;
+
+				var dateStr = match[0];
 
 				var parts = dateStr.split('-');
 				var formatted = parts[2] + '-' + getMonth(parts[1]) + '-' + parts[0];
@@ -317,8 +428,6 @@
 
 				return true;
 			}
-
-
 		);
 
 		function getMonth(mon) {

@@ -44,6 +44,15 @@
 				</span>
 			</div>
 
+			<div>
+				<a href="<?= base_url('index.php/Jobcard') ?>">
+					<button type="button"
+						class="w-full sm:w-auto px-6 py-2 bg-gray-500 text-white rounded">
+						Back
+					</button>
+				</a>
+			</div>
+
 		</div>
 	</div>
 

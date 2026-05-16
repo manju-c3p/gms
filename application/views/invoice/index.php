@@ -23,7 +23,7 @@
 		<tbody>
 			<?php $i = 1;
 			foreach ($invoices as $inv):
-				$balance = $inv->grand_total - $inv->paid_amount;
+				$balance = max(0, $inv->grand_total - $inv->paid_amount);
 
 				// Dynamic status calculation
 				if ($inv->paid_amount <= 0) {
@@ -43,9 +43,9 @@
 					<td><?= $inv->invoice_date ?></td>
 					<td><?= $inv->customer_name ?></td>
 					<td><?= $inv->registration_no ?></td>
-					<td><?= number_format($inv->grand_total, 2) ?></td>
-					<td><?= number_format($inv->paid_amount, 2) ?></td>
-					<td><?= number_format($balance, 2) ?></td>
+					<td class="text-right"><?= number_format($inv->grand_total, 2) ?></td>
+					<td class="text-right"><?= number_format($inv->paid_amount, 2) ?></td>
+					<td class="text-right"><?= number_format($balance, 2) ?></td>
 					<td>
 						<span class="px-2 py-1 rounded text-white text-xs <?= $status_class ?>">
 							<?= $status ?>
@@ -72,7 +72,9 @@
                     				 3 3 0 016 0z" />
 							</svg>
 						</a>
-						<?php if ($username == "Admin") { ?>
+						<?php 
+						// if ($username == "Admin") { 
+							?>
 							<!-- EDIT -->
 							<a href="<?= base_url('index.php/invoice/edit/' . $inv->invoice_id) ?>"
 								class="p-2 rounded bg-yellow-100 hover:bg-yellow-200"
@@ -91,7 +93,7 @@
 								</svg>
 							</a>
 							<!-- DELETE -->
-							<a href="<?= base_url('index.php/invoice/delete/' . $inv->invoice_id) ?>"
+							<!-- <a href="<?= base_url('index.php/invoice/delete/' . $inv->invoice_id) ?>"
 								onclick="return confirm('Are you sure you want to delete this invoice?')"
 								class="p-2 rounded bg-red-100 hover:bg-red-200"
 								title="Delete Invoice">
@@ -106,9 +108,11 @@
                							A2.25 2.25 0 0115.092 19.5H8.908a2.25 2.25 0 01-2.245-2.053L6 7.5m3 3v6m6-6v6" />
 								</svg>
 
-							</a>
+							</a> -->
 
-						<?php } ?>
+						<?php 
+						// } 
+						?>
 					</td>
 
 					<!-- <td class="space-x-1">

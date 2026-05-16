@@ -33,7 +33,7 @@ class Jobcard extends CI_Controller
 			->order_by('jobcard_id', 'DESC')
 			// ->order_by("CAST(SUBSTRING_INDEX(jobcard_no,'-',-1) AS UNSIGNED)", "DESC")
 			->limit(1)
-			->get('jobcards')
+			->get('job_cards')
 			->row();
 
 		if ($last) {
@@ -231,11 +231,13 @@ class Jobcard extends CI_Controller
 
 		$jobcardData = [
 
-			'status'          => 'Scheduled',
+			// 'status'          => 'Scheduled',
+			'status'          => $this->input->post('status'),
 			'remarks' => $this->input->post('remarks'),
 			'km_in' => $this->input->post('kmin'),
 			'expected_delivery_date' => $this->input->post('estdate'),
 			'completion_time' => $this->input->post('ctime'),
+			'jobcard_date'=> $this->input->post('jobcard_date')
 		];
 
 		$this->Jobcard_model->update_jobcard($jobcard_id, $jobcardData);
@@ -468,7 +470,7 @@ class Jobcard extends CI_Controller
 		// 3️⃣ Get estimation (jobcard MUST come after estimation)
 		// $estimation = $this->Estimation_model->get_by_appointment($appointment_id);
 
-		log_message('error', "check this function");
+		// log_message('error', "check this function");
 		$estimation = $this->Estimation_model->get_estimation_by_id($estimation_id);
 		if (!$estimation) {
 			$this->session->set_flashdata(
@@ -480,8 +482,8 @@ class Jobcard extends CI_Controller
 
 		$estimation_id = $estimation->estimation_id;
 		$parent_estimation_id = $estimation->parent_estimation_id;
-		log_message('error', "check this " . $parent_estimation_id);
-		log_message('error', "estimation_id this " . $estimation_id);
+		// log_message('error', "check this " . $parent_estimation_id);
+		// log_message('error', "estimation_id this " . $estimation_id);
 
 		if (!empty($parent_estimation_id)) {
 			$jobcard = $this->Jobcard_model->get_jobcard_by_eid($parent_estimation_id);

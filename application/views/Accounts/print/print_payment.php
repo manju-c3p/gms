@@ -13,14 +13,15 @@ $this->load->helper('myopeningbalance_helper.php');
 //     $company_email   = $row1->company_email_id;
 // }
 
-$receipt_no       = $header->voucher_code;
-$receipt_date     = $header->voucher_date;
+$receipt_no       = $header->voucher_code ?? '';
+$receipt_date     = $header->voucher_date ?? '';
 $supplier_name    = $header->particulars ?? ''; 
 $credit_account   = $header->credit_account_name ?? ''; 
-$total_amount     = $header->amount;
+$total_amount     = $header->amount ?? '';
 $transaction_type = $header->transaction_type ?? '';
 $transaction_no   = $header->transaction_no ?? '';
 $bank_name        = $header->bank_name ?? '';  
+$remark           = $header->narration ?? '';
 ?>
 
 <style>
@@ -161,6 +162,9 @@ $bank_name        = $header->bank_name ?? '';
   <strong>Amount (in words):</strong> 
   <?= function_exists('convert_number_to_words') ? convert_number_to_words($total_amount) : 'Function missing'; ?>
 </div>
+
+<p> <strong>Remarks</strong>
+	<?php echo $remark; ?></p>
 
 <div class="footer-sign">
   <div>Receiver's Signature: ____________________</div>

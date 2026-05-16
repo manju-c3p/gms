@@ -135,14 +135,18 @@ class Quotation extends CI_Controller
 		// log_message('error', 'New Parts: ' . print_r($parts_used_new, true));
 		// log_message('error', 'Aftermarket Parts: ' . print_r($parts_used_after, true));
 		// log_message('error', 'Used Parts: ' . print_r($parts_used_used, true));
-
-		$services_used = $this->Estimation_model->get_services($data['quotation']->estimation_id);
+		// =============================================
+		
+		// if ($data['quotation']->status == 'Approved') {
+		// 	$services_used = $this->Quotation_model->get_services($data['quotation']->quotation_id);
+		// } else {
+			$services_used = $this->Estimation_model->get_services($data['quotation']->estimation_id);
+		// }
 
 		$inspection = $this->Inspection_view_model->get_by_inspection($data['quotation']->inspection_id);
 		$data['parts'] = $this->SpareParts_model->get_all_parts();
 		$data['brands'] = $this->SpareParts_model->get_all_brands();
-		$data['services_master'] = $this->db->where('status', 'Active')
-			->get('services_master')->result();
+		$data['services_master'] = $this->db->where('status', 'Active')->get('services_master')->result();
 		$data['kms'] = $inspection->km_reading ?? $estimation->kmin;
 		$data['service_discount'] = $estimation->service_discount ?? null;
 		$data['sublet_discount'] = $estimation->sublet_discount ?? null;
@@ -295,9 +299,10 @@ class Quotation extends CI_Controller
 			'tdiscount'    => $post['totdiscount'],
 			'grand_total' => $post['grand_total'],
 			'remarks'     => $post['remarks'],
-			'status' => $status,
+			'status' => "Approved",
 			'srvice_discount'     => $this->input->post('service_discount'),
-			'sublet_discount'=> $this->input->post('sublet_discount'),
+			'sublet_discount' => $this->input->post('sublet_discount'),
+			'quotation_date' => $this->input->post('quote_date'),
 
 			// parts
 			'part_id'        => $post['part_id'] ?? null,
@@ -313,15 +318,15 @@ class Quotation extends CI_Controller
 
 
 			// services
-			'service_id'     => $post['service_id'],
-			'service_time'   => $post['service_time'],
-			'service_cost'   => $post['service_cost'],
-			'total_cost'     => $post['total_cost'],
+			'service_id'     => $post['service_id'] ?? null,
+			'service_time'   => $post['service_time'] ?? null,
+			'service_cost'   => $post['service_cost'] ?? null,
+			'total_cost'     => $post['total_cost'] ?? null,
 
 			// sublet services
-			'job_description'     => $post['job_description'],
-			'job_amount'   => $post['job_amount'],
-			
+			'job_description'     => $post['job_description'] ?? null,
+			'job_amount'   => $post['job_amount'] ?? null,
+
 		]);
 
 

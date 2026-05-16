@@ -26,7 +26,7 @@
 			$subtot = 0;
 			$ivat = 0;
 			$j = 1;
-			foreach ($records2 as $r) { ?>
+			foreach ($records2 as $r) { if ($r->balance_qty > 0) {?>
 
 				<tr class="hover:bg-gray-50">
 
@@ -119,13 +119,25 @@
 							value="<?php echo $r->quantity; ?>"
 							readonly />
 
-						<div class="text-xs text-gray-500">Received:</div>
+							<div class="text-xs text-gray-500">Pre Received Qty:</div>
 
 						<input type="number"
+							class="w-full border border-gray-300 rounded px-2 py-1 bg-gray-100 already_received"
+							name="already_received[]"
+							id="already_received<?php echo $i; ?>"
+							value="<?php echo $r->received_qty; ?>"
+							readonly />
+
+						<div class="text-xs text-gray-500">Received Qty:</div>
+
+						<input type="number"
+							step="any"
+							min="0"
 							class="w-full border border-gray-300 rounded px-2 py-1 rec_quantity focus:ring-2 focus:ring-blue-500"
-							onchange="test(event);"
+							oninput="calculateAll();"
 							name="rec_quantity[]"
 							id="rec_quantity<?php echo $i; ?>"
+								value="<?php echo $r->balance_qty; ?>"
 							data-index="<?php echo $i; ?>" />
 
 						<small id="error_msg<?php echo $i; ?>"
@@ -144,7 +156,7 @@
 							name="unit_price[]"
 							step="any"
 							id="unit_price<?php echo $i; ?>"
-							value="<?php echo $r->unit_price; ?>" />
+							value="<?php echo $r->orgprice; ?>" />
 
 						
 
@@ -197,7 +209,7 @@
 
 			<?php $i++;
 				$j++;
-			} ?>
+			} } ?>
 
 		</tbody>
 	</table>

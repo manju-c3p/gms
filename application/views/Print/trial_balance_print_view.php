@@ -81,7 +81,7 @@
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
 
     <!-- Logo -->
-    <img src="<?= base_url('public/images/logocooling.png'); ?>" width="30%" style="height:70px;">
+    <img src="<?= base_url('public/images/logocooling.png'); ?>" width="20%" >
 
     <!-- Company Details -->
     <div style="text-align:right; font-size:13px; line-height:1.5;">

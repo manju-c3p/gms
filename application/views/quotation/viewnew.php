@@ -513,7 +513,7 @@
 							</tr>
 							<?php $i = 1;
 							$jd_total = 0;
-							foreach ($job_descriptions as $s): $jd_total += $s->amount; ?>
+							foreach ($job_descriptions as $s): $jd_total += $s->amount; $totaldiscount += $s->discount_amount; ?>
 								<tr>
 									<td class="text-center"><?= $i++ ?></td>
 									<td><?= $s->description ?></td>
@@ -543,7 +543,10 @@
 					$subtotal = $service_total + $parts_total + $jd_total;
 					$taxable_amount = $subtotal - ($parts_discount_total + $totaldiscount);
 
-					$fulldiscount = $parts_discount_total + $totaldiscount;
+					// $fulldiscount = $parts_discount_total + $totaldiscount;
+					$fulldiscount =  $totaldiscount;
+
+					$taxable_amount = $subtotal - $fulldiscount;
 					$vat_amount = round($taxable_amount * 0.05, 2);
 
 					$grand_total = round($taxable_amount + $vat_amount, 2);

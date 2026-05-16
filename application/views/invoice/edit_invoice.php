@@ -38,6 +38,8 @@ foreach ($items as $it) {
 		<input type="hidden" name="customer_id" id="customer_id" value="<?= $invoice->customer_id  ?>">
 
 		<!-- ================= SERVICES ================= -->
+		<h3 class="font-semibold mb-2">Invoice Date</h3>
+		<input type="date" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" name="invoice_date" id="invoice_date" value="<?= $invoice->invoice_date  ?>">
 		<h3 class="font-semibold mb-2">Services</h3>
 
 		<table class="w-full border text-sm mb-6" id="serviceTable">
@@ -51,11 +53,11 @@ foreach ($items as $it) {
 
 			<tbody>
 
-				<?php foreach ($services as $s): ?>
+				<?php foreach ($services as $k =>  $s): ?>
 
 					<tr>
 						<td class="border p-2 text-center">
-							<input type="checkbox" class="srv-check" checked>
+							<input type="checkbox" name="srv_check_open[<?= $k ?>]]" class="srv-check" checked>
 						</td>
 
 						<td class="border p-2">
@@ -103,16 +105,17 @@ foreach ($items as $it) {
 
 			<tbody>
 
-				<?php foreach ($parts as $p): ?>
+				<?php foreach ($parts  as $k =>  $p): ?>
 
 					<tr>
 						<td class="border p-2 text-center">
-							<input type="checkbox" class="part-check" checked>
+							<input type="checkbox" name="part_check_open[<?= $k ?>]" value="1" class="part-check" checked>
 						</td>
 
 						<td class="border p-2">
 							<?= $p->item_name ?>
 							<input type="hidden" name="part_name[]" value="<?= $p->item_name ?>">
+							<input type="hidden" name="part_id[]" value="<?= $p->source_jobcard_item_id ?>">
 						</td>
 
 						<td class="border p-2">
@@ -165,11 +168,11 @@ foreach ($items as $it) {
 
 			<tbody>
 
-				<?php foreach ($sublets as $d): ?>
+				<?php foreach ($sublets as $k => $d): ?>
 
 					<tr>
 						<td class="border p-2 text-center">
-							<input type="checkbox" class="sub-check" checked>
+							<input type="checkbox" name="sub_check_open[<?= $k ?>]]" class="sub-check" checked>
 						</td>
 
 						<td class="border p-2">
@@ -208,14 +211,60 @@ foreach ($items as $it) {
 
 				<div class="flex justify-between"><span>Subtotal</span><span id="subtotal">0</span></div>
 				<div class="flex justify-between"><span>Discount</span><span id="discountamt"> <?= $invoice->discount_amount ?></span></div>
+				<div class="flex justify-between items-start gap-4">
+
+					<span class="pt-2">Additional Discount</span>
+
+					<div class="flex items-center gap-3">
+
+						<div class="flex flex-col">
+							<label class="text-xs text-gray-500 mb-1">Percentage</label>
+
+							<input type="number" step="0.01"
+								class="w-24 text-right border border-gray-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+								name="adddiscount_amount_per"
+								id="adddiscount_amount_per" value="<?= $invoice->add_dis_percentage ?>">
+						</div>
+
+						<div class="flex flex-col">
+							<label class="text-xs text-gray-500 mb-1">Amount</label>
+
+							<input type="number" step="0.01"
+								class="w-32 text-right border border-gray-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+								name="adddiscount_amount"
+								id="adddiscount_amount" value="<?= $invoice->add_dis_amount ?>">
+						</div>
+
+					</div>
+
+				</div>
+
+
 				<div class="flex justify-between"><span>Taxable Amount</span><span id="taxableamt">0</span></div>
 				<div class="flex justify-between"><span>VAT</span><span id="vat">0</span></div>
-				<div class="flex justify-between font-bold text-lg"><span>Grand</span><span id="grand">0</span></div>
+				<div class="flex justify-between "><span>Grand</span><span id="grand">0</span></div>
+
+				<div class="flex justify-between border-t pt-2 mt-2">
+					<span>Advance Payment(if Any)</span>
+
+					<input type="text" name="advance_paid" id="advance_paid" value="<?= $invoice->adv_paid ?>" readonly
+						class="advance_paid text-right border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+				</div>
+				<div class="flex justify-between border-t pt-2 mt-2">
+					<span>Balance</span>
+					<span id="balance">0.00</span>
+				</div>
+				<!-- ==================== advance entry====================== -->
 
 				<input type="hidden" name="subtotal" id="subtotal_input">
 				<input type="hidden" name="tax_amount" id="tax_input">
 				<input type="hidden" name="discount_amount" id="discount_input">
+				<input type="hidden" name="normal_discount_amount" id="normal_discount_amount" value="<?= $invoice->discount_amount ?>">
+
 				<input type="hidden" name="grand_total" id="grand_input">
+
+				<input type="hidden" name="adv_paid" id="adv_paid">
+				<input type="hidden" name="balance_total" id="balance_total">
 
 			</div>
 
@@ -426,6 +475,10 @@ foreach ($items as $it) {
 			</div>
 		</div>
 
+		<a href="<?php echo base_url('index.php/Invoice'); ?>"
+			class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-600">
+			Cancel
+		</a>
 		<button class="mt-6 bg-green-600 text-white px-6 py-2 rounded">
 			Update Invoice
 		</button>
@@ -466,28 +519,55 @@ foreach ($items as $it) {
 		document.getElementById('parts_total').innerText = partsTotal.toFixed(2);
 		document.getElementById('sub_total').innerText = subTotal.toFixed(2);
 
-		let totaldisamt = document.getElementById('discountamt').innerText;
+		let totaldisamt = parseFloat(document.getElementById('discountamt').innerText) || 0;
+
+		let totaladddisamt = parseFloat(document.getElementById('adddiscount_amount').value) || 0;
+
+		let totinvdisamt = totaldisamt + totaladddisamt;
 
 		let subtotal = serviceTotal + partsTotal + subTotal;
-		let taxableamt = subtotal - totaldisamt;
+		let taxableamt = subtotal - totinvdisamt;
+		// let taxableamt = subtotal - totaldisamt;
 		let vat = taxableamt * 0.05;
 		let grand = taxableamt + vat;
 
+		/* ========= advance calculation ========= */
+
+		let advpaid = parseFloat(document.getElementById('advance_paid').value) || 0;
+
+		// prevent overpayment
+		if (advpaid > grand) {
+			advpaid = grand;
+			document.getElementById('advance_paid').value = grand.toFixed(2);
+		}
+
+		let baltot = Math.round((grand - advpaid) * 100) / 100;
+
+		document.getElementById('balance').innerText = baltot.toFixed(2);
+		document.getElementById('balance_total').value = baltot.toFixed(2);
+
+		/* ========= DISPLAY ========= */
+
 		document.getElementById('subtotal').innerText = subtotal.toFixed(2);
+
 		document.getElementById('vat').innerText = vat.toFixed(2);
 		document.getElementById('grand').innerText = grand.toFixed(2);
-		
+
 		document.getElementById('taxableamt').innerText = taxableamt.toFixed(2);
 		// =====================accounts fileds===================
 		document.getElementById("inv_dr_amount0").value = grand.toFixed(2);
 		document.getElementById("inv_cr_amount0").value = subtotal.toFixed(2);
-		document.getElementById("inv_cr_amount2").value = totaldisamt;
+		document.getElementById("inv_cr_amount2").value = totinvdisamt;
+		// document.getElementById("inv_cr_amount2").value = totaldisamt;
 		document.getElementById("inv_cr_amount1").value = vat.toFixed(2);
 		/* ========= HIDDEN INPUTS ========= */
 		document.getElementById('subtotal_input').value = subtotal.toFixed(2);
 		document.getElementById('tax_input').value = vat.toFixed(2);
-		document.getElementById('discount_input').value =  totaldisamt; // or calculated discount
+		document.getElementById('discount_input').value = totinvdisamt; // or calculated discount
 		document.getElementById('grand_input').value = grand.toFixed(2);
+
+		document.getElementById('adv_paid').value = advpaid.toFixed(2);
+		document.getElementById('balance_total').value = baltot.toFixed(2);
 
 	}
 
@@ -522,7 +602,7 @@ foreach ($items as $it) {
 				);
 
 				var sub_total = parseFloat(
-					document.getElementById('subtotal_input').value  || 0
+					document.getElementById('subtotal_input').value || 0
 				);
 
 				var discount_amt = parseFloat(
@@ -542,6 +622,66 @@ foreach ($items as $it) {
 			error: function(xhr) {
 				console.error("Account AJAX error:", xhr.responseText);
 			}
+		});
+
+	});
+
+	document.getElementById('advance_paid').addEventListener('input', function() {
+
+		let grand = parseFloat(document.getElementById('grand_total').innerText) || 0;
+		let advpaid = parseFloat(this.value) || 0;
+
+		if (advpaid > grand) {
+			advpaid = grand;
+			this.value = grand.toFixed(2);
+		}
+
+		let balance = Math.round((grand - advpaid) * 100) / 100;
+
+		document.getElementById('balance').innerText = balance.toFixed(2);
+		document.getElementById('adv_paid').value = advpaid.toFixed(2);
+		document.getElementById('balance_total').value = balance.toFixed(2);
+	});
+
+
+
+	document.addEventListener("DOMContentLoaded", function() {
+
+		const subtotalEl = document.getElementById("subtotal");
+		const ndisamtE = document.getElementById("discount_input");
+		const addDiscountPer = document.getElementById("adddiscount_amount_per");
+		const addDiscountAmt = document.getElementById("adddiscount_amount");
+
+		// Percentage → Amount
+		addDiscountPer.addEventListener("input", function() {
+
+			let subtotal = parseFloat(subtotalEl.innerText) || 0;
+			let ndisamt = parseFloat(ndisamtE.value) || 0;
+			let per = parseFloat(this.value) || 0;
+
+			let amount = ((subtotal - ndisamt) * per) / 100;
+
+			addDiscountAmt.value = amount.toFixed(2);
+
+			calc();
+		});
+
+		// Amount → Percentage
+		addDiscountAmt.addEventListener("input", function() {
+
+			let subtotal = parseFloat(subtotalEl.innerText) || 0;
+			let ndisamt = parseFloat(ndisamtE.value) || 0;
+			let amount = parseFloat(this.value) || 0;
+
+			let per = 0;
+
+			if (subtotal > 0) {
+				per = (amount / (subtotal - ndisamt)) * 100;
+			}
+
+			addDiscountPer.value = per.toFixed(2);
+
+			calc();
 		});
 
 	});

@@ -1,9 +1,8 @@
 <html>
-	<head>
-		<title>
-			Purchase Order Report
-		</title>
-        <style>
+<head>
+    <title>Purchase Order Report</title>
+
+    <style>
         @page {
             margin: 10mm 10mm 25mm 10mm;
 
@@ -12,92 +11,142 @@
             }
 
             @bottom-left {
-                content: "©<?php echo date('Y'); ?> For Avenger Electronics LLC, Designed and developed by Concepts 360 Plus";
+                content: "©<?php echo date('Y'); ?>";
             }
-        }
+        }
+
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 6px;
+        }
+
+        th {
+            background: #f5f5f5;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        /* HEADER */
+        .invoice-header td {
+            vertical-align: middle;
+            padding: 10px;
+            border: none;
+        }
+
+        .logo-cell {
+            text-align: center;
+        }
+
+        .logo-cell img {
+            max-height: 70px;
+        }
+
+        .company-cell {
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: right;
+        }
     </style>
-	</head>
-	<body style="margin-left: 5px; margin-top:5px; font-family:Arial;font-size: 12px;text-align:center">
-	    <table width=100% style='border: 0'>
-            <thead>		
-				<th>					
-					<img src="<?php echo base_url() ?>public/header/header.jpg" alt="Header Image" width='100%' >										
-				</th>
-			</thead>
-			<tbody id="table-body">
-                <tr  class='calc'>
-                    <td style="background-color:rgb(5, 117, 61)">
-                        <table cellpadding=5 width=95% style='font-size: 15px;border:0;text-align:center'>
-                            <tr height='25px' >
-                                <td width=100% style="color:e8b41a">GRN Report (<?php echo $_GET["from_date"]; ?> to <?php echo $_GET["to_date"]; ?>)</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-				
-                <tr class='calc' height=5px style="background-color: #525453;"><td></td></tr>
-                <tr class='calc'>
-                <td>
-                        <table cellpadding=5 border=0 width=95% style='font-size: 12px; border-collapse: collapse;border:0'>
-                            <tr>
-                                <td>Prepared by:<?php ?></td>
-                            </tr>
-                        </table>
-                    </td>   
-                </tr>
-				<tr>
-					<td>
-                        <table cellpadding=10 width=100% style='font-size: 12px; border-collapse:collapse;border:1px solid'>
-                            <thead>
-                                <tr class='calc' style="border:1px solid #000;font-weight:bold;">
-                                    <td style='width:2%'>Sl No</td>
-                                    <td style='width:10%'>GRN Code</td>
-                                    <td style='width:10%'>GRN Date</td>
-                                    <td style='width:35%'>Supplier</td>
-                                    <td style='width:18%'>Grand Total</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            <?php 
-                            $sl_no = 1;
-                            $total_grand = 0;
+</head>
 
-                            foreach ($records as $detail): 
-                                $total_grand += $detail->grand_total;
-                            ?>
-                                <tr valign='top' style="border-bottom:1px solid">
-                                    <td><?php echo $sl_no++; ?></td>
-                                    <td><?php echo $detail->grn_code; ?></td>
-                                    <td><?php echo $detail->grn_date; ?></td>
-                                    <td><?php echo $detail->supplier_name; ?></td>
-                                    <td><?php echo number_format($detail->grand_total, 2); ?></td>
-                                </tr>
-                            <?php endforeach; ?>
+<body>
 
-                            <!-- Total row -->
-                            <tr>
-                                <td colspan="4" align="right"><strong>Total:</strong></td>
-                                <td><strong><?php echo number_format($total_grand, 2); ?></strong></td>
-                            </tr>
-                        </tbody>
-                        </table>
-					</td>
-				</tr>
-               
-               
-              
-                
-				
-			</tbody>
-			<tfoot class='footer'>		
-				
-			</tfoot>
-		</table>
-	</body>
+<!-- 🔥 HEADER -->
+<table class="invoice-header">
+    <tr>
+        <td width="20%" class="logo-cell">
+            <img src="<?= base_url('public/images/logocooling.png') ?>" alt="Logo">
+        </td>
+
+        <td width="80%" class="company-cell">
+            <strong>Cool Runnings Garage Co LLC</strong><br>
+            7 St, Al Quoz 3, Dubai, UAE<br>
+            www.coolrunningsgarage.com<br>
+            info@coolrunningsgarage.com<br>
+            Tel: +971 4 265 4887<br>
+            TRN: 104026094300003
+        </td>
+    </tr>
+</table>
+
+<!-- 🔥 TITLE ROW -->
+<table style="margin-top:10px;">
+    <tr>
+        <td width="40%" style="border:none;">
+            <b>Report:</b> GRN Report
+        </td>
+
+        <td width="20%" style="border:none; text-align:center; font-size:16px;">
+            <b>GRN REPORT</b>
+        </td>
+
+        <td width="40%" style="border:none; text-align:right;">
+            <b>Period:</b> <?= $_GET["from_date"]; ?> to <?= $_GET["to_date"]; ?>
+        </td>
+    </tr>
+</table>
+
+<br>
+
+<!-- 🔥 PREPARED BY -->
+<table style="border:none;">
+    <tr>
+        <td style="border:none;">
+            Prepared by: <?= $this->session->userdata('username') ?? '' ?>
+        </td>
+    </tr>
+</table>
+
+<br>
+
+<!-- 🔥 REPORT TABLE -->
+<table>
+    <thead>
+        <tr style="font-weight:bold;">
+            <th style='width:5%'>Sl No</th>
+            <th style='width:15%'>GRN Code</th>
+            <th style='width:15%'>GRN Date</th>
+            <th style='width:40%'>Supplier</th>
+            <th style='width:25%' class="right">Grand Total</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <?php 
+        $sl_no = 1;
+        $total_grand = 0;
+
+        foreach ($records as $detail): 
+            $total_grand += $detail->grand_total;
+        ?>
+            <tr>
+                <td><?= $sl_no++; ?></td>
+                <td><?= $detail->grn_code; ?></td>
+                <td><?= $detail->grn_date; ?></td>
+                <td><?= $detail->supplier_name; ?></td>
+                <td class="right"><?= number_format($detail->grand_total, 2); ?></td>
+            </tr>
+        <?php endforeach; ?>
+
+        <!-- TOTAL -->
+        <tr>
+            <td colspan="4" class="right"><strong>Total:</strong></td>
+            <td class="right"><strong><?= number_format($total_grand, 2); ?></strong></td>
+        </tr>
+    </tbody>
+</table>
+
+</body>
 </html>
-
-
-
-
-
-

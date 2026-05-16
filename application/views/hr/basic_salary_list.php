@@ -93,50 +93,18 @@
                         <!-- Action -->
                         <td class="px-4 py-2 border text-center whitespace-nowrap">
 
-                            <!-- Edit -->
-                            <a href="<?php echo base_url() . 'index.php/Hr/edit_salary_structure/' . $row->sid; ?>"
-                               title="Edit"
-                               class="inline-flex items-center justify-center w-8 h-8 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg">
+						<a href="<?php echo base_url() . 'index.php/Hr/edit_salary_structure/' . $row->sid; ?>"
+									class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded text-sm">
+									Edit
+								</a>
 
-                                <!-- Pencil Icon -->
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                     class="w-4 h-4"
-                                     fill="none"
-                                     viewBox="0 0 24 24"
-                                     stroke="currentColor">
+								<a href="<?php echo base_url() . 'index.php/Hr/delete_basic_salary/' . $row->sid; ?>"
+									onclick="return confirmcancel(<?php echo $row->sid; ?>);"
+									class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm ml-2">
+									Delete
+								</a>
 
-                                    <path stroke-linecap="round"
-                                          stroke-linejoin="round"
-                                          stroke-width="2"
-                                          d="M11 5h2m-1-1v2m-7.293 9.293l9-9a1 1 0 011.414 0l3.586 3.586a1 1 0 010 1.414l-9 9L7 17l-1.707-1.707z"/>
-
-                                </svg>
-
-                            </a>
-
-
-                            <!-- Delete -->
-                            <a href="<?php echo base_url() . 'index.php/Hr/delete_basic_salary/' . $row->sid; ?>"
-                               title="Delete"
-                               onclick="return confirmcancel(<?php echo $row->sid;?>);"
-                               class="inline-flex items-center justify-center w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg ml-2">
-
-                                <!-- Trash Icon -->
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                     class="w-4 h-4"
-                                     fill="none"
-                                     viewBox="0 0 24 24"
-                                     stroke="currentColor">
-
-                                    <path stroke-linecap="round"
-                                          stroke-linejoin="round"
-                                          stroke-width="2"
-                                          d="M6 7h12M9 7v12m6-12v12M4 7h16l-1 14H5L4 7zm3-3h10l1 3H6l1-3z"/>
-
-                                </svg>
-
-                            </a>
-
+                           
                         </td>
 
                     </tr>
